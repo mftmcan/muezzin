@@ -84,7 +84,9 @@ test.describe('Vekalet (Görev Devri) Akışı E2E', () => {
     await expect(yatsiKarti).toBeVisible({ timeout: 15000 });
 
     await yatsiKarti.getByRole('button', { name: /GÖREVİ DEVRET/i }).click();
-    await expect(page.getByText('HİZMET VEKALETİ TEKLİF ET')).toBeVisible();
+    // Modal başlığı "Premium tasarım denetimi" ile (013ad12) cümle düzenine
+    // çevrildi (HİZMET VEKALETİ TEKLİF ET -> Hizmet Vekaleti Teklif Et).
+    await expect(page.getByText('Hizmet Vekaleti Teklif Et')).toBeVisible();
 
     await page.getByText('E2E Vekalet Alıcı', { exact: true }).click();
 

@@ -51,7 +51,9 @@ test.describe('Haftalık Plan (planServisi.ts) Admin Akışı E2E', () => {
     await expect(gunKarti).toBeVisible({ timeout: 15000 });
     await gunKarti.getByRole('button', { name: /ogle/i }).click();
 
-    await expect(page.getByText('HİZMET OPERASYONU')).toBeVisible();
+    // Modal başlığı "Premium tasarım denetimi" ile (013ad12) cümle düzenine
+    // çevrildi (HİZMET OPERASYONU -> Hizmet Operasyonu) — bkz. HaftalikCizelge.tsx.
+    await expect(page.getByText('Hizmet Operasyonu')).toBeVisible();
     // PersonelSecici butonlarinin erisilebilir adi yalnizca isim degil —
     // avatar harfi + isim + "Görevli Kadro"/"Yedek Görevli" rol etiketini de
     // icerir (ör. "P PlanUc Görevli Kadro") — bu yuzden exact:true yerine
@@ -78,7 +80,7 @@ test.describe('Haftalık Plan (planServisi.ts) Admin Akışı E2E', () => {
     await expect(gunKarti).toBeVisible({ timeout: 15000 });
     await gunKarti.getByRole('button', { name: /ikindi/i }).click();
 
-    await expect(page.getByText('HİZMET OPERASYONU')).toBeVisible();
+    await expect(page.getByText('Hizmet Operasyonu')).toBeVisible();
     await page.locator('label:text("ASİL GÖREVLİ ATAMASI") + div').getByRole('button', { name: /PlanBir/ }).click();
     await page.locator('label:text("YEDEK PERSONEL ATAMASI") + div').getByRole('button', { name: /PlanIki/ }).click();
     await page.getByRole('button', { name: 'ATAMAYI GÜNCELLE' }).click();
