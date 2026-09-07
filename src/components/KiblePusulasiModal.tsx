@@ -180,7 +180,7 @@ export const KiblePusulasiModal: React.FC<KiblePusulasiModalProps> = ({ isOpen, 
   const dialRef = useRef<HTMLDivElement>(null);
   const needleRef = useRef<HTMLDivElement>(null);
   const lastUpdateRef = useRef<number>(0);
-  
+
   // Vibration Lockout to prevent browser flooding/blocking
   const lastVibeTimeRef = useRef<number>(0);
 
@@ -189,8 +189,21 @@ export const KiblePusulasiModal: React.FC<KiblePusulasiModalProps> = ({ isOpen, 
   const currentHeadingRef = useRef<number>(0);
   const rafIdRef = useRef<number>(0);
 
-  // Throttled states (Updated at 10Hz, which is perfect for text labels and glows)
-  const [headingState, setHeadingState] = useState<number | null>(null);
+  // Alt kısımdaki "Pusula Sapma Açısı / Kabe Bağıl Açısı" metni — dialRef/
+  // needleRef'le AYNI DOM-bypass mantığıyla doğrudan yazılır (bkz. aşağıdaki
+  // rAF döngüsü). ÖNCEDEN bu derece değeri `setHeadingState(Math.round(...))`
+  // ile bir React state'ine yazılıyordu — telefon fiilen döndürülürken (yani
+  // akıcılığın en kritik olduğu anda) saniyede 10 kez TÜM modal'ı yeniden
+  // render ettiriyordu (AnimatePresence/motion.div reconciliation dahil),
+  // bu da aynı ana thread'de çalışan rAF döngüsünün kare bütçesini çalıp
+  // görünür "takılma"ya yol açıyordu (bkz. kullanıcı geri bildirimi — pusula
+  // akıcı dönmüyor). Derece SAYISI artık hiçbir yerde React state'i tetiklemez;
+  // yalnızca "sensörden en az bir okuma geldi mi" bilgisi (aşağıdaki
+  // hasHeading) bir kez false→true olur, o da rozet/aura gibi gerçekten
+  // sınıf değişimi gerektiren yerlerde kullanılır.
+  const headingTextRef = useRef<HTMLSpanElement>(null);
+  const hasHeadingRef = useRef(false);
+  const [hasHeading, setHasHeading] = useState(false);
   const [isAligned, setIsAligned] = useState<boolean>(false);
 
   // iOS Safari'de requestPermission() zorunludur; bu tarayıcı özelliği
@@ -311,16 +324,30 @@ export const KiblePusulasiModal: React.FC<KiblePusulasiModalProps> = ({ isOpen, 
           needleRef.current.style.transform = `rotate(${(qiblaAngle - curHeading).toFixed(2)}deg) translateZ(0)`;
         }
 
-        // Throttle state updates to 10Hz to save CPU
+        // Metin etiketini doğrudan DOM'a yazar — React state'i TETİKLEMEZ,
+        // bu yüzden 10Hz sınırına ihtiyacı yok, her karede güncel kalabilir.
+        if (headingTextRef.current) {
+          const needleRotationText = Math.round(qiblaAngle - curHeading);
+          headingTextRef.current.textContent = `Pusula Sapma Açısı: ${Math.round(curHeading)}° • Kabe Bağıl Açısı: ${needleRotationText}°`;
+        }
+
+        // Throttle state updates to 10Hz to save CPU — yalnızca sınıf/görsel
+        // durum DEĞİŞİMİ gerektiren iki bayrak için (bkz. yukarıdaki yorum):
+        // gerçek re-render sayısı bu iki değer FİİLEN değiştiğinde olur
+        // (useState zaten aynı değer için no-op'tur), sürekli akan derece
+        // sayısı için değil.
         const nowTime = performance.now();
         if (nowTime - lastUpdateRef.current > 100) {
           lastUpdateRef.current = nowTime;
-          
+
           const diffRaw = Math.abs(curHeading - qiblaAngle) % 360;
           const angleDiff = diffRaw > 180 ? 360 - diffRaw : diffRaw;
           const aligned = angleDiff <= 3.5;
-          
-          setHeadingState(Math.round(curHeading));
+
+          if (!hasHeadingRef.current) {
+            hasHeadingRef.current = true;
+            setHasHeading(true);
+          }
           setIsAligned(aligned);
         }
       }
@@ -444,7 +471,8 @@ export const KiblePusulasiModal: React.FC<KiblePusulasiModalProps> = ({ isOpen, 
       // Kapanırken (veya yeniden çalışmadan önce) sensör durumunu sıfırla —
       // 0% aktif CPU kullanımı hedefi. Cleanup effect kapanış anında zaten
       // çalıştığı için ayrı bir "!isOpen" dalına gerek yok.
-      setHeadingState(null);
+      hasHeadingRef.current = false;
+      setHasHeading(false);
       setIsAligned(false);
       headingRef.current = null;
       lastVibeTimeRef.current = 0;
@@ -456,7 +484,6 @@ export const KiblePusulasiModal: React.FC<KiblePusulasiModalProps> = ({ isOpen, 
     : coords.kaynak === 'varsayilan'
       ? 'Varsayılan Konum (Ceyhan)'
       : `${settings.ilceAdi || 'Ceyhan'} İlçe Merkezi`;
-  const needleRotation = headingState !== null ? qiblaAngle - headingState : qiblaAngle;
 
   return (
     <Modal
@@ -472,7 +499,7 @@ export const KiblePusulasiModal: React.FC<KiblePusulasiModalProps> = ({ isOpen, 
             background: isAligned
               ? 'radial-gradient(circle, var(--aura-emerald) 0%, transparent 70%)'
               : 'radial-gradient(circle, var(--aura-amber) 0%, transparent 70%)',
-            opacity: headingState !== null ? (isAligned ? 0.35 : 0.12) : 0.05
+            opacity: hasHeading ? (isAligned ? 0.35 : 0.12) : 0.05
           }}
         />
 
@@ -574,7 +601,7 @@ export const KiblePusulasiModal: React.FC<KiblePusulasiModalProps> = ({ isOpen, 
                 <span className="w-2 h-2 rounded-full bg-[var(--aura-emerald)] animate-ping-slow shadow-[0_0_10px_var(--aura-emerald)]" />
                 KIBLE YÖNÜ HİZALANDI
               </motion.div>
-            ) : headingState !== null ? (
+            ) : hasHeading ? (
               <motion.div
                 key="rotating"
                 initial={{ opacity: 0 }}
@@ -632,10 +659,12 @@ export const KiblePusulasiModal: React.FC<KiblePusulasiModalProps> = ({ isOpen, 
           Manyetik pusulalar birkaç derece sapabilir — kesin yön için ±5° tolerans bırakın ve telefonu metal eşyalardan uzak tutun.
         </p>
 
-        {/* Live Heading status when sensors active */}
-        {headingState !== null && (
-          <span className="text-2xs label-tertiary font-mono mt-6">
-            Pusula Sapma Açısı: {Math.round(headingState)}° • Kabe Bağıl Açısı: {Math.round(needleRotation)}°
+        {/* Live Heading status when sensors active — metin rAF döngüsünden
+            doğrudan headingTextRef üzerinden yazılır (bkz. o döngüdeki yorum),
+            burada yalnızca başlangıç yer tutucusu var. */}
+        {hasHeading && (
+          <span ref={headingTextRef} className="text-2xs label-tertiary font-mono mt-6">
+            Pusula Sapma Açısı: 0° • Kabe Bağıl Açısı: 0°
           </span>
         )}
       </div>
