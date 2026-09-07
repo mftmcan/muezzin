@@ -1,9 +1,10 @@
 import React, { Suspense, lazy, useState } from 'react';
-import { LogOut, Info, Settings, ShieldCheck } from 'lucide-react';
+import { LogOut, Info, Settings, ShieldCheck, BookOpen } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useAuthStore } from '../store/useAuthStore';
 import { useMuezzinStore } from '../store/useMuezzinStore';
 import { HakkindaModal } from '../components/HakkindaModal';
+import { KullanimKilavuzuModal } from '../components/KullanimKilavuzuModal';
 import { ConfirmModal } from '../components/ui/ConfirmModal';
 import { playClick } from '../lib/sounds';
 import { performLogout } from '../hooks/useFcmToken';
@@ -17,6 +18,7 @@ function SettingsSkeleton() {
 
 export default function MuezzinAyarlari() {
   const [isAboutOpen, setIsAboutOpen] = useState(false);
+  const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
 
   const user = useAuthStore(s => s.user);
@@ -95,6 +97,25 @@ export default function MuezzinAyarlari() {
               type="button"
               onClick={() => {
                 playClick();
+                setIsGuideOpen(true);
+              }}
+              className="w-full flex items-center justify-between gap-5 py-5 first:pt-0 text-left group"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-11 h-11 rounded-2xl bg-[var(--text-primary)]/[0.04] border border-[var(--glass-border)] text-[var(--text-primary)]/55 flex items-center justify-center group-hover:text-[var(--dynamic-aura,var(--aura-indigo))] transition-colors">
+                  <BookOpen size={18} strokeWidth={1.6} />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-[var(--text-primary)]">Kullanım Kılavuzu</p>
+                  <p className="text-2xs text-[var(--text-secondary)]/75 mt-1">Ekranların ne işe yaradığını kısaca öğrenin</p>
+                </div>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                playClick();
                 setIsAboutOpen(true);
               }}
               className="w-full flex items-center justify-between gap-5 py-5 first:pt-0 text-left group"
@@ -134,6 +155,7 @@ export default function MuezzinAyarlari() {
         </motion.section>
       </div>
 
+      <KullanimKilavuzuModal isOpen={isGuideOpen} onClose={() => setIsGuideOpen(false)} />
       <HakkindaModal isOpen={isAboutOpen} onClose={() => setIsAboutOpen(false)} />
       <ConfirmModal
         isOpen={logoutConfirmOpen}

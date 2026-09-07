@@ -2,7 +2,7 @@ import React, { useState, useEffect, lazy, Suspense, useMemo, useCallback } from
 import { ErrorBoundary } from 'react-error-boundary';
 import { createPortal } from 'react-dom';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { LogOut, Moon, Sun, X } from 'lucide-react';
+import { LogOut, X } from 'lucide-react';
 import { performLogout } from '../../hooks/useFcmToken';
 import { useKrizAlarmlariStore } from '../../store/useKrizAlarmlariStore';
 import { useAdminIzinlerStore } from '../../store/useAdminIzinlerStore';
@@ -267,15 +267,11 @@ export default function AdminPanel() {
  {pageTitle}
  </h1>
  <div className="flex items-center gap-2 shrink-0">
-  <button
-  type="button"
-  onClick={toggleTheme}
-  className="lg:hidden flex items-center justify-center w-11 h-11 rounded-[14px] border border-[var(--glass-border)] bg-[var(--text-primary)]/[0.025] text-[var(--text-secondary)]/55 hover:text-[var(--dynamic-aura,var(--aura-indigo))] transition-all"
-  aria-label={theme === 'dark' ? 'Aydınlık temaya geç' : 'Karanlık temaya geç'}
-  title={theme === 'dark' ? 'Aydınlık temaya geç' : 'Karanlık temaya geç'}
-  >
-  {theme === 'dark' ? <Sun size={16} strokeWidth={1.7} /> : <Moon size={16} strokeWidth={1.7} />}
-  </button>
+  {/* Tema geçişi düğmesi FloatingDock'un daima-görünür, baş parmak
+      bölgesindeki ikincil satırına taşındı — bu köşe, sayfayla birlikte
+      kayan ve tek elle ulaşılması zor bir konumdaydı (bkz. FloatingDock.tsx
+      yorumu). `theme`/`toggleTheme` SlimSidebar'a (masaüstü) aktarılmaya
+      devam ediyor. */}
   <button
   type="button"
   onClick={requestLogout}

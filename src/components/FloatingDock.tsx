@@ -1,10 +1,11 @@
 import React, { memo, useCallback, useState } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { Home, Calendar, LayoutDashboard, User, Settings } from 'lucide-react';
+import { Home, Calendar, LayoutDashboard, User, Settings, Sun, Moon } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
 import { useAdminIzinlerStore } from '../store/useAdminIzinlerStore';
 import { useKrizAlarmlariStore } from '../store/useKrizAlarmlariStore';
+import { useThemeStore } from '../store/useThemeStore';
 import { playClick } from '../lib/sounds';
 import { hapticMedium } from '../lib/haptic';
 import { getAdminNavItems, APP_LINKS, toActiveModule, type ActiveModule } from '../pages/admin/config/navConfig';
@@ -141,6 +142,7 @@ export function FloatingDock() {
   const isAdmin = useAuthStore(state => state.isAdmin);
   const isAdminRoute = location.pathname.startsWith('/admin');
   const [dockRadius] = useState(readDockRadius);
+  const { theme, toggleTheme } = useThemeStore();
 
   const [searchParams, setSearchParams] = useSearchParams();
   const activeAdminTab = toActiveModule(searchParams.get('tab'));
@@ -236,7 +238,7 @@ export function FloatingDock() {
             exit={{ opacity: 0, y: 8, scale: 0.94 }}
             transition={{ type: 'spring', bounce: 0.1, duration: 0.4 }}
             aria-label="Müezzin menüsü"
-            className="apple-glass px-2 py-1 grid grid-cols-4 gap-1 pointer-events-auto touch-manipulation select-none"
+            className="apple-glass px-2 py-1 grid grid-cols-5 gap-1 pointer-events-auto touch-manipulation select-none"
           >
             {APP_LINKS.map((item) => (
               <button
@@ -251,6 +253,23 @@ export function FloatingDock() {
                 <item.icon size={16} strokeWidth={1.7} />
               </button>
             ))}
+            {/* Tema geçişi önceden AdminPanel'in kaydırılabilir içerik başlığında
+                (sağ üst köşe, `lg:hidden`) duruyordu — o buton bu sabit dock'un
+                aksine sayfayla birlikte kayıp gözden kayboluyordu ve köşe konumu
+                tek elle (baş parmakla) ulaşmayı zorlaştırıyordu. Aynı fiziksel
+                kabın (bkz. yukarıdaki bileşen yorumu) her zaman ekranda kalan,
+                baş parmak bölgesindeki bu ikincil satırına taşınarak hem daima
+                görünür hem de kolay erişilir hale getirildi. */}
+            <button
+              type="button"
+              onClick={(event) => { playClick(); toggleTheme(event); }}
+              onPointerDown={(event) => handleAdminPointerAction(event, () => toggleTheme())}
+              aria-label={theme === 'dark' ? 'Aydınlık temaya geç' : 'Karanlık temaya geç'}
+              title={theme === 'dark' ? 'Aydınlık temaya geç' : 'Karanlık temaya geç'}
+              className="min-w-[42px] h-[38px] px-2 rounded-[14px] flex items-center justify-center text-[var(--text-primary)]/45 hover:text-[var(--dynamic-aura,var(--aura-amber))] hover:bg-[var(--text-primary)]/[0.04] transition-all touch-manipulation"
+            >
+              {theme === 'dark' ? <Sun size={16} strokeWidth={1.7} /> : <Moon size={16} strokeWidth={1.7} />}
+            </button>
           </motion.nav>
         )}
       </AnimatePresence>
