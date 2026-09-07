@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Trash2, BellOff } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { Modal } from './ui/Modal';
+import { ConfirmModal } from './ui/ConfirmModal';
 import { EmptyState } from './ui/EmptyState';
 import { useNotificationStore } from '../store/useNotificationStore';
 import { TYPE_CONFIG } from './ui/NotificationToast';
@@ -16,6 +17,11 @@ interface NotificationHistoryPanelProps {
 export function NotificationHistoryPanel({ isOpen, onClose }: NotificationHistoryPanelProps) {
   const history = useNotificationStore((s) => s.history);
   const clearHistory = useNotificationStore((s) => s.clearHistory);
+  // "Tümünü Temizle" önceden tek tıkla, onaysız geri alınamaz bir silme
+  // yapıyordu — uygulamanın geri kalanındaki HER yıkıcı işlem (Duyuruyu Sil,
+  // Kaydı Sil, Mazeret Kaydını Sil...) ConfirmModal ile korunurken burası tek
+  // istisnaydı (bkz. kod denetimi).
+  const [confirmClearOpen, setConfirmClearOpen] = useState(false);
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Bildirim Geçmişi">
@@ -30,7 +36,7 @@ export function NotificationHistoryPanel({ isOpen, onClose }: NotificationHistor
         <div className="space-y-6">
           <div className="flex justify-end">
             <button
-              onClick={clearHistory}
+              onClick={() => setConfirmClearOpen(true)}
               className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[var(--glass-border)] text-[var(--text-secondary)] hover:text-[var(--status-danger)] hover:border-[var(--status-danger)]/30 text-2xs font-bold uppercase tracking-wide transition-all"
             >
               <Trash2 size={13} />
@@ -76,6 +82,17 @@ export function NotificationHistoryPanel({ isOpen, onClose }: NotificationHistor
           </ul>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={confirmClearOpen}
+        onClose={() => setConfirmClearOpen(false)}
+        onConfirm={() => { clearHistory(); setConfirmClearOpen(false); }}
+        title="Tümünü Temizle"
+        message="Bildirim geçmişindeki tüm kayıtlar bu cihazdan kalıcı olarak silinecektir. Bu işlem geri alınamaz."
+        confirmText="Temizle"
+        cancelText="Vazgeç"
+        isDanger
+      />
     </Modal>
   );
 }

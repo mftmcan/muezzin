@@ -68,7 +68,11 @@ export default function Profil() {
   const muezzinlerLoading = useMuezzinStore(s => s.loading);
   const loading = !authInitialized || (!!user && muezzinlerLoading);
 
-  const currentAylikVakit = userData?.aylikVakitSayisi || 0;
+  // Rozetler KASITLI OLARAK aylikVakitSayisi değil toplamVakitSayisi
+  // kullanır — aksi halde ay değişince sıfırlanan bir sayaç yüzünden
+  // kazanılmış bir hizmet rozeti sessizce kaybolurdu (bkz. ProfileBadges.tsx,
+  // types.ts toplamVakitSayisi yorumu, kod denetimi).
+  const currentToplamVakit = userData?.toplamVakitSayisi || 0;
 
   return (
     // pb-8: Layout.tsx'teki <main> zaten dock temizliği için pb ayırıyor (bkz.
@@ -95,7 +99,7 @@ export default function Profil() {
             <ProfileHeader userData={userData} user={user} />
 
             {/* 2. Rozet İstasyonu — hafif, hemen render */}
-            <ProfileBadges aylikVakitSayisi={currentAylikVakit} />
+            <ProfileBadges toplamVakitSayisi={currentToplamVakit} />
 
             {/* 3. Core Profile Stats — hafif, hemen render */}
             <ProfileStats userData={userData} />

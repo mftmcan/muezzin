@@ -26,6 +26,12 @@ export interface Muezzin {
   * sürekli yedek kalan biri her hafta yeniden "en az yüklü" ölçülüp tekrar
   * yedeğe atanabiliyordu (bkz. src/utils/tieBreaker.ts, mimari denetim K6). */
  aylikYedekSayisi?: number;
+ /** Kaç vakitte asil görevli olarak hizmet ettiğinin KALICI toplamı —
+  * aylikVakitSayisi'nin aksine her ayın 1'inde SIFIRLANMAZ (bkz.
+  * scripts/yatsiSonuIslemleri.ts). ProfileBadges.tsx'teki hizmet/sadakat
+  * rozetleri, ay değişince sessizce kaybolmasın diye bu alan üzerinden
+  * kazanılır (bkz. kod denetimi). */
+ toplamVakitSayisi?: number;
  /** Bu takvim yılında ONAYLANMIŞ yıllık izin olarak kullanılan gün sayısı
   * (yıllık 30 gün kotasının kalıcı sayacı) — her 1 Ocak'ta
   * scripts/yatsiSonuIslemleri.ts tarafından sıfırlanır (bkz.

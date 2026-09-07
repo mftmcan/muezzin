@@ -82,12 +82,13 @@ async function koleksiyonuSil(koleksiyonAdi: string, onSayfa?: (toplamSilinen: n
   return toplamSilinen;
 }
 
-/** aylikVakitSayisi/aylikCumaSayisi/aylikYedekSayisi `bildirimler`'den,
- * yillikIzinKullanilanGun `izinler`'den TÜRETİLEN kalıcı sayaçlardır
- * (muezzins belgesinde tutulur). Bu iki koleksiyon sıfırlanıp bu sayaçlar
- * dokunulmadan bırakılırsa, kişi kartlarındaki "GÖREV YÜKÜ"/"HİZMET
- * VERİMİ" ve yıllık izin kotası artık HİÇBİR kaynak kaydı olmayan hayalet
- * değerler gösterirdi — "yeni sezona sıfırdan başla" niyetiyle çelişir.
+/** aylikVakitSayisi/aylikCumaSayisi/aylikYedekSayisi/toplamVakitSayisi
+ * `bildirimler`'den, yillikIzinKullanilanGun `izinler`'den TÜRETİLEN kalıcı
+ * sayaçlardır (muezzins belgesinde tutulur). Bu iki koleksiyon sıfırlanıp bu
+ * sayaçlar dokunulmadan bırakılırsa, kişi kartlarındaki "GÖREV YÜKÜ"/"HİZMET
+ * VERİMİ", hizmet rozetleri ve yıllık izin kotası artık HİÇBİR kaynak kaydı
+ * olmayan hayalet değerler gösterirdi — "yeni sezona sıfırdan başla"
+ * niyetiyle çelişir.
  */
 async function kadroSayaclariniSifirla(): Promise<number> {
   const muezzinSnap = await zamanAsimiIle(getDocs(collection(db, 'muezzins')));
@@ -100,6 +101,7 @@ async function kadroSayaclariniSifirla(): Promise<number> {
         aylikVakitSayisi: 0,
         aylikCumaSayisi: 0,
         aylikYedekSayisi: 0,
+        toplamVakitSayisi: 0,
         yillikIzinKullanilanGun: 0,
       });
     });

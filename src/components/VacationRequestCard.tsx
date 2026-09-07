@@ -11,6 +11,7 @@ import { Modal } from './ui/Modal';
 import { FormField } from './ui/FormField';
 import { useMuezzinStore } from '../store/useMuezzinStore';
 import { useAuthStore } from '../store/useAuthStore';
+import { useNotificationStore } from '../store/useNotificationStore';
 import { GOZLEMCI_SALT_OKUMA_IPUCU } from '../lib/rolMetinleri';
 
 interface IzinFormAlanHatalari {
@@ -55,6 +56,7 @@ export default function VacationRequestCard({ user }: VacationRequestCardProps) 
   // role == 'muezzin' şartı) zaten reddediyor, burası kullanıcıya sebebi
   // gösteren istemci katmanı (bkz. premium denetim P1.5).
   const isReadOnly = useAuthStore(s => s.isReadOnly);
+  const showNotification = useNotificationStore(s => s.showNotification);
 
   const yillikKullanilan = useMuezzinStore(s => (user ? s.muezzinMap[user.uid]?.yillikIzinKullanilanGun : undefined)) || 0;
   const yillikKalanKota = Math.max(0, YILLIK_IZIN_KOTASI - yillikKullanilan);
@@ -222,7 +224,13 @@ export default function VacationRequestCard({ user }: VacationRequestCardProps) 
       });
       await batch.commit();
 
-      setSuccessMessage('İzin talebiniz başarıyla oluşturuldu, yönetici onayına gönderildi.');
+      // Kart-içi mesajın YANINDA global toast da gösterilir — GorevKarti.tsx'teki
+      // AYNI çift-kanallı desen (bkz. kod denetimi, premium standart analizi):
+      // bu kart modal kapanınca (3sn sonra) unmount olur, toast ise Ayarlar'a
+      // geçilse bile ekranda kalıp kalıcı bir onay bırakır.
+      const basariMetni = 'İzin talebiniz başarıyla oluşturuldu, yönetici onayına gönderildi.';
+      setSuccessMessage(basariMetni);
+      showNotification('Talep Gönderildi', basariMetni, 'success');
       setSebep('');
       setBaslangic('');
       setBitis('');
@@ -232,7 +240,9 @@ export default function VacationRequestCard({ user }: VacationRequestCardProps) 
       }, 3000);
     } catch (err) {
       console.error('İzin talebi oluşturulamadı:', err);
-      setErrorMessage('Talep gönderilirken dizgesel bir hata oluştu.');
+      const hataMetni = 'Talep gönderilirken dizgesel bir hata oluştu.';
+      setErrorMessage(hataMetni);
+      showNotification('Hata Oluştu', hataMetni, 'error');
     } finally {
       setIsSubmitting(false);
     }

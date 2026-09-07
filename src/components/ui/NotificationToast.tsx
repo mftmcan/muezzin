@@ -9,7 +9,7 @@
  * - True Black zemin, backdrop blur
  */
 
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Info, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useNetworkStatus } from '../../hooks/useNetworkStatus';
@@ -45,10 +45,37 @@ export const NotificationToast: React.FC<NotificationToastProps> = ({
  durationMs = 5500,
  onClose,
 }) => {
+ // Fare üzerideyken otomatik kapanma duraklar — aksi halde kullanıcı mesajı
+ // okurken ya da bir action butonuna (varsa) tıklamaya çalışırken toast
+ // altından kayıp gidebiliyordu (bkz. kod denetimi — premium standart
+ // analizi). Kalan süre elle izlenir; imleç ayrılınca kaldığı yerden devam
+ // eder, sıfırdan başlamaz.
+ const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+ const remainingRef = useRef(durationMs);
+ // Render sırasında Date.now() çağırmak saf-olmayan bir işlem sayılır (bkz.
+ // react-hooks/purity) — gerçek başlangıç zamanı yalnızca start() (mount'ta
+ // effect içinden) çalıştığında set edilir, burada yalnızca bir yer tutucu.
+ const lastStartRef = useRef(0);
+
+ const start = useCallback(() => {
+ lastStartRef.current = Date.now();
+ timeoutRef.current = setTimeout(() => onClose(id), remainingRef.current);
+ }, [id, onClose]);
+
+ const pause = useCallback(() => {
+ if (!timeoutRef.current) return;
+ clearTimeout(timeoutRef.current);
+ timeoutRef.current = null;
+ remainingRef.current -= Date.now() - lastStartRef.current;
+ }, []);
+
  useEffect(() => {
- const timer = setTimeout(() => onClose(id), durationMs);
- return () => clearTimeout(timer);
- }, [id, onClose, durationMs]);
+ start();
+ return () => {
+ if (timeoutRef.current) clearTimeout(timeoutRef.current);
+ };
+ // eslint-disable-next-line react-hooks/exhaustive-deps
+ }, []);
 
  const cfg = TYPE_CONFIG[type] ?? TYPE_CONFIG.info;
 
@@ -57,6 +84,8 @@ export const NotificationToast: React.FC<NotificationToastProps> = ({
  layout
  role={type === 'error' ? 'alert' : 'status'}
  aria-atomic="true"
+ onMouseEnter={pause}
+ onMouseLeave={start}
  initial={{ opacity: 0, y: -8, x: 0 }}
  animate={{ opacity: 1, y: 0, x: 0 }}
  exit={{ opacity: 0, x: '110%', transition: { duration: 0.28, ease: [0.4, 0, 1, 1] } }}

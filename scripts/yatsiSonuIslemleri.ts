@@ -120,6 +120,10 @@ export async function processYatsiSonuIslemleri(gonderici?: FcmGonderici) {
       const updates: Record<string, FirebaseFirestore.FieldValue> = {};
       if (asilKredi[mDoc.id]) {
         updates.aylikVakitSayisi = FieldValue.increment(asilKredi[mDoc.id]);
+        // toplamVakitSayisi KASITLI OLARAK aynı kredi ile ama AYRI bir alanda
+        // artırılır — aylikVakitSayisi aşağıda her ayın 1'inde sıfırlanır,
+        // bu alan sıfırlanmaz (bkz. types.ts yorumu, ProfileBadges.tsx).
+        updates.toplamVakitSayisi = FieldValue.increment(asilKredi[mDoc.id]);
       }
       if (cumaKredi[mDoc.id]) {
         updates.aylikCumaSayisi = FieldValue.increment(cumaKredi[mDoc.id]);
@@ -267,6 +271,9 @@ export async function processYatsiSonuIslemleri(gonderici?: FcmGonderici) {
   const yarın = new Date(hedefGun);
   yarın.setDate(yarın.getDate() + 1);
   if (yarın.getDate() === 1) {
+    // toplamVakitSayisi BİLİNÇLİ OLARAK bu sıfırlamaya dahil değil — o alan
+    // ProfileBadges.tsx'teki hizmet/sadakat rozetlerinin kalıcı kaynağı,
+    // ay değiştiğinde rozetin kaybolmaması için (bkz. types.ts yorumu).
     const muezzins = await db.collection('muezzins').get();
     const resetBatch = db.batch();
     muezzins.docs.forEach(doc => resetBatch.update(doc.ref, { aylikVakitSayisi: 0, aylikCumaSayisi: 0, aylikYedekSayisi: 0 }));

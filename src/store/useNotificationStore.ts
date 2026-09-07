@@ -35,6 +35,13 @@ interface ShowNotificationOptions {
 // aksi halde limit değişirse etiket sessizce yanlış kalırdı.
 export const NOTIFICATION_HISTORY_LIMIT = 50;
 
+// Aynı anda kaç toast EKRANDA görünebilir — geçmiş (history) bundan ayrı ve
+// hep tam kaydediliyor, yalnızca canlı yığın sınırlanıyor. Art arda gelen
+// birden fazla FCM push'u (ör. bir nöbet hatırlatması + bir duyuru aynı
+// tetiklemede) öncesinde sınırsız birikip ekranı toast yığınıyla
+// doldurabiliyordu (bkz. kod denetimi — premium standart analizi).
+export const MAX_VISIBLE_TOASTS = 4;
+
 interface NotificationState {
  notifications: Notification[];
  history: NotificationHistoryEntry[];
@@ -207,7 +214,9 @@ export const useNotificationStore = create<NotificationState>()(
  const safeType = normalizeNotificationType(type);
  const timestamp = Date.now();
  set((state) => ({
- notifications: [...state.notifications, { id, title, message, type: safeType, action: options?.action, durationMs: options?.durationMs }],
+ // En eski toast(lar) sessizce düşer — kullanıcı onları kaçırmaz, aynı
+ // olay zaten history'e tam olarak yazıldı (bkz. Bildirim Geçmişi paneli).
+ notifications: [...state.notifications, { id, title, message, type: safeType, action: options?.action, durationMs: options?.durationMs }].slice(-MAX_VISIBLE_TOASTS),
  history: [{ id, title, message, type: safeType, timestamp }, ...state.history].slice(0, NOTIFICATION_HISTORY_LIMIT),
  }));
 

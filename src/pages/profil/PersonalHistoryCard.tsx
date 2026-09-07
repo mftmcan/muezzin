@@ -84,7 +84,11 @@ export default function PersonalHistoryCard({ user }: PersonalHistoryCardProps) 
       ) : history.length === 0 ? (
         <div className="py-12 text-center border border-dashed border-[var(--text-primary)]/5 rounded-3xl">
           <BookOpen className="text-[var(--text-secondary)] mx-auto mb-4" size={32} strokeWidth={1.5} />
-          <p className="text-2xs text-[var(--text-secondary)]/75 font-light">Son 30 gün içinde onaylanmış veya mazeret bildirilmiş bir göreviniz bulunmamaktadır.</p>
+          {/* "Son 30 gün" yanlıştı — sorgu bir tarih aralığı değil, sayı
+              (limit(30)) sınırlıdır; hiç kaydı olmayan biri için "30 gün
+              içinde bulunamadı" ifadesi var olmayan bir zaman penceresi
+              kontrol edilmiş gibi yanıltıyordu (bkz. kod denetimi). */}
+          <p className="text-2xs text-[var(--text-secondary)]/75 font-light">Henüz onaylanmış veya mazeret bildirilmiş bir göreviniz bulunmamaktadır.</p>
         </div>
       ) : (
         <div className="relative pl-6 space-y-6 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-[1px] before:bg-[var(--glass-border)]">

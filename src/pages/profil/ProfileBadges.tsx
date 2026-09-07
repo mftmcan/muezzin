@@ -2,7 +2,7 @@ import { Award, Shield, User } from 'lucide-react';
 import { motion } from 'motion/react';
 
 interface ProfileBadgesProps {
-  aylikVakitSayisi: number;
+  toplamVakitSayisi: number;
 }
 
 const BADGES = [
@@ -32,7 +32,7 @@ const BADGES = [
   },
 ] as const;
 
-export default function ProfileBadges({ aylikVakitSayisi }: ProfileBadgesProps) {
+export default function ProfileBadges({ toplamVakitSayisi }: ProfileBadgesProps) {
   return (
     <motion.div
       whileHover={{ y: -4 }}
@@ -53,7 +53,7 @@ export default function ProfileBadges({ aylikVakitSayisi }: ProfileBadgesProps) 
 
       <div className="grid grid-cols-3 gap-4 relative z-10">
         {BADGES.map((badge) => {
-          const earned = aylikVakitSayisi >= badge.threshold;
+          const earned = toplamVakitSayisi >= badge.threshold;
           return (
             <div
               key={badge.label}

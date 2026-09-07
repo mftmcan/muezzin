@@ -175,7 +175,7 @@ service cloud.firestore {
       return data.keys().hasAll(['displayName', 'aktif', 'role']) &&
              data.keys().hasOnly([
                'displayName', 'aktif', 'role', 'email', 'photoURL', 'fcmToken', 'fcmTokens',
-               'aylikVakitSayisi', 'aylikCumaSayisi', 'aylikYedekSayisi', 'yillikIzinKullanilanGun',
+               'aylikVakitSayisi', 'aylikCumaSayisi', 'aylikYedekSayisi', 'toplamVakitSayisi', 'yillikIzinKullanilanGun',
                'haftalikIzinGunu', 'notificationSettings',
                'onayBekliyor', 'kayitTarihi', 'arsivlendi', 'arsivTarihi'
              ]) &&
@@ -189,6 +189,10 @@ service cloud.firestore {
              (!data.keys().hasAny(['aylikVakitSayisi']) || (data.aylikVakitSayisi is int && data.aylikVakitSayisi >= 0)) &&
              (!data.keys().hasAny(['aylikCumaSayisi']) || (data.aylikCumaSayisi is int && data.aylikCumaSayisi >= 0)) &&
              (!data.keys().hasAny(['aylikYedekSayisi']) || (data.aylikYedekSayisi is int && data.aylikYedekSayisi >= 0)) &&
+             // aylikVakitSayisi'nin AKSİNE her ayın 1'inde sıfırlanmaz (bkz.
+             // scripts/yatsiSonuIslemleri.ts) — ProfileBadges.tsx'teki hizmet
+             // rozetleri bu kalıcı toplam üzerinden kazanılır/korunur.
+             (!data.keys().hasAny(['toplamVakitSayisi']) || (data.toplamVakitSayisi is int && data.toplamVakitSayisi >= 0)) &&
              // Yıllık izin kotası (takvim yılı başına 30 gün) — bu üst sınır
              // SERT bir engeldir, admin de aşamaz (kullanıcı kararı). Sayaç
              // her 1 Ocak'ta scripts/yatsiSonuIslemleri.ts tarafından
