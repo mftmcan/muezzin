@@ -7,6 +7,7 @@
     "node": ">=22"
   },
   "scripts": {
+    "prepare": "husky || true",
     "dev": "vite --port=3000 --host=0.0.0.0",
     "build": "vite build",
     "preview": "vite preview",
@@ -17,7 +18,7 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\" \"scripts/**/*.ts\" \"tests/**/*.{ts,tsx}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\" \"scripts/**/*.ts\" \"tests/**/*.{ts,tsx}\"",
     "test": "npm run test:smoke",
-    "test:all": "npm run typecheck && npm run typecheck:scripts && npm run lint && npm run test:smoke && npm run test:unit && npm run test:rules && npm run test:integration && npm run verify:sw-config && npm run verify:indexes",
+    "test:all": "npm run typecheck && npm run typecheck:scripts && npm run lint && npm run format:check && npm run test:smoke && npm run test:unit && npm run test:rules && npm run test:integration && npm run verify:sw-config && npm run verify:indexes",
     "verify:sw-config": "tsx scripts/verify-sw-config.ts",
     "test:e2e": "playwright test",
     "test:rules": "firebase emulators:exec --only firestore \"tsx scripts/firestore-rules-tests.ts\"",
@@ -71,7 +72,9 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "firebase-admin": "^14.1.0",
     "firebase-tools": "^15.23.0",
+    "husky": "^9.1.7",
     "jsdom": "^30.0.1",
+    "lint-staged": "^17.5.0",
     "prettier": "^3.9.6",
     "tailwindcss": "^4.1.14",
     "tsx": "^4.21.0",
@@ -80,5 +83,10 @@
     "vite": "^6.2.0",
     "vite-plugin-pwa": "^1.2.0",
     "vitest": "^4.1.10"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix"
+    ]
   }
 }
