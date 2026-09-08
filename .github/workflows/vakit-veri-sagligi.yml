@@ -53,3 +53,11 @@ jobs:
         env:
           FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_MUEZZIN_C8485 }}
         run: npx tsx scripts/lib/reportWorkflowFailure.ts "Vakit Veri Sağlığı Kontrolü"
+      # UYARI_WEBHOOK_URL tanımlı değilse script sessizce atlar (bkz.
+      # scripts/lib/disKanalUyari.ts) — Firestore'un kendisi arızalıysa
+      # yukarıdaki adım da yazamayabilir, bu adım ondan BAĞIMSIZ bir kanaldır.
+      - name: Kritik arızayı dış kanala bildir
+        if: failure()
+        env:
+          UYARI_WEBHOOK_URL: ${{ secrets.UYARI_WEBHOOK_URL }}
+        run: npx tsx scripts/lib/disKanalUyari.ts "Vakit Veri Sağlığı Kontrolü"

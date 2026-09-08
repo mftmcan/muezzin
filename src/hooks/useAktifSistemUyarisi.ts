@@ -22,17 +22,19 @@ export function useAktifSistemUyarisi(uid: string | undefined) {
     if (!uid) return;
 
     // limit(1) DEĞİL: 'kotaUyarisi' (scripts/kotaKontrol.ts'in günlük Spark
-    // kota tahmini) saha müezzinini hiç ilgilendirmeyen, aksiyona
-    // dönüşmeyen teknik bir ihbardır — tek başına en güncel uyarı olsaydı
-    // gerçek bir arızayı (ör. zincirTukendi) sahadan GİZLERDİ. Bu yüzden
-    // birkaç kayıt okunup saha-dışı tipler eleniyor; sorgu aynı
-    // (cozuldu, olusturmaTarihi) index'ini kullanmaya devam ediyor.
+    // kota tahmini) ve 'hataPatlamasi' (scripts/hataEsigiKontrol.ts'in hata
+    // tekrar eşiği) saha müezzinini hiç ilgilendirmeyen, aksiyona dönüşmeyen
+    // teknik ihbarlardır — tek başına en güncel uyarı olsaydı gerçek bir
+    // arızayı (ör. zincirTukendi) sahadan GİZLERDİ. Bu yüzden birkaç kayıt
+    // okunup saha-dışı tipler eleniyor; sorgu aynı (cozuldu, olusturmaTarihi)
+    // index'ini kullanmaya devam ediyor.
+    const SAHA_DISI_TIPLER: AdminUyarisi['tip'][] = ['kotaUyarisi', 'hataPatlamasi'];
     const q = query(collection(db, 'adminUyarilari'), where('cozuldu', '==', false), orderBy('olusturmaTarihi', 'desc'), limit(5));
 
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
-        const doc = snapshot.docs.find((d) => (d.data() as AdminUyarisi).tip !== 'kotaUyarisi');
+        const doc = snapshot.docs.find((d) => !SAHA_DISI_TIPLER.includes((d.data() as AdminUyarisi).tip));
         setUyari(doc ? ({ id: doc.id, ...doc.data() } as AdminUyarisi & { id: string }) : null);
       },
       (err) => {

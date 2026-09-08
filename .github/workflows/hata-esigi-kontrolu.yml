@@ -1,21 +1,21 @@
-name: Haftalik Plan Olustur
+name: Hata Esigi Kontrolu
 
+# İstemci tarafında (src/services/telemetryService.ts) aynı imzalı bir
+# hatanın çok sayıda FARKLI oturumda anormal tekrarını erken yakalar (bkz.
+# scripts/hataEsigiKontrol.ts başındaki gerekçe) — kota-kontrol.yml ile AYNI
+# "erken uyarı, iş hatası değil" felsefesi. 6 saatlik cadence: günlük
+# (kota-kontrol.yml) kadar seyrek değil, proaktif bir uyarı için yeterli.
 on:
   workflow_dispatch:
   schedule:
-    - cron: '30 19 * * 0'
+    - cron: '0 */6 * * *'
 
-# Zamanlanmış Pazar koşusuyla bir workflow_dispatch (ya da "Re-run")
-# çakışırsa haftalikPlanOlustur.ts'in `planDoc.exists` varlık kontrolü
-# (TRANSACTION DEĞİL) iki süreçte de "plan yok" görebilir: aynı hafta için
-# iki kez `adminUyarilari` belgesi (otomatik ID, dedup yok) ve iki kez
-# "plan yayınlandı" FCM push'u üretilirdi. Diğer cron'lardaki AYNI desen.
 concurrency:
   group: ${{ github.workflow }}
   cancel-in-progress: false
 
 jobs:
-  planla:
+  hata-esigi-kontrolu:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -26,24 +26,23 @@ jobs:
           cache: 'npm'
       - name: Paketleri kur
         run: npm ci
-      - name: Planı oluştur
+      - name: Hata tekrar eşiğini kontrol et
         env:
           FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_MUEZZIN_C8485 }}
-        run: npx tsx scripts/haftalikPlanOlustur.ts
-      # Bu iş daha önce başarısız olup admin paneline "otomasyonHatasi"
-      # uyarısı bırakmışsa, şimdi başarılıysa o uyarıyı otomatik çözer
-      # (bkz. reportWorkflowSuccess.ts — "bilinçli olarak dışarıda
-      # bırakılanlar" listesinden kapatılan bulgu).
+        # Script eşik aşımında BAŞARISIZ OLMAZ (uyarıyı kendisi
+        # adminUyarilari'na yazar) — buradaki failure() dalı yalnızca
+        # gerçek script/altyapı hataları için.
+        run: npm run hata:esigi-kontrol
       - name: Başarıyı admin paneline bildir (önceki uyarıyı otomatik çöz)
         if: success()
         env:
           FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_MUEZZIN_C8485 }}
-        run: npx tsx scripts/lib/reportWorkflowSuccess.ts "Haftalık Plan Oluştur"
+        run: npx tsx scripts/lib/reportWorkflowSuccess.ts "Hata Eşiği Kontrolü"
       - name: Başarısızlığı admin paneline bildir
         if: failure()
         env:
           FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_MUEZZIN_C8485 }}
-        run: npx tsx scripts/lib/reportWorkflowFailure.ts "Haftalık Plan Oluştur"
+        run: npx tsx scripts/lib/reportWorkflowFailure.ts "Hata Eşiği Kontrolü"
       # UYARI_WEBHOOK_URL tanımlı değilse script sessizce atlar (bkz.
       # scripts/lib/disKanalUyari.ts) — Firestore'un kendisi arızalıysa
       # yukarıdaki adım da yazamayabilir, bu adım ondan BAĞIMSIZ bir kanaldır.
@@ -51,4 +50,4 @@ jobs:
         if: failure()
         env:
           UYARI_WEBHOOK_URL: ${{ secrets.UYARI_WEBHOOK_URL }}
-        run: npx tsx scripts/lib/disKanalUyari.ts "Haftalık Plan Oluştur"
+        run: npx tsx scripts/lib/disKanalUyari.ts "Hata Eşiği Kontrolü"

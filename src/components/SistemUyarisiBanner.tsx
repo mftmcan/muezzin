@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { AlertTriangle, ServerCrash, CalendarX, RefreshCcw, Gauge } from 'lucide-react';
+import { AlertTriangle, ServerCrash, CalendarX, RefreshCcw, Gauge, TrendingUp } from 'lucide-react';
 import { AdminUyarisi } from '../types';
 
 interface SistemUyarisiBannerProps {
@@ -18,6 +18,8 @@ const BASLIKLAR: Record<AdminUyarisi['tip'], string> = {
   // eksiksiz olsun ve ileride eleme kaldırılırsa jenerik metne düşmesin diye
   // yine de tanımlı.
   kotaUyarisi: 'DİZGE KAPASİTE UYARISI',
+  // hataPatlamasi da AYNI gerekçeyle useAktifSistemUyarisi'nde elenir.
+  hataPatlamasi: 'DİZGE HATA TEKRARI UYARISI',
 };
 
 function getIcon(tip: AdminUyarisi['tip']) {
@@ -32,6 +34,8 @@ function getIcon(tip: AdminUyarisi['tip']) {
       return <RefreshCcw size={16} strokeWidth={1.5} />;
     case 'kotaUyarisi':
       return <Gauge size={16} strokeWidth={1.5} />;
+    case 'hataPatlamasi':
+      return <TrendingUp size={16} strokeWidth={1.5} />;
     default:
       return <AlertTriangle size={16} strokeWidth={1.5} />;
   }

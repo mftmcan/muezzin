@@ -122,6 +122,11 @@ const requiredIndexes: RequiredIndex[] = [
     fields: ['vekaletDevredildi', 'tarih'],
     reason: 'vekaletDevirleriniIsle.ts: devredilmis gorevleri son 30 gunle sinirli haftaPlanlari senkronu',
   },
+  {
+    collectionGroup: 'muezzins',
+    fields: ['role', 'aktif'],
+    reason: 'kritikUyariBildirimGonder.ts: aktif admin alicilarini bulma (iki esitlik filtresi, zigzag yerine acik indeks)',
+  },
 ];
 
 function fieldsKey(fields: IndexField[]) {

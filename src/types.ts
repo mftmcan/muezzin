@@ -207,8 +207,11 @@ export interface VekaletTalebi {
 export interface AdminUyarisi {
   /** 'kotaUyarisi' — scripts/kotaKontrol.ts'in günlük Spark kotası erken
    * uyarısı; bir arıza DEĞİL, "yazma hacmi anormal yükseldi" ihbarıdır
-   * (bkz. o dosyanın başındaki TAHMİN/proxy açıklaması). */
-  tip: 'zincirTukendi' | 'apiHatasi' | 'planOlusturulamadi' | 'otomasyonHatasi' | 'kotaUyarisi';
+   * (bkz. o dosyanın başındaki TAHMİN/proxy açıklaması).
+   * 'hataPatlamasi' — scripts/hataEsigiKontrol.ts'in aynı imzalı istemci
+   * hatasının kısa sürede anormal tekrarı uyarısı; kotaUyarisi'yle AYNI
+   * "eşik aşımı, aktif kesinti değil" kategorisi. */
+  tip: 'zincirTukendi' | 'apiHatasi' | 'planOlusturulamadi' | 'otomasyonHatasi' | 'kotaUyarisi' | 'hataPatlamasi';
   mesaj: string;
   tarih: string;
   vakit: string | null;

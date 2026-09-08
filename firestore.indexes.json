@@ -168,6 +168,14 @@
         { "fieldPath": "tarih", "order": "ASCENDING" },
         { "fieldPath": "cozuldu", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "muezzins",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "role", "order": "ASCENDING" },
+        { "fieldPath": "aktif", "order": "ASCENDING" }
+      ]
     }
   ]
 }

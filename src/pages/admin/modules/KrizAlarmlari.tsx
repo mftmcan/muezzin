@@ -1,6 +1,6 @@
 import React from 'react';
 import { useKrizAlarmlariStore } from '../../../store/useKrizAlarmlariStore';
-import { AlertTriangle, ServerCrash, CalendarX, CheckCircle, RefreshCcw, Gauge } from 'lucide-react';
+import { AlertTriangle, ServerCrash, CalendarX, CheckCircle, RefreshCcw, Gauge, TrendingUp } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { motion, AnimatePresence } from 'motion/react';
@@ -94,6 +94,11 @@ export default function KrizAlarmlari() {
       // ihbarı olduğu için 'otomasyonHatasi'ndan ayrı bir kategori.
       case 'kotaUyarisi':
         return <Gauge size={24} />;
+      // scripts/hataEsigiKontrol.ts — son N saatte aynı imzalı istemci
+      // hatasının anormal tekrarı (kotaUyarisi'yle AYNI "eşik aşımı, aktif
+      // kesinti değil" kategorisi).
+      case 'hataPatlamasi':
+        return <TrendingUp size={24} />;
       default:
         return <AlertTriangle size={24} />;
     }
@@ -112,6 +117,9 @@ export default function KrizAlarmlari() {
       // Kota uyarısı henüz bir kesinti değil, önlem alınacak bir eşik aşımı —
       // 'amber' (izleme) tonu, 'rose' (kesinti) değil.
       case 'kotaUyarisi':
+        return 'amber';
+      // hataPatlamasi da aynı gerekçeyle 'amber' — eşik aşımı, kesinti değil.
+      case 'hataPatlamasi':
         return 'amber';
       default:
         return 'rose';
@@ -290,15 +298,17 @@ export default function KrizAlarmlari() {
                                 ? 'OTOMASYON HATASI'
                                 : alarm.tip === 'kotaUyarisi'
                                   ? 'KOTA UYARISI (TAHMİNİ)'
-                                  : 'NÖBET UYARISI'}
+                                  : alarm.tip === 'hataPatlamasi'
+                                    ? 'HATA PATLAMASI'
+                                    : 'NÖBET UYARISI'}
                       </span>
                       {!alarm.cozuldu && (
                         <div
                           className={`px-3 py-1 rounded-xl ${styles.badgeBg} ${styles.badgeText} text-2xs font-bold tracking-wide border ${styles.badgeBorder} animate-pulse`}
                         >
-                          {/* Kota uyarısı henüz bir kesinti değil — "ACİL MÜDAHALE" rozeti
- gerçek arızaların aciliyetini enflasyona uğratırdı. */}
-                          {alarm.tip === 'kotaUyarisi' ? 'İZLEME GEREKİR' : 'ACİL MÜDAHALE'}
+                          {/* Kota uyarısı ve hata patlaması henüz bir kesinti değil — "ACİL
+ MÜDAHALE" rozeti gerçek arızaların aciliyetini enflasyona uğratırdı. */}
+                          {alarm.tip === 'kotaUyarisi' || alarm.tip === 'hataPatlamasi' ? 'İZLEME GEREKİR' : 'ACİL MÜDAHALE'}
                         </div>
                       )}
                     </div>

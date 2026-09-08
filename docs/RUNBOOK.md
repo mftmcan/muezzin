@@ -131,3 +131,46 @@ Bu onay kapısı **rules'un kendisini test etmez** — o güvenlik ağı hâlâ
 `npm run test:rules` (emülatör, PR'da `test` job'ı içinde çalışır). Onay
 kapısı yalnızca "testler geçti ama gerçekten canlıya çıksın mı" kararını
 insana bırakır.
+
+## 7. Proaktif uyarı sistemi (dış kanal webhook + hata patlaması eşiği)
+
+Admin paneli AÇIK olmadıkça `adminUyarilari`'ndaki kayıtlar görünmezdi.
+Şimdi iki tamamlayıcı mekanizma var:
+
+**a) FCM push (Firestore'a bağımlı)** —
+`.github/workflows/kritik-uyari-bildirimi.yml` her 30 dakikada bir
+`scripts/kritikUyariBildirimGonder.ts`'i çalıştırır; `cozuldu: false` olan
+her uyarıyı tüm **aktif admin**'lere (`muezzins` `role=='admin' &&
+aktif==true`) push bildirimi olarak gönderir. Bildirim tercihi YOK — kritik
+sistem arızası opt-out edilebilir değildir (bkz. script başı yorumu).
+
+**b) Dış kanal webhook (Firestore'dan BAĞIMSIZ)** — 8 cron workflow'unun
+her birinde `if: failure()` adımının yanına eklenen "Kritik arızayı dış
+kanala bildir" adımı, `UYARI_WEBHOOK_URL` secret'ı tanımlıysa
+`scripts/lib/disKanalUyari.ts` ile bir HTTP POST gönderir. Bu, kök nedeni
+Firestore'un KENDİSİ olan arızaları da (a)'nın kör noktasını kapatarak
+haber verir. **Kurulum opsiyoneldir** — secret tanımlı değilse script
+sessizce atlanır, hiçbir iş bu yüzden kırılmaz.
+
+Kurulum örnekleri (GitHub → Settings → Secrets and variables → Actions →
+`UYARI_WEBHOOK_URL`):
+- **Slack**: bir "Incoming Webhook" uygulaması ekleyip verdiği URL'yi
+  (`https://hooks.slack.com/services/...`) olduğu gibi kullan.
+- **Discord**: kanal ayarları → Integrations → Webhooks → New Webhook →
+  URL'yi kopyala.
+- **ntfy.sh**: `https://ntfy.sh/<kendi-topic-adın>` — topic'e abone olmak
+  için ntfy uygulamasını/tarayıcısını kullan. JSON gövde bu uç noktaya
+  düz metin olarak görünür (çirkin ama okunabilir); tam JSON API deseni
+  isteniyorsa `disKanalUyari.ts`'in payload'ı ayrıca uyarlanmalı.
+
+**c) Hata patlaması eşiği** — `.github/workflows/hata-esigi-kontrolu.yml`
+her 6 saatte bir `scripts/hataEsigiKontrol.ts`'i çalıştırır: son 6 saatte
+aynı imzalı bir istemci hatasının 50'den fazla kez kaydedilip
+kaydedilmediğine bakar (imza formülü `telemetryService.ts`'teki OTURUM
+başına rate-limit ile AYNI, ama bu script TÜM oturumlar toplamını görür).
+Eşik aşılırsa `hataPatlamasi` tipinde bir `adminUyarilari` kaydı açılır —
+(a) mekanizması bunu otomatik push'lar. Eşik altına dönünce önceki uyarı
+otomatik çözülür (kotaKontrol.ts'teki AYNI desen).
+
+Her iki yeni cron da elle tetiklenebilir: Actions → ilgili workflow → **Run
+workflow**.

@@ -12,6 +12,19 @@ yerine geçmez.
 - `CONTRIBUTING.md`, `LICENSE`, bu `CHANGELOG.md`.
 - Pre-commit hook (husky + lint-staged, `eslint --fix`).
 - `format:check` artık `npm run test:all` zincirinin bir parçası.
+- Deploy onay kapısı: `build_and_deploy` job'ı `environment: production`
+  taşıyor (GitHub'da Required reviewers ile aktive edilir, bkz.
+  `docs/RUNBOOK.md` §6).
+- Zod ile form doğrulama (`src/lib/validation/`) + `verify-schema-parity`
+  ile `firestore.rules` senkron denetimi — personel, duyuru, sistem
+  ayarları ve izin talebi formları.
+- Proaktif uyarı sistemi: `adminUyarilari`'nda çözülmemiş uyarılar artık
+  30 dakikada bir tüm aktif admin'lere FCM push olarak gönderiliyor
+  (`scripts/kritikUyariBildirimGonder.ts`); 8 cron workflow'u artık
+  `UYARI_WEBHOOK_URL` tanımlıysa arızada dış kanala (Slack/Discord/
+  ntfy.sh) da bildiriyor; yeni `hataEsigiKontrol.ts` aynı imzalı istemci
+  hatalarının anormal tekrarını 6 saatte bir erken yakalıyor (bkz.
+  `docs/RUNBOOK.md` §7).
 
 ## [2.2.0] — 2026-09-04
 

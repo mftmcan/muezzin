@@ -1,23 +1,22 @@
-name: Duyuru ve Izin Durumu Bildirimlerini Gonder
+name: Kritik Uyari Bildirimlerini Gonder
 
-# Duyuru yayınlama (duyuruServisi.ts) ve izin kararı (useAdminIzinlerStore.ts
-# izinGuncelle) istemci tarafında gerçekleşir — istemci Firebase SDK'sı FCM
-# push GÖNDEREMEZ (yalnızca Admin SDK gönderebilir). Bu iş, "duyurular" ve
-# "mazeretDurumu" bildirim tercihlerini (bkz. NotificationSettings.tsx)
-# gerçekten push'a çeviren tek yer — mazeret-devirleri.yml'deki (her 10
-# dakika) aynı sıklık deseni, ayrı bir dosyada (tek-iş-tek-workflow kuralı,
-# bkz. diğer altı cron).
+# adminUyarilari'nda biriken kriz uyarıları (bkz. KrizAlarmlari.tsx) şu ana
+# kadar yalnızca admin paneli AÇILDIĞINDA görünüyordu. Bu iş, çözülmemiş her
+# uyarı için tüm aktif admin'lere FCM push gönderir (bkz.
+# scripts/kritikUyariBildirimGonder.ts) — bildirim-gonder.yml'deki (duyuru/
+# izin) AYNI sıklık deseninin yarısı: uyarılar zaten nadir ve acil olduğundan
+# 30 dakika, 10 dakikadan daha uzun bir kabul edilebilir gecikme.
 on:
   workflow_dispatch:
   schedule:
-    - cron: '*/10 * * * *'
+    - cron: '*/30 * * * *'
 
 concurrency:
   group: ${{ github.workflow }}
   cancel-in-progress: false
 
 jobs:
-  bildirim-gonder:
+  kritik-uyari-bildirimi:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -28,28 +27,23 @@ jobs:
           cache: 'npm'
       - name: Paketleri kur
         run: npm ci
-      - name: Duyuru bildirimlerini gönder
+      - name: Kritik uyarı bildirimlerini gönder
         env:
           FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_MUEZZIN_C8485 }}
-        run: npm run process:duyuru-bildirimi
-      - name: İzin durumu bildirimlerini gönder
-        env:
-          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_MUEZZIN_C8485 }}
-        run: npm run process:izin-durum-bildirimi
+        run: npm run process:kritik-uyari-bildirimi
       # Bu iş daha önce başarısız olup admin paneline "otomasyonHatasi"
       # uyarısı bırakmışsa, şimdi başarılıysa o uyarıyı otomatik çözer
-      # (bkz. reportWorkflowSuccess.ts — "bilinçli olarak dışarıda
-      # bırakılanlar" listesinden kapatılan bulgu).
+      # (bkz. reportWorkflowSuccess.ts).
       - name: Başarıyı admin paneline bildir (önceki uyarıyı otomatik çöz)
         if: success()
         env:
           FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_MUEZZIN_C8485 }}
-        run: npx tsx scripts/lib/reportWorkflowSuccess.ts "Duyuru ve İzin Durumu Bildirimlerini Gönder"
+        run: npx tsx scripts/lib/reportWorkflowSuccess.ts "Kritik Uyarı Bildirimlerini Gönder"
       - name: Başarısızlığı admin paneline bildir
         if: failure()
         env:
           FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_MUEZZIN_C8485 }}
-        run: npx tsx scripts/lib/reportWorkflowFailure.ts "Duyuru ve İzin Durumu Bildirimlerini Gönder"
+        run: npx tsx scripts/lib/reportWorkflowFailure.ts "Kritik Uyarı Bildirimlerini Gönder"
       # UYARI_WEBHOOK_URL tanımlı değilse script sessizce atlar (bkz.
       # scripts/lib/disKanalUyari.ts) — Firestore'un kendisi arızalıysa
       # yukarıdaki adım da yazamayabilir, bu adım ondan BAĞIMSIZ bir kanaldır.
@@ -57,4 +51,4 @@ jobs:
         if: failure()
         env:
           UYARI_WEBHOOK_URL: ${{ secrets.UYARI_WEBHOOK_URL }}
-        run: npx tsx scripts/lib/disKanalUyari.ts "Duyuru ve İzin Durumu Bildirimlerini Gönder"
+        run: npx tsx scripts/lib/disKanalUyari.ts "Kritik Uyarı Bildirimlerini Gönder"
