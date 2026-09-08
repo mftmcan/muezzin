@@ -1,0 +1,75 @@
+name: Firestore Yedekle
+
+# Proje bilerek Spark planında kalıyor (bkz. scripts/kotaKontrol.ts) — native
+# Firestore Managed Export/scheduled backup Blaze gerektirir, kapalı. Bu iş
+# Admin SDK ile (scripts/firestoreYedekle.ts) iş verisi koleksiyonlarını
+# NDJSON'a export eder, GPG ile şifreler (repo PUBLIC olduğundan zorunlu) ve
+# 90 gün saklanan bir GitHub Actions artifact'ı olarak yükler (bkz.
+# docs/RUNBOOK.md §8). Haftalık kadans, diğer cron'ların yoğunlaştığı gece
+# penceresinin (19:30-03:00 UTC) dışında.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 0'
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  firestore-yedekle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: 'npm'
+      - name: Paketleri kur
+        run: npm ci
+      - name: Firestore'u NDJSON'a yedekle
+        env:
+          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_MUEZZIN_C8485 }}
+        run: npm run yedek:al -- --out=yedek/firestore-yedek.ndjson
+      # Tavan aşılırsa (firestoreYedekle.ts, bkz. dosya başı yorumu)
+      # dosya hiç YAZILMAZ — bu adım o durumda sessizce atlanır, aşağıdaki
+      # "Başarısızlığı admin paneline bildir" adımı da TETİKLENMEZ çünkü
+      # script kendisi process.exit(1) yapmıyor (bu bir iş hatası değil, bir
+      # veri-ölçeği olayı — firestoreYedekle.ts kendi adminUyarilari'nı yazar).
+      - name: Yedeği şifrele (repo public — GPG AES256 zorunlu)
+        if: hashFiles('yedek/firestore-yedek.ndjson') != ''
+        env:
+          YEDEK_PAROLASI: ${{ secrets.YEDEK_PAROLASI }}
+        run: |
+          if [ -z "$YEDEK_PAROLASI" ]; then
+            echo "::error::YEDEK_PAROLASI secret'ı tanımlı değil — yedek şifresiz kalamaz, işlem durduruldu."
+            exit 1
+          fi
+          tar -czf yedek.tar.gz -C yedek firestore-yedek.ndjson
+          gpg --batch --yes --symmetric --cipher-algo AES256 --passphrase "$YEDEK_PAROLASI" --output yedek.tar.gz.gpg yedek.tar.gz
+          rm -f yedek.tar.gz yedek/firestore-yedek.ndjson
+      - name: Şifreli yedeği artifact olarak yükle
+        if: hashFiles('yedek.tar.gz.gpg') != ''
+        uses: actions/upload-artifact@v7
+        with:
+          name: firestore-yedek-${{ github.run_id }}
+          path: yedek.tar.gz.gpg
+          retention-days: 90
+      - name: Başarıyı admin paneline bildir (önceki uyarıyı otomatik çöz)
+        if: success()
+        env:
+          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_MUEZZIN_C8485 }}
+        run: npx tsx scripts/lib/reportWorkflowSuccess.ts "Firestore Yedekle"
+      - name: Başarısızlığı admin paneline bildir
+        if: failure()
+        env:
+          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_MUEZZIN_C8485 }}
+        run: npx tsx scripts/lib/reportWorkflowFailure.ts "Firestore Yedekle"
+      # UYARI_WEBHOOK_URL tanımlı değilse script sessizce atlar (bkz.
+      # scripts/lib/disKanalUyari.ts).
+      - name: Kritik arızayı dış kanala bildir
+        if: failure()
+        env:
+          UYARI_WEBHOOK_URL: ${{ secrets.UYARI_WEBHOOK_URL }}
+        run: npx tsx scripts/lib/disKanalUyari.ts "Firestore Yedekle"

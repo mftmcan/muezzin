@@ -18,12 +18,13 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\" \"scripts/**/*.ts\" \"tests/**/*.{ts,tsx}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\" \"scripts/**/*.ts\" \"tests/**/*.{ts,tsx}\"",
     "test": "npm run test:smoke",
-    "test:all": "npm run typecheck && npm run typecheck:scripts && npm run lint && npm run format:check && npm run test:smoke && npm run test:unit && npm run verify:schema-parity && npm run test:rules && npm run test:integration && npm run verify:sw-config && npm run verify:indexes",
+    "test:all": "npm run typecheck && npm run typecheck:scripts && npm run lint && npm run format:check && npm run test:smoke && npm run test:unit && npm run verify:schema-parity && npm run verify:backup && npm run test:rules && npm run test:integration && npm run verify:sw-config && npm run verify:indexes",
     "verify:sw-config": "tsx scripts/verify-sw-config.ts",
     "verify:schema-parity": "tsx scripts/verify-schema-parity.ts",
+    "verify:backup": "tsx scripts/verify-backup-coverage.ts",
     "test:e2e": "playwright test",
     "test:rules": "firebase emulators:exec --only firestore \"tsx scripts/firestore-rules-tests.ts\"",
-    "test:integration": "firebase emulators:exec --only firestore \"tsx tests/integration/mazeretDevirleriniIsle.test.ts && tsx tests/integration/vekaletDevirleriniIsle.test.ts && tsx tests/integration/mazeretPenceresiBackfill.test.ts && tsx tests/integration/duyuruBildirimGonder.test.ts && tsx tests/integration/izinDurumBildirimGonder.test.ts && tsx tests/integration/fcmGonderimBasarisizligi.test.ts && tsx tests/integration/fixInvalidRoleAssignments.test.ts && tsx tests/integration/reportWorkflowStatus.test.ts && tsx tests/integration/kritikUyariBildirimGonder.test.ts && tsx tests/integration/hataEsigiKontrol.test.ts\"",
+    "test:integration": "firebase emulators:exec --only firestore \"tsx tests/integration/mazeretDevirleriniIsle.test.ts && tsx tests/integration/vekaletDevirleriniIsle.test.ts && tsx tests/integration/mazeretPenceresiBackfill.test.ts && tsx tests/integration/duyuruBildirimGonder.test.ts && tsx tests/integration/izinDurumBildirimGonder.test.ts && tsx tests/integration/fcmGonderimBasarisizligi.test.ts && tsx tests/integration/fixInvalidRoleAssignments.test.ts && tsx tests/integration/reportWorkflowStatus.test.ts && tsx tests/integration/kritikUyariBildirimGonder.test.ts && tsx tests/integration/hataEsigiKontrol.test.ts && tsx tests/integration/firestoreYedekGeriYukle.test.ts\"",
     "test:smoke": "tsx scripts/smoke-tests.ts",
     "test:unit": "vitest run --coverage",
     "test:unit:watch": "vitest",
@@ -37,7 +38,9 @@
     "seed:super-admin": "tsx scripts/seedSuperAdminConfig.ts",
     "temizle:gunlukler": "tsx scripts/temizleGunlukler.ts",
     "kota:kontrol": "tsx scripts/kotaKontrol.ts",
-    "hata:esigi-kontrol": "tsx scripts/hataEsigiKontrol.ts"
+    "hata:esigi-kontrol": "tsx scripts/hataEsigiKontrol.ts",
+    "yedek:al": "tsx scripts/firestoreYedekle.ts",
+    "yedek:geri-yukle": "tsx scripts/firestoreGeriYukle.ts"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.2.8",

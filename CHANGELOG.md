@@ -25,6 +25,13 @@ yerine geçmez.
   ntfy.sh) da bildiriyor; yeni `hataEsigiKontrol.ts` aynı imzalı istemci
   hatalarının anormal tekrarını 6 saatte bir erken yakalıyor (bkz.
   `docs/RUNBOOK.md` §7).
+- Otomatik Firestore yedekleme: haftalık, şifreli (GPG AES256) bir GitHub
+  Actions artifact'ı olarak (90 gün saklanır) — `scripts/firestoreYedekle.ts`
+  fail-closed koleksiyon keşfi + kota koruması ile export eder,
+  `scripts/firestoreGeriYukle.ts` CI'da asla çalışmayan, dry-run varsayılan,
+  proje-ID teyitli bir geri yükleme sağlar (bkz. `docs/RUNBOOK.md` §8).
+  Yeni `verify-backup` (`test:all` zincirinde) `firestore.rules`↔yedek
+  kapsamı senkronunu denetler.
 
 ## [2.2.0] — 2026-09-04
 

@@ -174,3 +174,62 @@ otomatik çözülür (kotaKontrol.ts'teki AYNI desen).
 
 Her iki yeni cron da elle tetiklenebilir: Actions → ilgili workflow → **Run
 workflow**.
+
+## 8. Firestore yedekleme ve geri yükleme (DR)
+
+Proje Spark planında kaldığından native Managed Export/PITR yok — yedekleme
+`scripts/firestoreYedekle.ts` ile Admin SDK üzerinden, haftalık
+(`.github/workflows/firestore-yedek.yml`, Pazar 09:00 TR) çalışır.
+
+**Kapsam**: `scripts/lib/yedekKapsam.ts`'teki `YEDEKLENECEK_KOLEKSIYONLAR`
+(iş verisi: `muezzins`, `izinler`, `bildirimler`, `haftaPlanlari`, `duyurular`
+vb.) — `error_logs`/`telemetry_logs` (TTL'li teşhis verisi) ve `vakitler`
+(Diyanet API'den yeniden üretilebilir) ve `cronDurumu` (kısa ömürlü sentinel)
+bilinçli hariç (bkz. o dosyadaki gerekçe). **Fail-closed**: canlı
+veritabanında bu iki listede olmayan bir koleksiyon varsa yedekleme
+FIRLATIR — `npm run verify:backup` (offline, `test:all` zincirinde) da
+`firestore.rules`'taki her koleksiyonun kapsamda olduğunu CI'da doğrular.
+
+**Kota koruması**: toplam belge sayısı 30.000'i (Spark'ın günlük 50K okuma
+kotasının ~%60'ı) aşarsa yedek İPTAL edilir, `adminUyarilari`'na bir uyarı
+bırakılır (§7'deki (a) mekanizması bunu push'lar) — dosya hiç yazılmaz.
+Kapsam normale dönünce bir sonraki koşu bu uyarıyı otomatik çözer.
+
+**Şifreleme**: depo PUBLIC olduğundan (bkz. kök `CLAUDE.md`) GitHub Actions
+artifact'ları da repoyu okuyabilen herkese açıktır — yedek `gpg --symmetric
+--cipher-algo AES256` ile `YEDEK_PAROLASI` secret'ı kullanılarak şifrelenir,
+90 gün saklanan bir artifact olarak yüklenir. **`YEDEK_PAROLASI` repo
+DIŞINDA (ör. bir parola yöneticisinde) saklanmalı** — yalnızca GitHub
+secret'ında tutulursa ve secret bir şekilde erişilemez hâle gelirse (repo
+silinir/erişim kaybedilir) yedek de işe yaramaz hâle gelir.
+
+### Geri yükleme (acil durum)
+
+`scripts/firestoreGeriYukle.ts` **CI'da ASLA çalıştırılmaz** (bilerek
+reddedilir — deploy adımının tam tersi bir koruma) — yalnızca elle, yerel
+bir makineden:
+
+```bash
+# 1. Artifact'ı GitHub Actions → ilgili "Firestore Yedekle" run'ından indir,
+#    şifresini çöz:
+gpg --batch --yes --passphrase "$YEDEK_PAROLASI" --output yedek.tar.gz --decrypt yedek.tar.gz.gpg
+tar -xzf yedek.tar.gz
+
+# 2. ÖNCE her zaman dry-run (varsayılan — --onayla verilmedikçe hiçbir şey
+#    yazılmaz):
+FIREBASE_SERVICE_ACCOUNT_KEY=... npm run yedek:geri-yukle -- --in=firestore-yedek.ndjson
+
+# 3. Yalnızca çıktı beklentiyle eşleşiyorsa GERÇEK yazım — proje ID'sini
+#    doğru teyit etmek ZORUNLUDUR (yanlış proje reddedilir):
+FIREBASE_SERVICE_ACCOUNT_KEY=... npm run yedek:geri-yukle -- --in=firestore-yedek.ndjson --onayla --proje=muezzin-c8485
+
+# Yalnızca tek bir koleksiyonu geri yüklemek için (tam felaket nadir,
+# tipik senaryo tek koleksiyonun bozulmasıdır):
+FIREBASE_SERVICE_ACCOUNT_KEY=... npm run yedek:geri-yukle -- --in=firestore-yedek.ndjson --onayla --proje=muezzin-c8485 --koleksiyon=izinler
+```
+
+**Önemli**: geri yükleme `set()` ile TAM ÜZERİNE YAZAR (merge değil) —
+yedek alındıktan SONRA oluşturulan belgeler etkilenmez, ama yedekteki bir
+belge o tarihten sonra değiştiyse değişiklik geri alınır. Kısmi/güncel bir
+felakette önce hangi koleksiyonun etkilendiğini belirleyip yalnızca onu
+`--koleksiyon` ile geri yükleyin.
