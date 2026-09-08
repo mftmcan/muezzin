@@ -4,10 +4,12 @@ Bu doküman, production'da (`muezzin-c8485`) bir şeyler ters gittiğinde
 izlenecek adımları tarif eder. Hedef kitle: bu depoya erişimi olan
 (Firebase Console + GitHub Actions secrets) bir yönetici/geliştirici.
 
-Genel bağlam: `main`'e her push, testler geçtiyse doğrudan production'a
-deploy edilir (`.github/workflows/test.yml` → `build_and_deploy` job'ı) —
-ayrı bir staging/preview ortamı yoktur (bkz. premium denetim, bölüm 16).
-Bu yüzden geri alma (rollback) prosedürleri özellikle önemlidir.
+Genel bağlam: `main`'e her push, testler geçtiyse production'a deploy edilir
+(`.github/workflows/test.yml` → `build_and_deploy` job'ı) — bir **onay
+kapısı** arkasında (bkz. §6). Ayrı bir staging/preview ortamı hâlâ yoktur
+(Firebase Hosting preview channel aynı production Firestore/Auth'a bağlanır,
+gerçek bir staging sağlamaz — bilinçli olarak eklenmedi). Bu yüzden geri alma
+(rollback) prosedürleri özellikle önemlidir.
 
 ## 1. Hosting'i geri alma (statik dosyalar — JS/CSS/manifest)
 
@@ -102,3 +104,30 @@ için:
 git tag -l 'release-*' --sort=-creatordate | head -20
 git show <tag> --stat
 ```
+
+## 6. Onay kapısı ve acil deploy
+
+`build_and_deploy` job'ı `environment: production` taşır
+(`.github/workflows/test.yml`). GitHub → Settings → Environments →
+`production` → **Required reviewers** yapılandırıldıysa, `test` job'ı
+geçtikten sonra bu job **onay verilene kadar hiçbir adımı çalıştırmaz** —
+build başlamaz, Firebase servis hesabı anahtarı runner'a hiç inmez. Onay,
+GitHub'daki ilgili Actions run sayfasından ("Review deployments" butonu) ile
+verilir.
+
+**Bilinen davranış**: Ard arda birden fazla `main` push'u, `concurrency:
+deploy-production` (`cancel-in-progress: false`) nedeniyle onay bekleyen bir
+kuyruğa girer — her biri sırayla onay ister. Tek geliştiricili bir depoda bu
+kabul edilebilir ama unutulursa deploy'lar birikir; Actions sekmesinde
+"Waiting" durumundaki run'ları düzenli kontrol edin.
+
+**Acil durum**: Onay adımını atlamanın CLI'dan bir yolu yoktur (bilerek —
+amaç budur). Gerçekten acil bir düzeltme gerekiyorsa (örn. §2'deki rules
+rollback'i) doğrudan `firebase deploy --only firestore:rules --project
+muezzin-c8485` ile yerel makineden elle deploy edilebilir; bu, onay kapısını
+atlamaz çünkü zaten GitHub Actions akışının dışındadır.
+
+Bu onay kapısı **rules'un kendisini test etmez** — o güvenlik ağı hâlâ
+`npm run test:rules` (emülatör, PR'da `test` job'ı içinde çalışır). Onay
+kapısı yalnızca "testler geçti ama gerçekten canlıya çıksın mı" kararını
+insana bırakır.
