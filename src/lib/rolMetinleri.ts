@@ -13,11 +13,9 @@
 /** 'gozlemci' rolü hiçbir yazma/talep akışını kullanamaz — sunucu tarafı
  *  karşılığı: firestore.rules `isAssignableDutyUidVeri` (role == 'muezzin')
  *  ve `isValidIzin` / `isValidVekaletCreate` içindeki rol şartları. */
-export const GOZLEMCI_SALT_OKUMA_IPUCU =
-  'Gözlemci rolündesiniz — bu ekranı yalnızca görüntüleyebilirsiniz, işlem yapamazsınız.';
+export const GOZLEMCI_SALT_OKUMA_IPUCU = 'Gözlemci rolündesiniz — bu ekranı yalnızca görüntüleyebilirsiniz, işlem yapamazsınız.';
 
 /** Geri alınamaz toplu silme işlemleri yalnızca config/bootstrap
  *  superAdminEmails listesindeki süper-adminlere açıktır — sunucu tarafı
  *  karşılığı: firestore.rules `isSuperAdmin()`. */
-export const SUPER_ADMIN_GEREKLI_IPUCU =
-  'Bu geri alınamaz işlem yalnızca baş yönetici (süper-admin) yetkisiyle yürütülebilir.';
+export const SUPER_ADMIN_GEREKLI_IPUCU = 'Bu geri alınamaz işlem yalnızca baş yönetici (süper-admin) yetkisiyle yürütülebilir.';

@@ -29,24 +29,27 @@ async function ensureUser(uid: string, displayName: string, role: 'admin' | 'mue
     // kullanıcı yoktu, sorun değil
   }
   await auth.createUser({ uid, email: `${uid}@example.test`, displayName, emailVerified: true });
-  await db.collection('muezzins').doc(uid).set({
-    displayName,
-    email: `${uid}@example.test`,
-    role,
-    aktif: true,
-    photoURL: '',
-    fcmToken: null,
-    onayBekliyor: false,
-    // firestore.rules isValidMuezzin `kayitTarihi is string` şartı koşuyor
-    // (bkz. o dosyadaki yorum — useAuthStore.ts ISO string yazar, Timestamp
-    // DEĞİL). Burada yanlışlıkla Timestamp.now() yazılmıştı; bu, muezzins
-    // koleksiyonunun TAMAMINI güncelleyen HERHANGİ bir işlemin (ör.
-    // veriSifirlamaServisi.ts kadroSayaclariniSifirla — tek bir writeBatch,
-    // içindeki TEK bir belge kuralı ihlal etse bile TÜMÜ reddedilir)
-    // PERMISSION_DENIED almasına yol açıyordu (bkz. premium denetim P2.5
-    // sonrası CI regresyonu — veri-sifirlama.spec.ts).
-    kayitTarihi: new Date().toISOString(),
-  });
+  await db
+    .collection('muezzins')
+    .doc(uid)
+    .set({
+      displayName,
+      email: `${uid}@example.test`,
+      role,
+      aktif: true,
+      photoURL: '',
+      fcmToken: null,
+      onayBekliyor: false,
+      // firestore.rules isValidMuezzin `kayitTarihi is string` şartı koşuyor
+      // (bkz. o dosyadaki yorum — useAuthStore.ts ISO string yazar, Timestamp
+      // DEĞİL). Burada yanlışlıkla Timestamp.now() yazılmıştı; bu, muezzins
+      // koleksiyonunun TAMAMINI güncelleyen HERHANGİ bir işlemin (ör.
+      // veriSifirlamaServisi.ts kadroSayaclariniSifirla — tek bir writeBatch,
+      // içindeki TEK bir belge kuralı ihlal etse bile TÜMÜ reddedilir)
+      // PERMISSION_DENIED almasına yol açıyordu (bkz. premium denetim P2.5
+      // sonrası CI regresyonu — veri-sifirlama.spec.ts).
+      kayitTarihi: new Date().toISOString(),
+    });
 }
 
 async function seed() {

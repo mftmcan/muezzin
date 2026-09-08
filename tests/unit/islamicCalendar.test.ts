@@ -120,7 +120,7 @@ describe('Teşrik günleri (9-13 Zilhicce)', () => {
     }
   });
 
-  it('isSonTesrikGunu yalnızca 13 Zilhicce\'de true döner ve isTesrikGunu\'nun bir alt kümesidir', () => {
+  it("isSonTesrikGunu yalnızca 13 Zilhicce'de true döner ve isTesrikGunu'nun bir alt kümesidir", () => {
     for (let i = 0; i < 800; i++) {
       const d = addDays(new Date(2025, 0, 1), i);
       if (isSonTesrikGunu(d)) {

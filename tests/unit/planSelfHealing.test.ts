@@ -35,14 +35,18 @@ describe('selfHealingTetiklenmeliMi', () => {
   it('çevrimdışı açılış senaryosu: plan sunucuda VAR ama önbellekte yok → tetiklenmez', () => {
     // Uygulama çevrimdışı açıldı: dinleyici önbellekten "belge yok" dedi
     // (planVarMi=false, sunucudanDogrulandi=false), yükleme de bitti.
-    expect(selfHealingTetiklenmeliMi(girdi({
-      planVarMi: false,
-      planLoading: false,
-      sunucudanDogrulandi: false,
-    }))).toBe(false);
+    expect(
+      selfHealingTetiklenmeliMi(
+        girdi({
+          planVarMi: false,
+          planLoading: false,
+          sunucudanDogrulandi: false,
+        })
+      )
+    ).toBe(false);
   });
 
-  it('yeniden bağlanma sonrası sunucu snapshot\'ı gelince tetiklenebilir hale gelir', () => {
+  it("yeniden bağlanma sonrası sunucu snapshot'ı gelince tetiklenebilir hale gelir", () => {
     const oncesi = girdi({ sunucudanDogrulandi: false });
     expect(selfHealingTetiklenmeliMi(oncesi)).toBe(false);
     expect(selfHealingTetiklenmeliMi({ ...oncesi, sunucudanDogrulandi: true })).toBe(true);

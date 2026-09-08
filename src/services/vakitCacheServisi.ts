@@ -29,11 +29,13 @@ export async function listeleVakitCacheleri(ilceId?: string): Promise<VakitCache
     // denetim, bölüm 17).
     const baseCollection = collection(db, 'vakitler');
     const snapshot = ilceId
-      ? await getDocs(query(
-          baseCollection,
-          where(documentId(), '>=', `${ilceId}_`),
-          where(documentId(), '<', `${ilceId}_${PREFIX_QUERY_UPPER_BOUND_CHAR}`)
-        ))
+      ? await getDocs(
+          query(
+            baseCollection,
+            where(documentId(), '>=', `${ilceId}_`),
+            where(documentId(), '<', `${ilceId}_${PREFIX_QUERY_UPPER_BOUND_CHAR}`)
+          )
+        )
       : await getDocs(baseCollection);
     const data = snapshot.docs.map((docSnap) => ({
       id: docSnap.id,
@@ -59,9 +61,7 @@ export async function listeleVakitCacheleri(ilceId?: string): Promise<VakitCache
  * çağırıyordu; ikisi de AYNI karışık pencereyi alıp kendi doc'una tam
  * olarak yazıyordu (bkz. mimari denetim O5).
  */
-export async function senkronizeGuncelVeGelecekAyCache(
-  settings: Pick<SystemSettings, 'ilceId' | 'ilceAdi'>
-) {
+export async function senkronizeGuncelVeGelecekAyCache(settings: Pick<SystemSettings, 'ilceId' | 'ilceAdi'>) {
   try {
     const bugun = getTurkeyNow();
     const apiVerisi = await aylikVakitleriCek(bugun.getFullYear(), bugun.getMonth() + 1, settings.ilceId, settings.ilceAdi);

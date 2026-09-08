@@ -5,7 +5,7 @@ import {
   assertSucceeds,
   initializeTestEnvironment,
   RulesTestContext,
-  RulesTestEnvironment
+  RulesTestEnvironment,
 } from '@firebase/rules-unit-testing';
 import {
   collection,
@@ -22,7 +22,7 @@ import {
   Timestamp,
   updateDoc,
   where,
-  writeBatch
+  writeBatch,
 } from 'firebase/firestore';
 
 const projectId = 'demo-muezzin-rules';
@@ -40,7 +40,7 @@ const testUser = (env: RulesTestEnvironment, uid: string, role?: string): RulesT
   return env.authenticatedContext(uid, {
     email: `${uid}@example.test`,
     email_verified: true,
-    role
+    role,
   });
 };
 
@@ -63,12 +63,12 @@ function mazeretRetBatch(
     durum: 'reddedildi',
     pendingAck: false,
     sonGuncelleme: Timestamp.now(),
-    ...ekAlanlar
+    ...ekAlanlar,
   });
   batch.set(doc(dbInstance, 'mazeret_detaylari', bildirimId), {
     uid,
     retSebebi,
-    olusturmaTarihi: Timestamp.now()
+    olusturmaTarihi: Timestamp.now(),
   });
   return batch.commit();
 }
@@ -97,7 +97,7 @@ async function seedBaseData(env: RulesTestEnvironment) {
       aktif: true,
       photoURL: '',
       fcmToken: null,
-      aylikVakitSayisi: 0
+      aylikVakitSayisi: 0,
     });
 
     await setDoc(doc(db, 'muezzins/muezzin1'), {
@@ -107,7 +107,7 @@ async function seedBaseData(env: RulesTestEnvironment) {
       aktif: true,
       photoURL: '',
       fcmToken: null,
-      aylikVakitSayisi: 0
+      aylikVakitSayisi: 0,
     });
 
     await setDoc(doc(db, 'muezzins/muezzin2'), {
@@ -117,7 +117,7 @@ async function seedBaseData(env: RulesTestEnvironment) {
       aktif: true,
       photoURL: '',
       fcmToken: null,
-      aylikVakitSayisi: 0
+      aylikVakitSayisi: 0,
     });
 
     // Gozlemci: sadece izleyici, hicbir zaman nobete atanmiyor (bkz.
@@ -130,7 +130,7 @@ async function seedBaseData(env: RulesTestEnvironment) {
       aktif: true,
       photoURL: '',
       fcmToken: null,
-      aylikVakitSayisi: 0
+      aylikVakitSayisi: 0,
     });
 
     // NOT: bu ucu (ownPendingAsil/otherPendingAsil/ownPendingYedek) kasitli
@@ -154,7 +154,7 @@ async function seedBaseData(env: RulesTestEnvironment) {
       retSebebi: null,
       olusturmaTarihi: Timestamp.now(),
       sonGuncelleme: Timestamp.now(),
-      mazeretSonBasvuru: PENCERE_ACIK()
+      mazeretSonBasvuru: PENCERE_ACIK(),
     });
 
     await setDoc(doc(db, 'bildirimler/otherPendingAsil'), {
@@ -168,7 +168,7 @@ async function seedBaseData(env: RulesTestEnvironment) {
       retSebebi: null,
       olusturmaTarihi: Timestamp.now(),
       sonGuncelleme: Timestamp.now(),
-      mazeretSonBasvuru: PENCERE_ACIK()
+      mazeretSonBasvuru: PENCERE_ACIK(),
     });
 
     await setDoc(doc(db, 'bildirimler/ownPendingYedek'), {
@@ -182,7 +182,7 @@ async function seedBaseData(env: RulesTestEnvironment) {
       retSebebi: null,
       olusturmaTarihi: Timestamp.now(),
       sonGuncelleme: Timestamp.now(),
-      mazeretSonBasvuru: PENCERE_ACIK()
+      mazeretSonBasvuru: PENCERE_ACIK(),
     });
 
     // Deterministik ID'li asil/yedek çifti (mazeret devri testleri için) —
@@ -198,7 +198,7 @@ async function seedBaseData(env: RulesTestEnvironment) {
       retSebebi: null,
       olusturmaTarihi: Timestamp.now(),
       sonGuncelleme: Timestamp.now(),
-      mazeretSonBasvuru: PENCERE_ACIK()
+      mazeretSonBasvuru: PENCERE_ACIK(),
     });
 
     await setDoc(doc(db, 'bildirimler/W2026-06-01_2026-06-03_yatsi_yedek'), {
@@ -212,7 +212,7 @@ async function seedBaseData(env: RulesTestEnvironment) {
       retSebebi: null,
       olusturmaTarihi: Timestamp.now(),
       sonGuncelleme: Timestamp.now(),
-      mazeretSonBasvuru: PENCERE_ACIK()
+      mazeretSonBasvuru: PENCERE_ACIK(),
     });
 
     // Cuma gunune denk gelen bir gorev (cumaMi:true) — mazeret/gorev devri
@@ -229,7 +229,7 @@ async function seedBaseData(env: RulesTestEnvironment) {
       cumaMi: true,
       olusturmaTarihi: Timestamp.now(),
       sonGuncelleme: Timestamp.now(),
-      mazeretSonBasvuru: PENCERE_ACIK()
+      mazeretSonBasvuru: PENCERE_ACIK(),
     });
 
     // Aynı Cuma günü için bir yedek görev — yedek'in kendi mazeretinin de
@@ -246,7 +246,7 @@ async function seedBaseData(env: RulesTestEnvironment) {
       cumaMi: true,
       olusturmaTarihi: Timestamp.now(),
       sonGuncelleme: Timestamp.now(),
-      mazeretSonBasvuru: PENCERE_ACIK()
+      mazeretSonBasvuru: PENCERE_ACIK(),
     });
 
     // `cumaMi` alanı HİÇ YOK (backfill öncesi gerçek bir belgeyi temsil
@@ -264,7 +264,7 @@ async function seedBaseData(env: RulesTestEnvironment) {
       retSebebi: null,
       olusturmaTarihi: Timestamp.now(),
       sonGuncelleme: Timestamp.now(),
-      mazeretSonBasvuru: PENCERE_ACIK()
+      mazeretSonBasvuru: PENCERE_ACIK(),
     });
 
     // 1 SAATLİK PENCERE fixture'ları (bkz. PENCERE_ACIK/PENCERE_KAPALI).
@@ -283,7 +283,7 @@ async function seedBaseData(env: RulesTestEnvironment) {
       retSebebi: null,
       olusturmaTarihi: Timestamp.now(),
       sonGuncelleme: Timestamp.now(),
-      mazeretSonBasvuru: PENCERE_KAPALI()
+      mazeretSonBasvuru: PENCERE_KAPALI(),
     });
 
     // `windowClosedYedek`: aynısının yedek karşılığı (yedek mazeret dalı).
@@ -298,7 +298,7 @@ async function seedBaseData(env: RulesTestEnvironment) {
       retSebebi: null,
       olusturmaTarihi: Timestamp.now(),
       sonGuncelleme: Timestamp.now(),
-      mazeretSonBasvuru: PENCERE_KAPALI()
+      mazeretSonBasvuru: PENCERE_KAPALI(),
     });
 
     // `noWindowStampAsil`: `mazeretSonBasvuru` alanı HİÇ YOK — bu özellik
@@ -315,13 +315,13 @@ async function seedBaseData(env: RulesTestEnvironment) {
       pendingAck: true,
       retSebebi: null,
       olusturmaTarihi: Timestamp.now(),
-      sonGuncelleme: Timestamp.now()
+      sonGuncelleme: Timestamp.now(),
     });
 
     await setDoc(doc(db, 'duyurular/publicNotice'), {
       baslik: 'Duyuru',
       icerik: 'Metin',
-      tarih: Timestamp.now()
+      tarih: Timestamp.now(),
     });
   });
 }
@@ -330,14 +330,17 @@ function validVakitGunleri() {
   return Object.fromEntries(
     Array.from({ length: 30 }, (_, index) => {
       const day = String(index + 1).padStart(2, '0');
-      return [`2026-05-${day}`, {
-        sabah: '04:10',
-        gunes: '05:42',
-        ogle: '12:45',
-        ikindi: '16:30',
-        aksam: '19:51',
-        yatsi: '21:18'
-      }];
+      return [
+        `2026-05-${day}`,
+        {
+          sabah: '04:10',
+          gunes: '05:42',
+          ogle: '12:45',
+          ikindi: '16:30',
+          aksam: '19:51',
+          yatsi: '21:18',
+        },
+      ];
     })
   );
 }
@@ -348,168 +351,192 @@ const tests: TestCase[] = [
     run: async (env) => {
       const db = env.unauthenticatedContext().firestore();
       await assertFails(getDoc(doc(db, 'duyurular/publicNotice')));
-    }
+    },
   },
   {
     name: 'giris yapan kullanici duyuru okuyabilir',
     run: async (env) => {
       const db = testUser(env, 'muezzin1').firestore();
       await assertSucceeds(getDoc(doc(db, 'duyurular/publicNotice')));
-    }
+    },
   },
   {
     name: 'dogrulanmamis e-posta ile hicbir seye erisilemez (K1 regresyonu)',
     run: async (env) => {
-      const db = env.authenticatedContext('sahtekullanici', {
-        email: 'sahtekullanici@example.test',
-        email_verified: false
-      }).firestore();
+      const db = env
+        .authenticatedContext('sahtekullanici', {
+          email: 'sahtekullanici@example.test',
+          email_verified: false,
+        })
+        .firestore();
       await assertFails(getDoc(doc(db, 'duyurular/publicNotice')));
-    }
+    },
   },
   {
     name: 'muezzin kendi profil tercihlerini guncelleyebilir ama rolunu degistiremez',
     run: async (env) => {
       const db = testUser(env, 'muezzin1').firestore();
 
-      await assertSucceeds(updateDoc(doc(db, 'muezzins/muezzin1'), {
-        notificationSettings: {
-          nobetHatirlatici: true,
-          duyurular: false,
-          mazeretDurumu: true
-        }
-      }));
+      await assertSucceeds(
+        updateDoc(doc(db, 'muezzins/muezzin1'), {
+          notificationSettings: {
+            nobetHatirlatici: true,
+            duyurular: false,
+            mazeretDurumu: true,
+          },
+        })
+      );
 
-      await assertFails(updateDoc(doc(db, 'muezzins/muezzin1'), {
-        role: 'admin'
-      }));
-    }
+      await assertFails(
+        updateDoc(doc(db, 'muezzins/muezzin1'), {
+          role: 'admin',
+        })
+      );
+    },
   },
   {
     name: 'muezzin kendi fcm token haritasini guncelleyebilir',
     run: async (env) => {
       const db = testUser(env, 'muezzin1').firestore();
 
-      await assertSucceeds(updateDoc(doc(db, 'muezzins/muezzin1'), {
-        fcmToken: 'token-1',
-        fcmTokens: {
-          'token-1': Timestamp.now()
-        }
-      }));
-    }
+      await assertSucceeds(
+        updateDoc(doc(db, 'muezzins/muezzin1'), {
+          fcmToken: 'token-1',
+          fcmTokens: {
+            'token-1': Timestamp.now(),
+          },
+        })
+      );
+    },
   },
   {
     name: 'muezzin profil semasina yabanci alan ekleyemez',
     run: async (env) => {
       const db = testUser(env, 'muezzin1').firestore();
 
-      await assertFails(updateDoc(doc(db, 'muezzins/muezzin1'), {
-        privateNote: 'Kurallarda tanimli olmayan alan'
-      }));
-    }
+      await assertFails(
+        updateDoc(doc(db, 'muezzins/muezzin1'), {
+          privateNote: 'Kurallarda tanimli olmayan alan',
+        })
+      );
+    },
   },
   {
     name: 'admin bir muezzinin haftalik izin gununu cuma yapamaz',
     run: async (env) => {
       const db = testUser(env, 'admin').firestore();
 
-      await assertFails(updateDoc(doc(db, 'muezzins/muezzin2'), {
-        haftalikIzinGunu: 5
-      }));
-    }
+      await assertFails(
+        updateDoc(doc(db, 'muezzins/muezzin2'), {
+          haftalikIzinGunu: 5,
+        })
+      );
+    },
   },
   {
     name: 'admin bir muezzinin haftalik izin gununu cuma disi bir gune ayarlayabilir',
     run: async (env) => {
       const db = testUser(env, 'admin').firestore();
 
-      await assertSucceeds(updateDoc(doc(db, 'muezzins/muezzin2'), {
-        haftalikIzinGunu: 3
-      }));
-    }
+      await assertSucceeds(
+        updateDoc(doc(db, 'muezzins/muezzin2'), {
+          haftalikIzinGunu: 3,
+        })
+      );
+    },
   },
   {
     name: 'muezzin fcm token haritasini sinirsiz buyutemez',
     run: async (env) => {
       const db = testUser(env, 'muezzin1').firestore();
-      const tooManyTokens = Object.fromEntries(
-        Array.from({ length: 21 }, (_, index) => [`token-${index}`, Timestamp.now()])
-      );
+      const tooManyTokens = Object.fromEntries(Array.from({ length: 21 }, (_, index) => [`token-${index}`, Timestamp.now()]));
 
-      await assertFails(updateDoc(doc(db, 'muezzins/muezzin1'), {
-        fcmTokens: tooManyTokens
-      }));
-    }
+      await assertFails(
+        updateDoc(doc(db, 'muezzins/muezzin1'), {
+          fcmTokens: tooManyTokens,
+        })
+      );
+    },
   },
   {
     name: 'admin gecerli davet olusturabilir',
     run: async (env) => {
       const db = testUser(env, 'admin').firestore();
 
-      await assertSucceeds(setDoc(doc(db, 'invites/valid@example.test'), {
-        email: 'valid@example.test',
-        displayName: 'Valid User',
-        role: 'muezzin',
-        haftalikIzinGunu: 3,
-        olusturmaTarihi: Timestamp.now()
-      }));
-    }
+      await assertSucceeds(
+        setDoc(doc(db, 'invites/valid@example.test'), {
+          email: 'valid@example.test',
+          displayName: 'Valid User',
+          role: 'muezzin',
+          haftalikIzinGunu: 3,
+          olusturmaTarihi: Timestamp.now(),
+        })
+      );
+    },
   },
   {
     name: 'admin haftalik izin gunu cuma olan davet olusturamaz (Cuma kapsami hic bos kalmamali)',
     run: async (env) => {
       const db = testUser(env, 'admin').firestore();
 
-      await assertFails(setDoc(doc(db, 'invites/friday-leave@example.test'), {
-        email: 'friday-leave@example.test',
-        displayName: 'Friday Leave',
-        role: 'muezzin',
-        haftalikIzinGunu: 5,
-        olusturmaTarihi: Timestamp.now()
-      }));
-    }
+      await assertFails(
+        setDoc(doc(db, 'invites/friday-leave@example.test'), {
+          email: 'friday-leave@example.test',
+          displayName: 'Friday Leave',
+          role: 'muezzin',
+          haftalikIzinGunu: 5,
+          olusturmaTarihi: Timestamp.now(),
+        })
+      );
+    },
   },
   {
     name: 'admin email ile belge id uyusmayan davet olusturamaz',
     run: async (env) => {
       const db = testUser(env, 'admin').firestore();
 
-      await assertFails(setDoc(doc(db, 'invites/wrong@example.test'), {
-        email: 'valid@example.test',
-        displayName: 'Wrong User',
-        role: 'muezzin',
-        olusturmaTarihi: Timestamp.now()
-      }));
-    }
+      await assertFails(
+        setDoc(doc(db, 'invites/wrong@example.test'), {
+          email: 'valid@example.test',
+          displayName: 'Wrong User',
+          role: 'muezzin',
+          olusturmaTarihi: Timestamp.now(),
+        })
+      );
+    },
   },
   {
     name: 'admin gecersiz haftalik izin gunu ile davet olusturamaz',
     run: async (env) => {
       const db = testUser(env, 'admin').firestore();
 
-      await assertFails(setDoc(doc(db, 'invites/invalid-leave@example.test'), {
-        email: 'invalid-leave@example.test',
-        displayName: 'Invalid Leave',
-        role: 'muezzin',
-        haftalikIzinGunu: 8,
-        olusturmaTarihi: Timestamp.now()
-      }));
-    }
+      await assertFails(
+        setDoc(doc(db, 'invites/invalid-leave@example.test'), {
+          email: 'invalid-leave@example.test',
+          displayName: 'Invalid Leave',
+          role: 'muezzin',
+          haftalikIzinGunu: 8,
+          olusturmaTarihi: Timestamp.now(),
+        })
+      );
+    },
   },
   {
     name: 'davetsiz kullanici kendi muezzin profilini olusturamaz',
     run: async (env) => {
       const db = testUser(env, 'newuser').firestore();
-      await assertFails(setDoc(doc(db, 'muezzins/newuser'), {
-        displayName: 'New User',
-        email: 'newuser@example.test',
-        role: 'muezzin',
-        aktif: true,
-        photoURL: '',
-        fcmToken: null,
-        aylikVakitSayisi: 0
-      }));
-    }
+      await assertFails(
+        setDoc(doc(db, 'muezzins/newuser'), {
+          displayName: 'New User',
+          email: 'newuser@example.test',
+          role: 'muezzin',
+          aktif: true,
+          photoURL: '',
+          fcmToken: null,
+          aylikVakitSayisi: 0,
+        })
+      );
+    },
   },
   {
     name: 'davetli kullanici kendi muezzin profilini olusturabilir',
@@ -520,24 +547,26 @@ const tests: TestCase[] = [
           email: 'invited@example.test',
           displayName: 'Invited User',
           role: 'muezzin',
-          olusturmaTarihi: Timestamp.now()
+          olusturmaTarihi: Timestamp.now(),
         });
       });
 
       const db = testUser(env, 'invited').firestore();
-      await assertSucceeds(setDoc(doc(db, 'muezzins/invited'), {
-        displayName: 'Invited User',
-        email: 'invited@example.test',
-        role: 'muezzin',
-        aktif: true,
-        photoURL: '',
-        fcmToken: null,
-        aylikVakitSayisi: 0,
-        // useAuthStore.ts her zaman bunu ayarlar (admin haric) — bkz.
-        // mimari denetim Y4 / isInvitedSelfMuezzinCreate.
-        onayBekliyor: true
-      }));
-    }
+      await assertSucceeds(
+        setDoc(doc(db, 'muezzins/invited'), {
+          displayName: 'Invited User',
+          email: 'invited@example.test',
+          role: 'muezzin',
+          aktif: true,
+          photoURL: '',
+          fcmToken: null,
+          aylikVakitSayisi: 0,
+          // useAuthStore.ts her zaman bunu ayarlar (admin haric) — bkz.
+          // mimari denetim Y4 / isInvitedSelfMuezzinCreate.
+          onayBekliyor: true,
+        })
+      );
+    },
   },
   {
     name: 'davetli kullanici onayBekliyor:false ile kendi profilini olusturamaz (Y4 regresyonu)',
@@ -548,7 +577,7 @@ const tests: TestCase[] = [
           email: 'invited2@example.test',
           displayName: 'Invited User 2',
           role: 'muezzin',
-          olusturmaTarihi: Timestamp.now()
+          olusturmaTarihi: Timestamp.now(),
         });
       });
 
@@ -556,17 +585,19 @@ const tests: TestCase[] = [
       // onayBekliyor:false (ya da hic gonderilmemesi) ile kendi profilini
       // olusturmaya calisan bir kullanici, admin onayini atlayip dogrudan
       // nobete atanabilir hale gelmemeli.
-      await assertFails(setDoc(doc(db, 'muezzins/invited2'), {
-        displayName: 'Invited User 2',
-        email: 'invited2@example.test',
-        role: 'muezzin',
-        aktif: true,
-        photoURL: '',
-        fcmToken: null,
-        aylikVakitSayisi: 0,
-        onayBekliyor: false
-      }));
-    }
+      await assertFails(
+        setDoc(doc(db, 'muezzins/invited2'), {
+          displayName: 'Invited User 2',
+          email: 'invited2@example.test',
+          role: 'muezzin',
+          aktif: true,
+          photoURL: '',
+          fcmToken: null,
+          aylikVakitSayisi: 0,
+          onayBekliyor: false,
+        })
+      );
+    },
   },
   {
     name: 'muezzin bildirim olusturamaz admin olusturabilir',
@@ -583,12 +614,12 @@ const tests: TestCase[] = [
         pendingAck: true,
         retSebebi: null,
         olusturmaTarihi: Timestamp.now(),
-        sonGuncelleme: Timestamp.now()
+        sonGuncelleme: Timestamp.now(),
       };
 
       await assertFails(setDoc(doc(muezzinDb, 'bildirimler/maliciousCreate'), payload));
       await assertSucceeds(setDoc(doc(adminDb, 'bildirimler/adminCreate'), payload));
-    }
+    },
   },
   {
     // haftaGunuNumarasi/isValidBildirim (bkz. mimari denetim #6) — sabit
@@ -602,19 +633,21 @@ const tests: TestCase[] = [
       });
 
       const db = testUser(env, 'admin').firestore();
-      await assertFails(setDoc(doc(db, 'bildirimler/fixedDayOffCreate'), {
-        haftaId: 'W2026-05-18',
-        tarih: '2026-05-18',
-        vakit: 'ogle',
-        uid: 'muezzin1',
-        tip: 'asil',
-        durum: 'bekliyor',
-        pendingAck: true,
-        retSebebi: null,
-        olusturmaTarihi: Timestamp.now(),
-        sonGuncelleme: Timestamp.now()
-      }));
-    }
+      await assertFails(
+        setDoc(doc(db, 'bildirimler/fixedDayOffCreate'), {
+          haftaId: 'W2026-05-18',
+          tarih: '2026-05-18',
+          vakit: 'ogle',
+          uid: 'muezzin1',
+          tip: 'asil',
+          durum: 'bekliyor',
+          pendingAck: true,
+          retSebebi: null,
+          olusturmaTarihi: Timestamp.now(),
+          sonGuncelleme: Timestamp.now(),
+        })
+      );
+    },
   },
   {
     name: 'admin haftalik izin gunu uyusmayan tarihte nobet bildirimi olusturabilir',
@@ -625,49 +658,55 @@ const tests: TestCase[] = [
       });
 
       const db = testUser(env, 'admin').firestore();
-      await assertSucceeds(setDoc(doc(db, 'bildirimler/nonFixedDayOffCreate'), {
-        haftaId: 'W2026-05-18',
-        tarih: '2026-05-18',
-        vakit: 'ogle',
-        uid: 'muezzin1',
-        tip: 'asil',
-        durum: 'bekliyor',
-        pendingAck: true,
-        retSebebi: null,
-        olusturmaTarihi: Timestamp.now(),
-        sonGuncelleme: Timestamp.now()
-      }));
-    }
+      await assertSucceeds(
+        setDoc(doc(db, 'bildirimler/nonFixedDayOffCreate'), {
+          haftaId: 'W2026-05-18',
+          tarih: '2026-05-18',
+          vakit: 'ogle',
+          uid: 'muezzin1',
+          tip: 'asil',
+          durum: 'bekliyor',
+          pendingAck: true,
+          retSebebi: null,
+          olusturmaTarihi: Timestamp.now(),
+          sonGuncelleme: Timestamp.now(),
+        })
+      );
+    },
   },
   {
     name: 'admin kendisine nobet bildirimi olusturamaz',
     run: async (env) => {
       const db = testUser(env, 'admin').firestore();
 
-      await assertFails(setDoc(doc(db, 'bildirimler/adminDutyCreate'), {
-        haftaId: 'W2026-05-18',
-        tarih: '2026-05-22',
-        vakit: 'yatsi',
-        uid: 'admin',
-        tip: 'asil',
-        durum: 'bekliyor',
-        pendingAck: true,
-        retSebebi: null,
-        olusturmaTarihi: Timestamp.now(),
-        sonGuncelleme: Timestamp.now()
-      }));
-    }
+      await assertFails(
+        setDoc(doc(db, 'bildirimler/adminDutyCreate'), {
+          haftaId: 'W2026-05-18',
+          tarih: '2026-05-22',
+          vakit: 'yatsi',
+          uid: 'admin',
+          tip: 'asil',
+          durum: 'bekliyor',
+          pendingAck: true,
+          retSebebi: null,
+          olusturmaTarihi: Timestamp.now(),
+          sonGuncelleme: Timestamp.now(),
+        })
+      );
+    },
   },
   {
     name: 'admin mevcut nobeti admin kullanicisina devredemez',
     run: async (env) => {
       const db = testUser(env, 'admin').firestore();
 
-      await assertFails(updateDoc(doc(db, 'bildirimler/ownPendingAsil'), {
-        uid: 'admin',
-        sonGuncelleme: Timestamp.now()
-      }));
-    }
+      await assertFails(
+        updateDoc(doc(db, 'bildirimler/ownPendingAsil'), {
+          uid: 'admin',
+          sonGuncelleme: Timestamp.now(),
+        })
+      );
+    },
   },
   {
     name: 'admin kendi adina eski nobet bildirimini onaylayamaz',
@@ -684,39 +723,45 @@ const tests: TestCase[] = [
           pendingAck: true,
           retSebebi: null,
           olusturmaTarihi: Timestamp.now(),
-          sonGuncelleme: Timestamp.now()
+          sonGuncelleme: Timestamp.now(),
         });
       });
 
       const db = testUser(env, 'admin').firestore();
-      await assertFails(updateDoc(doc(db, 'bildirimler/legacyAdminDuty'), {
-        durum: 'onaylandi',
-        pendingAck: false,
-        sonGuncelleme: Timestamp.now()
-      }));
-    }
+      await assertFails(
+        updateDoc(doc(db, 'bildirimler/legacyAdminDuty'), {
+          durum: 'onaylandi',
+          pendingAck: false,
+          sonGuncelleme: Timestamp.now(),
+        })
+      );
+    },
   },
   {
     name: 'muezzin kendi bekleyen gorevini onaylayabilir',
     run: async (env) => {
       const db = testUser(env, 'muezzin1').firestore();
-      await assertSucceeds(updateDoc(doc(db, 'bildirimler/ownPendingAsil'), {
-        durum: 'onaylandi',
-        pendingAck: false,
-        sonGuncelleme: Timestamp.now()
-      }));
-    }
+      await assertSucceeds(
+        updateDoc(doc(db, 'bildirimler/ownPendingAsil'), {
+          durum: 'onaylandi',
+          pendingAck: false,
+          sonGuncelleme: Timestamp.now(),
+        })
+      );
+    },
   },
   {
     name: 'muezzin baskasinin gorevini onaylayamaz',
     run: async (env) => {
       const db = testUser(env, 'muezzin1').firestore();
-      await assertFails(updateDoc(doc(db, 'bildirimler/otherPendingAsil'), {
-        durum: 'onaylandi',
-        pendingAck: false,
-        sonGuncelleme: Timestamp.now()
-      }));
-    }
+      await assertFails(
+        updateDoc(doc(db, 'bildirimler/otherPendingAsil'), {
+          durum: 'onaylandi',
+          pendingAck: false,
+          sonGuncelleme: Timestamp.now(),
+        })
+      );
+    },
   },
   {
     name: 'muezzin kendi asil gorevine mazeret yazabilir',
@@ -726,7 +771,7 @@ const tests: TestCase[] = [
       // mazeret_detaylari'na yaziliyor (bkz. mazeretRetBatch, mimari
       // denetim — altinci tur).
       await assertSucceeds(mazeretRetBatch(db, 'ownPendingAsil', 'muezzin1', 'Hastalik', { devirSonucu: 'alarm_bekliyor' }));
-    }
+    },
   },
   {
     // `legacyFridayNoCumaMiAsil` kasitli olarak cumaMi alani OLMADAN
@@ -742,7 +787,7 @@ const tests: TestCase[] = [
     run: async (env) => {
       const db = testUser(env, 'muezzin2').firestore();
       await assertFails(mazeretRetBatch(db, 'legacyFridayNoCumaMiAsil', 'muezzin2', 'Hastalik', { devirSonucu: 'alarm_bekliyor' }));
-    }
+    },
   },
   {
     name: 'muezzin cuma gorevine mazeret bildiremez',
@@ -751,7 +796,7 @@ const tests: TestCase[] = [
       // Eslesen mazeret_detaylari yazimi DAHIL edildi ki test yalnizca
       // Cuma kisitlamasini izole etsin (baska bir nedenle degil).
       await assertFails(mazeretRetBatch(db, 'fridayPendingAsil', 'muezzin1', 'Hastalik', { devirSonucu: 'alarm_bekliyor' }));
-    }
+    },
   },
   {
     name: 'muezzin cuma gorevini yine de okudum olarak onaylayabilir',
@@ -759,12 +804,14 @@ const tests: TestCase[] = [
       // Cuma kisitlamasi yalnizca mazeret (reddedildi) geciscine uygulanir —
       // gorevi ustlenme (okudum/onaylandi) onayi hala serbesttir.
       const db = testUser(env, 'muezzin1').firestore();
-      await assertSucceeds(updateDoc(doc(db, 'bildirimler/fridayPendingAsil'), {
-        durum: 'onaylandi',
-        pendingAck: false,
-        sonGuncelleme: Timestamp.now()
-      }));
-    }
+      await assertSucceeds(
+        updateDoc(doc(db, 'bildirimler/fridayPendingAsil'), {
+          durum: 'onaylandi',
+          pendingAck: false,
+          sonGuncelleme: Timestamp.now(),
+        })
+      );
+    },
   },
   {
     name: 'yedek gorev mazeret reddine ceviremez',
@@ -774,21 +821,21 @@ const tests: TestCase[] = [
       // taklit ediyor) — bkz. asagidaki "devirSonucu ile" testi, dogru
       // sekilde bicimlendirilmis bir yedek mazereti bunun aksine basarili olur.
       await assertFails(mazeretRetBatch(db, 'ownPendingYedek', 'muezzin1', 'Uygun degilim', {}));
-    }
+    },
   },
   {
     name: 'yedek gorevli kendi mazeretini (devirSonucu ile) bildirebilir',
     run: async (env) => {
       const db = testUser(env, 'muezzin1').firestore();
       await assertSucceeds(mazeretRetBatch(db, 'ownPendingYedek', 'muezzin1', 'Uygun degilim', { devirSonucu: 'alarm_bekliyor' }));
-    }
+    },
   },
   {
     name: 'yedek gorevli Cuma gorevi icin mazeret bildiremez',
     run: async (env) => {
       const db = testUser(env, 'muezzin1').firestore();
       await assertFails(mazeretRetBatch(db, 'fridayPendingYedek', 'muezzin1', 'Uygun degilim', { devirSonucu: 'alarm_bekliyor' }));
-    }
+    },
   },
   // ---------------------------------------------------------------
   // 1 SAATLİK MAZERET/VEKALET PENCERESİ — SUNUCU TARAFI (request.time)
@@ -811,7 +858,7 @@ const tests: TestCase[] = [
       const db = testUser(env, 'muezzin1').firestore();
       await env.withSecurityRulesDisabled(async (context) => {
         await updateDoc(doc(context.firestore(), 'bildirimler/windowClosedAsil'), {
-          mazeretSonBasvuru: PENCERE_ACIK()
+          mazeretSonBasvuru: PENCERE_ACIK(),
         });
       });
       await assertSucceeds(mazeretRetBatch(db, 'windowClosedAsil', 'muezzin1', 'Zamaninda mazeret', { devirSonucu: 'alarm_bekliyor' }));
@@ -820,18 +867,18 @@ const tests: TestCase[] = [
         await updateDoc(doc(context.firestore(), 'bildirimler/windowClosedAsil'), {
           durum: 'bekliyor',
           pendingAck: true,
-          mazeretSonBasvuru: PENCERE_KAPALI()
+          mazeretSonBasvuru: PENCERE_KAPALI(),
         });
       });
       await assertFails(mazeretRetBatch(db, 'windowClosedAsil', 'muezzin1', 'Gec kalan mazeret', { devirSonucu: 'alarm_bekliyor' }));
-    }
+    },
   },
   {
     name: 'PENCERE: kapali pencerede yedek mazereti de reddedilir',
     run: async (env) => {
       const db = testUser(env, 'muezzin1').firestore();
       await assertFails(mazeretRetBatch(db, 'windowClosedYedek', 'muezzin1', 'Gec kalan mazeret', { devirSonucu: 'alarm_bekliyor' }));
-    }
+    },
   },
   {
     // FAIL-CLOSED: damga hic yoksa (bu ozellik oncesi olusturulmus belge)
@@ -841,7 +888,7 @@ const tests: TestCase[] = [
     run: async (env) => {
       const db = testUser(env, 'muezzin2').firestore();
       await assertFails(mazeretRetBatch(db, 'noWindowStampAsil', 'muezzin2', 'Damgasiz belge', { devirSonucu: 'alarm_bekliyor' }));
-    }
+    },
   },
   {
     // ASIL GUVENLIK IDDIASI: istemcinin gonderdigi HICBIR zaman degeri karari
@@ -853,10 +900,10 @@ const tests: TestCase[] = [
     run: async (env) => {
       const db = testUser(env, 'muezzin1').firestore();
       const sahteZamanlar = [
-        Timestamp.fromMillis(Date.now() - 45 * 60 * 1000),        // cihaz saati 45 dk geri
+        Timestamp.fromMillis(Date.now() - 45 * 60 * 1000), // cihaz saati 45 dk geri
         Timestamp.fromMillis(Date.now() - 10 * 24 * 3600 * 1000), // 10 gun geri
         Timestamp.fromMillis(Date.now() + 10 * 24 * 3600 * 1000), // 10 gun ileri
-        Timestamp.fromMillis(0)                                    // epoch
+        Timestamp.fromMillis(0), // epoch
       ];
       for (const sahte of sahteZamanlar) {
         const batch = writeBatch(db);
@@ -864,16 +911,16 @@ const tests: TestCase[] = [
           durum: 'reddedildi',
           pendingAck: false,
           devirSonucu: 'alarm_bekliyor',
-          sonGuncelleme: sahte
+          sonGuncelleme: sahte,
         });
         batch.set(doc(db, 'mazeret_detaylari', 'windowClosedAsil'), {
           uid: 'muezzin1',
           retSebebi: 'Saat manipulasyonu denemesi',
-          olusturmaTarihi: sahte
+          olusturmaTarihi: sahte,
         });
         await assertFails(batch.commit());
       }
-    }
+    },
   },
   {
     // Ayna testi: pencere ACIKKEN, istemcinin gonderdigi zaman degeri
@@ -887,15 +934,15 @@ const tests: TestCase[] = [
         durum: 'reddedildi',
         pendingAck: false,
         devirSonucu: 'alarm_bekliyor',
-        sonGuncelleme: Timestamp.fromMillis(Date.now() - 30 * 24 * 3600 * 1000)
+        sonGuncelleme: Timestamp.fromMillis(Date.now() - 30 * 24 * 3600 * 1000),
       });
       batch.set(doc(db, 'mazeret_detaylari', 'ownPendingAsil'), {
         uid: 'muezzin1',
         retSebebi: 'Gecmis zaman damgasi',
-        olusturmaTarihi: Timestamp.fromMillis(Date.now() - 30 * 24 * 3600 * 1000)
+        olusturmaTarihi: Timestamp.fromMillis(Date.now() - 30 * 24 * 3600 * 1000),
       });
       await assertSucceeds(batch.commit());
-    }
+    },
   },
   {
     // Damganin KENDISI istemciye kapali: `changed.hasOnly([...])` bu alani
@@ -904,15 +951,19 @@ const tests: TestCase[] = [
     name: 'PENCERE: muezzin mazeretSonBasvuru damgasini kendisi ileri alamaz',
     run: async (env) => {
       const db = testUser(env, 'muezzin1').firestore();
-      await assertFails(updateDoc(doc(db, 'bildirimler/windowClosedAsil'), {
-        mazeretSonBasvuru: Timestamp.fromMillis(Date.now() + 3600 * 1000),
-        sonGuncelleme: Timestamp.now()
-      }));
-      await assertFails(mazeretRetBatch(db, 'windowClosedAsil', 'muezzin1', 'Damgayi da uzatma denemesi', {
-        devirSonucu: 'alarm_bekliyor',
-        mazeretSonBasvuru: Timestamp.fromMillis(Date.now() + 3600 * 1000)
-      }));
-    }
+      await assertFails(
+        updateDoc(doc(db, 'bildirimler/windowClosedAsil'), {
+          mazeretSonBasvuru: Timestamp.fromMillis(Date.now() + 3600 * 1000),
+          sonGuncelleme: Timestamp.now(),
+        })
+      );
+      await assertFails(
+        mazeretRetBatch(db, 'windowClosedAsil', 'muezzin1', 'Damgayi da uzatma denemesi', {
+          devirSonucu: 'alarm_bekliyor',
+          mazeretSonBasvuru: Timestamp.fromMillis(Date.now() + 3600 * 1000),
+        })
+      );
+    },
   },
   {
     // Pencere yalnizca MAZERET (reddedildi) gecisini kapatir — gorevi
@@ -921,12 +972,14 @@ const tests: TestCase[] = [
     name: 'PENCERE: kapali pencerede okudum onayi hala serbesttir',
     run: async (env) => {
       const db = testUser(env, 'muezzin1').firestore();
-      await assertSucceeds(updateDoc(doc(db, 'bildirimler/windowClosedAsil'), {
-        durum: 'onaylandi',
-        pendingAck: false,
-        sonGuncelleme: Timestamp.now()
-      }));
-    }
+      await assertSucceeds(
+        updateDoc(doc(db, 'bildirimler/windowClosedAsil'), {
+          durum: 'onaylandi',
+          pendingAck: false,
+          sonGuncelleme: Timestamp.now(),
+        })
+      );
+    },
   },
   {
     // POZITIF KONTROL DAHIL (bkz. yukaridaki asil-mazeret testindeki ayni
@@ -947,13 +1000,13 @@ const tests: TestCase[] = [
         saat: '21:18',
         tip: 'asil',
         durum: 'beklemede',
-        olusturmaTarihi: Timestamp.now()
+        olusturmaTarihi: Timestamp.now(),
       };
       const talepRef = doc(db, 'vekalet_talepleri/W2026-05-18_2026-05-20_yatsi_asil_muezzin2');
 
       await env.withSecurityRulesDisabled(async (context) => {
         await updateDoc(doc(context.firestore(), 'bildirimler/windowClosedAsil'), {
-          mazeretSonBasvuru: PENCERE_ACIK()
+          mazeretSonBasvuru: PENCERE_ACIK(),
         });
       });
       await assertSucceeds(setDoc(talepRef, yuk));
@@ -961,31 +1014,33 @@ const tests: TestCase[] = [
       await env.withSecurityRulesDisabled(async (context) => {
         await deleteDoc(doc(context.firestore(), 'vekalet_talepleri/W2026-05-18_2026-05-20_yatsi_asil_muezzin2'));
         await updateDoc(doc(context.firestore(), 'bildirimler/windowClosedAsil'), {
-          mazeretSonBasvuru: PENCERE_KAPALI()
+          mazeretSonBasvuru: PENCERE_KAPALI(),
         });
       });
       await assertFails(setDoc(talepRef, yuk));
-    }
+    },
   },
   {
     name: 'PENCERE: damgasiz bildirim icin vekalet teklifi FAIL-CLOSED reddedilir',
     run: async (env) => {
       const db = testUser(env, 'muezzin2').firestore();
-      await assertFails(setDoc(doc(db, 'vekalet_talepleri/W2026-05-18_2026-05-20_aksam_asil_muezzin1'), {
-        bildirimId: 'noWindowStampAsil',
-        haftaId: 'W2026-05-18',
-        gonderenUid: 'muezzin2',
-        gonderenIsim: 'Muezzin Two',
-        aliciUid: 'muezzin1',
-        aliciIsim: 'Muezzin One',
-        tarih: '2026-05-20',
-        vakit: 'aksam',
-        saat: '19:51',
-        tip: 'asil',
-        durum: 'beklemede',
-        olusturmaTarihi: Timestamp.now()
-      }));
-    }
+      await assertFails(
+        setDoc(doc(db, 'vekalet_talepleri/W2026-05-18_2026-05-20_aksam_asil_muezzin1'), {
+          bildirimId: 'noWindowStampAsil',
+          haftaId: 'W2026-05-18',
+          gonderenUid: 'muezzin2',
+          gonderenIsim: 'Muezzin Two',
+          aliciUid: 'muezzin1',
+          aliciIsim: 'Muezzin One',
+          tarih: '2026-05-20',
+          vakit: 'aksam',
+          saat: '19:51',
+          tip: 'asil',
+          durum: 'beklemede',
+          olusturmaTarihi: Timestamp.now(),
+        })
+      );
+    },
   },
   {
     // KABUL yolu ayrica kapatilmali: teklif pencere ACIKKEN gonderilmis
@@ -1009,7 +1064,7 @@ const tests: TestCase[] = [
           saat: '21:18',
           tip: 'asil',
           durum: 'beklemede',
-          olusturmaTarihi: Timestamp.now()
+          olusturmaTarihi: Timestamp.now(),
         });
       });
 
@@ -1020,38 +1075,42 @@ const tests: TestCase[] = [
       // redlerin sebebinin gercekten pencere oldugunu kanitlar.
       await env.withSecurityRulesDisabled(async (context) => {
         await updateDoc(doc(context.firestore(), 'bildirimler/windowClosedAsil'), {
-          mazeretSonBasvuru: PENCERE_ACIK()
+          mazeretSonBasvuru: PENCERE_ACIK(),
         });
       });
       await assertSucceeds(updateDoc(talepRef, { durum: 'kabul_edildi', sonGuncelleme: Timestamp.now() }));
       await env.withSecurityRulesDisabled(async (context) => {
         await updateDoc(doc(context.firestore(), 'vekalet_talepleri/W2026-05-18_2026-05-20_yatsi_asil_muezzin2'), {
-          durum: 'beklemede'
+          durum: 'beklemede',
         });
         await updateDoc(doc(context.firestore(), 'bildirimler/windowClosedAsil'), {
-          mazeretSonBasvuru: PENCERE_KAPALI()
+          mazeretSonBasvuru: PENCERE_KAPALI(),
         });
       });
 
       // (1) Talep durumu 'kabul_edildi' — tek basina reddedilmeli.
       await assertFails(updateDoc(talepRef, { durum: 'kabul_edildi', sonGuncelleme: Timestamp.now() }));
       // (2) Bildirimdeki niyet bayragi — tek basina reddedilmeli.
-      await assertFails(updateDoc(doc(db, 'bildirimler/windowClosedAsil'), {
-        vekaletDevriBekliyor: true,
-        sonGuncelleme: Timestamp.now()
-      }));
-      // (3) Gercek istemcinin yaptigi gibi ikisi AYNI transaction'da — yine reddedilmeli.
-      await assertFails(runTransaction(db, async (transaction) => {
-        transaction.update(talepRef, { durum: 'kabul_edildi', sonGuncelleme: Timestamp.now() });
-        transaction.update(doc(db, 'bildirimler/windowClosedAsil'), {
+      await assertFails(
+        updateDoc(doc(db, 'bildirimler/windowClosedAsil'), {
           vekaletDevriBekliyor: true,
-          sonGuncelleme: Timestamp.now()
-        });
-      }));
+          sonGuncelleme: Timestamp.now(),
+        })
+      );
+      // (3) Gercek istemcinin yaptigi gibi ikisi AYNI transaction'da — yine reddedilmeli.
+      await assertFails(
+        runTransaction(db, async (transaction) => {
+          transaction.update(talepRef, { durum: 'kabul_edildi', sonGuncelleme: Timestamp.now() });
+          transaction.update(doc(db, 'bildirimler/windowClosedAsil'), {
+            vekaletDevriBekliyor: true,
+            sonGuncelleme: Timestamp.now(),
+          });
+        })
+      );
       // (4) REDDETME pencereden BAGIMSIZ olarak serbest kalmali — alici,
       // pencere kapandiktan sonra da teklifi geri cevirebilmelidir.
       await assertSucceeds(updateDoc(talepRef, { durum: 'reddedildi', sonGuncelleme: Timestamp.now() }));
-    }
+    },
   },
   {
     // Fix 3'un KOK NEDENI: `vekalet_talepleri` update kuralinin admin dali
@@ -1075,7 +1134,7 @@ const tests: TestCase[] = [
           saat: '12:45',
           tip: 'asil',
           durum: 'kabul_edildi',
-          olusturmaTarihi: Timestamp.now()
+          olusturmaTarihi: Timestamp.now(),
         });
       });
 
@@ -1089,19 +1148,21 @@ const tests: TestCase[] = [
       await assertFails(updateDoc(ref, { tip: 'yedek' }));
       // Mesru bir admin onarimi (durum + goruntulenen alanlar) hala serbest.
       await assertSucceeds(updateDoc(ref, { durum: 'reddedildi', sonGuncelleme: Timestamp.now() }));
-    }
+    },
   },
   {
     name: 'muezzin bildirim kimlik alanlarini degistiremez',
     run: async (env) => {
       const db = testUser(env, 'muezzin1').firestore();
-      await assertFails(updateDoc(doc(db, 'bildirimler/ownPendingAsil'), {
-        uid: 'muezzin2',
-        durum: 'onaylandi',
-        pendingAck: false,
-        sonGuncelleme: Timestamp.now()
-      }));
-    }
+      await assertFails(
+        updateDoc(doc(db, 'bildirimler/ownPendingAsil'), {
+          uid: 'muezzin2',
+          durum: 'onaylandi',
+          pendingAck: false,
+          sonGuncelleme: Timestamp.now(),
+        })
+      );
+    },
   },
   {
     name: 'izin talebinde kullanici sadece kendisi adina kayit acabilir',
@@ -1113,18 +1174,22 @@ const tests: TestCase[] = [
         bitis: '2026-05-19',
         tip: 'mazeret',
         durum: 'onay_bekliyor',
-        olusturmaTarihi: Timestamp.now()
+        olusturmaTarihi: Timestamp.now(),
       };
 
-      await assertSucceeds(setDoc(doc(db, 'izinler/ownLeave'), {
-        ...base,
-        uid: 'muezzin1'
-      }));
-      await assertFails(setDoc(doc(db, 'izinler/otherLeave'), {
-        ...base,
-        uid: 'muezzin2'
-      }));
-    }
+      await assertSucceeds(
+        setDoc(doc(db, 'izinler/ownLeave'), {
+          ...base,
+          uid: 'muezzin1',
+        })
+      );
+      await assertFails(
+        setDoc(doc(db, 'izinler/otherLeave'), {
+          ...base,
+          uid: 'muezzin2',
+        })
+      );
+    },
   },
   {
     // Izin (leave) yalnizca nobete atanabilen 'muezzin' rolu icin
@@ -1138,21 +1203,25 @@ const tests: TestCase[] = [
         bitis: '2026-05-19',
         tip: 'mazeret',
         durum: 'onay_bekliyor',
-        olusturmaTarihi: Timestamp.now()
+        olusturmaTarihi: Timestamp.now(),
       };
 
       const gozlemciDb = testUser(env, 'gozlemci1').firestore();
-      await assertFails(setDoc(doc(gozlemciDb, 'izinler/gozlemciLeave'), {
-        ...base,
-        uid: 'gozlemci1'
-      }));
+      await assertFails(
+        setDoc(doc(gozlemciDb, 'izinler/gozlemciLeave'), {
+          ...base,
+          uid: 'gozlemci1',
+        })
+      );
 
       const adminDb = testUser(env, 'admin').firestore();
-      await assertFails(setDoc(doc(adminDb, 'izinler/adminLeave'), {
-        ...base,
-        uid: 'admin'
-      }));
-    }
+      await assertFails(
+        setDoc(doc(adminDb, 'izinler/adminLeave'), {
+          ...base,
+          uid: 'admin',
+        })
+      );
+    },
   },
   {
     // izinler'in `list` kuralinda (yukarida, ayni match blogu) zaten
@@ -1165,7 +1234,7 @@ const tests: TestCase[] = [
     run: async (env) => {
       const db = testUser(env, 'muezzin1').firestore();
       await assertSucceeds(getDoc(doc(db, 'izinler/hicOlusturulmamisIzin')));
-    }
+    },
   },
   {
     name: 'izin talebi Cuma iceren bir araligi sunucu tarafinda reddeder',
@@ -1175,40 +1244,50 @@ const tests: TestCase[] = [
         uid: 'muezzin1',
         tip: 'mazeret',
         durum: 'onay_bekliyor',
-        olusturmaTarihi: Timestamp.now()
+        olusturmaTarihi: Timestamp.now(),
       };
 
       // 2026-05-22 tek basina bir Cuma.
-      await assertFails(setDoc(doc(db, 'izinler/tekGunCuma'), {
-        ...base,
-        baslangic: '2026-05-22',
-        bitis: '2026-05-22'
-      }));
+      await assertFails(
+        setDoc(doc(db, 'izinler/tekGunCuma'), {
+          ...base,
+          baslangic: '2026-05-22',
+          bitis: '2026-05-22',
+        })
+      );
       // 2026-05-18 (Pzt) - 2026-05-24 (Paz) araligi 2026-05-22 Cuma'yi kapsiyor.
-      await assertFails(setDoc(doc(db, 'izinler/araligaCumaGiriyor'), {
-        ...base,
-        baslangic: '2026-05-18',
-        bitis: '2026-05-24'
-      }));
+      await assertFails(
+        setDoc(doc(db, 'izinler/araligaCumaGiriyor'), {
+          ...base,
+          baslangic: '2026-05-18',
+          bitis: '2026-05-24',
+        })
+      );
       // 7+ gunluk her aralik istatistiksel olarak bir Cuma icerir.
-      await assertFails(setDoc(doc(db, 'izinler/haftalikArayaCumaGirer'), {
-        ...base,
-        baslangic: '2026-05-19',
-        bitis: '2026-05-26'
-      }));
+      await assertFails(
+        setDoc(doc(db, 'izinler/haftalikArayaCumaGirer'), {
+          ...base,
+          baslangic: '2026-05-19',
+          bitis: '2026-05-26',
+        })
+      );
       // Cuma icermeyen kisa bir araligin gecmesi gerekir (regresyon kontrolu).
-      await assertSucceeds(setDoc(doc(db, 'izinler/cumasizAralik'), {
-        ...base,
-        baslangic: '2026-05-18',
-        bitis: '2026-05-21'
-      }));
+      await assertSucceeds(
+        setDoc(doc(db, 'izinler/cumasizAralik'), {
+          ...base,
+          baslangic: '2026-05-18',
+          bitis: '2026-05-21',
+        })
+      );
       // Ters cevrilmis aralik (bitis < baslangic) reddedilmeli.
-      await assertFails(setDoc(doc(db, 'izinler/tersAralik'), {
-        ...base,
-        baslangic: '2026-05-25',
-        bitis: '2026-05-20'
-      }));
-    }
+      await assertFails(
+        setDoc(doc(db, 'izinler/tersAralik'), {
+          ...base,
+          baslangic: '2026-05-25',
+          bitis: '2026-05-20',
+        })
+      );
+    },
   },
   {
     // FR-O3 sonrasi: `sebep` artik `izinler`de degil, kendi ID'si karsilik
@@ -1219,30 +1298,38 @@ const tests: TestCase[] = [
     name: 'izin_detaylari sebep 1000 karakteri asarsa veya string degilse reddedilir',
     run: async (env) => {
       const db = testUser(env, 'muezzin1').firestore();
-      await assertSucceeds(setDoc(doc(db, 'izinler/izinDetaySinirTest'), {
-        uid: 'muezzin1',
-        baslangic: '2026-05-18',
-        bitis: '2026-05-19',
-        tip: 'mazeret',
-        durum: 'onay_bekliyor',
-        olusturmaTarihi: Timestamp.now()
-      }));
+      await assertSucceeds(
+        setDoc(doc(db, 'izinler/izinDetaySinirTest'), {
+          uid: 'muezzin1',
+          baslangic: '2026-05-18',
+          bitis: '2026-05-19',
+          tip: 'mazeret',
+          durum: 'onay_bekliyor',
+          olusturmaTarihi: Timestamp.now(),
+        })
+      );
 
       const base = { uid: 'muezzin1', olusturmaTarihi: Timestamp.now() };
-      await assertFails(setDoc(doc(db, 'izin_detaylari/izinDetaySinirTest'), {
-        ...base,
-        sebep: 'a'.repeat(1001)
-      }));
-      await assertFails(setDoc(doc(db, 'izin_detaylari/izinDetaySinirTest'), {
-        ...base,
-        sebep: 12345
-      }));
+      await assertFails(
+        setDoc(doc(db, 'izin_detaylari/izinDetaySinirTest'), {
+          ...base,
+          sebep: 'a'.repeat(1001),
+        })
+      );
+      await assertFails(
+        setDoc(doc(db, 'izin_detaylari/izinDetaySinirTest'), {
+          ...base,
+          sebep: 12345,
+        })
+      );
       // Tam sinirda (1000 karakter) gecmeli (regresyon kontrolu).
-      await assertSucceeds(setDoc(doc(db, 'izin_detaylari/izinDetaySinirTest'), {
-        ...base,
-        sebep: 'a'.repeat(1000)
-      }));
-    }
+      await assertSucceeds(
+        setDoc(doc(db, 'izin_detaylari/izinDetaySinirTest'), {
+          ...base,
+          sebep: 'a'.repeat(1000),
+        })
+      );
+    },
   },
   {
     // izin_detaylari'nin create kurali kendi uid'ini dogrular ama (mazeret_
@@ -1253,17 +1340,21 @@ const tests: TestCase[] = [
     name: 'izin_detaylari yalnizca kendi uid ile olusturulabilir',
     run: async (env) => {
       const db = testUser(env, 'muezzin1').firestore();
-      await assertFails(setDoc(doc(db, 'izin_detaylari/baskasininUidi'), {
-        uid: 'muezzin2',
-        sebep: 'Baskasi adina yazma denemesi',
-        olusturmaTarihi: Timestamp.now()
-      }));
-      await assertSucceeds(setDoc(doc(db, 'izin_detaylari/kendiUidi'), {
-        uid: 'muezzin1',
-        sebep: 'Gecerli',
-        olusturmaTarihi: Timestamp.now()
-      }));
-    }
+      await assertFails(
+        setDoc(doc(db, 'izin_detaylari/baskasininUidi'), {
+          uid: 'muezzin2',
+          sebep: 'Baskasi adina yazma denemesi',
+          olusturmaTarihi: Timestamp.now(),
+        })
+      );
+      await assertSucceeds(
+        setDoc(doc(db, 'izin_detaylari/kendiUidi'), {
+          uid: 'muezzin1',
+          sebep: 'Gecerli',
+          olusturmaTarihi: Timestamp.now(),
+        })
+      );
+    },
   },
   {
     // VacationRequestCard.tsx'in GERCEK yazim deseni: izinler + izin_detaylari
@@ -1282,15 +1373,15 @@ const tests: TestCase[] = [
         bitis: '2026-05-19',
         tip: 'mazeret',
         durum: 'onay_bekliyor',
-        olusturmaTarihi: Timestamp.now()
+        olusturmaTarihi: Timestamp.now(),
       });
       batch.set(doc(db, 'izin_detaylari/izinDetayAyniBatch'), {
         uid: 'muezzin1',
         sebep: 'Ayni batch testi',
-        olusturmaTarihi: Timestamp.now()
+        olusturmaTarihi: Timestamp.now(),
       });
       await assertSucceeds(batch.commit());
-    }
+    },
   },
   {
     name: 'izin_detaylari yalnizca ilgili kisi veya admin tarafindan okunabilir',
@@ -1300,7 +1391,7 @@ const tests: TestCase[] = [
         await setDoc(doc(db, 'izin_detaylari/ozelIzinSebebi'), {
           uid: 'muezzin1',
           sebep: 'Gizli saglik detayi',
-          olusturmaTarihi: Timestamp.now()
+          olusturmaTarihi: Timestamp.now(),
         });
       });
 
@@ -1312,7 +1403,7 @@ const tests: TestCase[] = [
 
       const adminDb = testUser(env, 'admin').firestore();
       await assertSucceeds(getDoc(doc(adminDb, 'izin_detaylari/ozelIzinSebebi')));
-    }
+    },
   },
   {
     name: 'izin_detaylari yalnizca admin tarafindan listelenebilir',
@@ -1322,7 +1413,7 @@ const tests: TestCase[] = [
 
       const adminDb = testUser(env, 'admin').firestore();
       await assertSucceeds(getDocs(collection(adminDb, 'izin_detaylari')));
-    }
+    },
   },
   {
     // Ucuncu denetim turu bulgusu: veriOnarimServisi.ts'in "Veri Sagligi"
@@ -1344,7 +1435,7 @@ const tests: TestCase[] = [
           tip: 'mazeret',
           durum: 'onaylandi',
           sebep: 'Aile',
-          olusturmaTarihi: Timestamp.now()
+          olusturmaTarihi: Timestamp.now(),
         });
       });
 
@@ -1354,7 +1445,7 @@ const tests: TestCase[] = [
       // veriOnarimServisi.ts'in gercek onarim yazimi: iki tarihi yer
       // degistirir, baska hicbir alana dokunmaz.
       await assertSucceeds(updateDoc(ref, { baslangic: '2026-05-18', bitis: '2026-05-19' }));
-    }
+    },
   },
   {
     // Onarim yolu sonsuz esneklige acilmamali — duzeltilmis aralik da
@@ -1371,7 +1462,7 @@ const tests: TestCase[] = [
           tip: 'mazeret',
           durum: 'onaylandi',
           sebep: 'Aile',
-          olusturmaTarihi: Timestamp.now()
+          olusturmaTarihi: Timestamp.now(),
         });
       });
 
@@ -1380,7 +1471,7 @@ const tests: TestCase[] = [
 
       // Duzeltme sonrasi da hala ters aralik (bitis < baslangic) — reddedilmeli.
       await assertFails(updateDoc(ref, { baslangic: '2026-05-20', bitis: '2026-05-15' }));
-    }
+    },
   },
   {
     // Admin izin onarim yolu yalnizca durum/redSebebi/baslangic/bitis
@@ -1396,7 +1487,7 @@ const tests: TestCase[] = [
           tip: 'mazeret',
           durum: 'onaylandi',
           sebep: 'Aile',
-          olusturmaTarihi: Timestamp.now()
+          olusturmaTarihi: Timestamp.now(),
         });
       });
 
@@ -1404,7 +1495,7 @@ const tests: TestCase[] = [
       const ref = doc(db, 'izinler/kimlikDenemesi');
 
       await assertFails(updateDoc(ref, { uid: 'muezzin2' }));
-    }
+    },
   },
   {
     // isValidIzin artik hasOnly ile sinirli — sema disi ekstra bir alan
@@ -1412,17 +1503,19 @@ const tests: TestCase[] = [
     name: 'izin talebi sema disi ekstra alan icermemeli (isValidIzin hasOnly)',
     run: async (env) => {
       const db = testUser(env, 'muezzin1').firestore();
-      await assertFails(setDoc(doc(db, 'izinler/ekstraAlanli'), {
-        uid: 'muezzin1',
-        baslangic: '2026-05-18',
-        bitis: '2026-05-19',
-        tip: 'mazeret',
-        durum: 'onay_bekliyor',
-        sebep: 'Aile',
-        olusturmaTarihi: Timestamp.now(),
-        yetkisizAlan: 'sizma denemesi'
-      }));
-    }
+      await assertFails(
+        setDoc(doc(db, 'izinler/ekstraAlanli'), {
+          uid: 'muezzin1',
+          baslangic: '2026-05-18',
+          bitis: '2026-05-19',
+          tip: 'mazeret',
+          durum: 'onay_bekliyor',
+          sebep: 'Aile',
+          olusturmaTarihi: Timestamp.now(),
+          yetkisizAlan: 'sizma denemesi',
+        })
+      );
+    },
   },
   {
     // izinGuncelle karar aninda durum ile AYNI update'te bildirimGonderildi:
@@ -1441,7 +1534,7 @@ const tests: TestCase[] = [
           tip: 'mazeret',
           durum: 'onay_bekliyor',
           sebep: 'Aile',
-          olusturmaTarihi: Timestamp.now()
+          olusturmaTarihi: Timestamp.now(),
         });
       });
 
@@ -1449,7 +1542,7 @@ const tests: TestCase[] = [
       const ref = doc(db, 'izinler/kararBekleyen');
 
       await assertSucceeds(updateDoc(ref, { durum: 'onaylandi', bildirimGonderildi: false }));
-    }
+    },
   },
   {
     // Düşük öncelikli bulgu: admin dalı hangi ALANLARIN değiştiğini
@@ -1466,7 +1559,7 @@ const tests: TestCase[] = [
           bitis: '2026-05-19',
           tip: 'mazeret',
           durum: 'onay_bekliyor',
-          olusturmaTarihi: Timestamp.now()
+          olusturmaTarihi: Timestamp.now(),
         });
       });
 
@@ -1474,7 +1567,7 @@ const tests: TestCase[] = [
       const ref = doc(db, 'izinler/semaDisiDurumDenemesi');
 
       await assertFails(updateDoc(ref, { durum: 'gecersizDurum' }));
-    }
+    },
   },
   {
     // izinGeriAl bir karari geri alirken bildirimGonderildi'yi SILER (deleteField)
@@ -1492,7 +1585,7 @@ const tests: TestCase[] = [
           durum: 'onaylandi',
           sebep: 'Aile',
           olusturmaTarihi: Timestamp.now(),
-          bildirimGonderildi: true
+          bildirimGonderildi: true,
         });
       });
 
@@ -1500,7 +1593,7 @@ const tests: TestCase[] = [
       const ref = doc(db, 'izinler/geriAlinacakKarar');
 
       await assertSucceeds(updateDoc(ref, { durum: 'onay_bekliyor', bildirimGonderildi: deleteField() }));
-    }
+    },
   },
   {
     // `puanIslendi`nin isValidBildirim'de yol actigi bulgunun BIREBIR
@@ -1523,7 +1616,7 @@ const tests: TestCase[] = [
           durum: 'onay_bekliyor',
           olusturmaTarihi: Timestamp.now(),
           bildirimGonderildi: true,
-          bildirimGonderimBaslangici: Timestamp.now()
+          bildirimGonderimBaslangici: Timestamp.now(),
         });
       });
 
@@ -1532,7 +1625,7 @@ const tests: TestCase[] = [
 
       // 2026-05-18 (Pzt) - 2026-05-21 (Per): Cuma icermeyen gecerli aralik.
       await assertSucceeds(updateDoc(ref, { bitis: '2026-05-21' }));
-    }
+    },
   },
   {
     // Alanlar hasOnly'ye eklenirken TIPSIZ birakilmamali (bkz. isValidDuyuru
@@ -1541,25 +1634,29 @@ const tests: TestCase[] = [
     name: 'izin talebinde bildirimGonderildi/gonderim damgasi yanlis tiplerle yazilamaz',
     run: async (env) => {
       const db = testUser(env, 'muezzin1').firestore();
-      await assertFails(setDoc(doc(db, 'izinler/yanlisTipBayrak'), {
-        uid: 'muezzin1',
-        baslangic: '2026-05-18',
-        bitis: '2026-05-19',
-        tip: 'mazeret',
-        durum: 'onay_bekliyor',
-        olusturmaTarihi: Timestamp.now(),
-        bildirimGonderildi: 'evet'
-      }));
-      await assertFails(setDoc(doc(db, 'izinler/yanlisTipDamga'), {
-        uid: 'muezzin1',
-        baslangic: '2026-05-18',
-        bitis: '2026-05-19',
-        tip: 'mazeret',
-        durum: 'onay_bekliyor',
-        olusturmaTarihi: Timestamp.now(),
-        bildirimGonderimBaslangici: 'simdi'
-      }));
-    }
+      await assertFails(
+        setDoc(doc(db, 'izinler/yanlisTipBayrak'), {
+          uid: 'muezzin1',
+          baslangic: '2026-05-18',
+          bitis: '2026-05-19',
+          tip: 'mazeret',
+          durum: 'onay_bekliyor',
+          olusturmaTarihi: Timestamp.now(),
+          bildirimGonderildi: 'evet',
+        })
+      );
+      await assertFails(
+        setDoc(doc(db, 'izinler/yanlisTipDamga'), {
+          uid: 'muezzin1',
+          baslangic: '2026-05-18',
+          bitis: '2026-05-19',
+          tip: 'mazeret',
+          durum: 'onay_bekliyor',
+          olusturmaTarihi: Timestamp.now(),
+          bildirimGonderimBaslangici: 'simdi',
+        })
+      );
+    },
   },
   {
     name: 'admin duyuru yazabilir ve silebilir',
@@ -1570,14 +1667,16 @@ const tests: TestCase[] = [
       // Gercek servis (duyuruServisi.ts duyuruYayinla) her zaman 'tip'
       // gonderiyor — isValidDuyuru eklenmeden once bu alan sema disi
       // kaldigindan bu test fixture'i eksikti (bkz. asagidaki yeni testler).
-      await assertSucceeds(setDoc(ref, {
-        baslik: 'Admin',
-        icerik: 'Metin',
-        tip: 'duyuru',
-        tarih: Timestamp.now()
-      }));
+      await assertSucceeds(
+        setDoc(ref, {
+          baslik: 'Admin',
+          icerik: 'Metin',
+          tip: 'duyuru',
+          tarih: Timestamp.now(),
+        })
+      );
       await assertSucceeds(deleteDoc(ref));
-    }
+    },
   },
   {
     // Ucuncu denetim turu bulgusu: duyurular hic sema dogrulamasi
@@ -1586,26 +1685,30 @@ const tests: TestCase[] = [
     name: 'admin duyurusuna sema disi ekstra alan ekleyemez (isValidDuyuru hasOnly)',
     run: async (env) => {
       const db = testUser(env, 'admin').firestore();
-      await assertFails(setDoc(doc(db, 'duyurular/extraFieldNotice'), {
-        baslik: 'Admin',
-        icerik: 'Metin',
-        tip: 'duyuru',
-        tarih: Timestamp.now(),
-        yetkisizAlan: 'sizma denemesi'
-      }));
-    }
+      await assertFails(
+        setDoc(doc(db, 'duyurular/extraFieldNotice'), {
+          baslik: 'Admin',
+          icerik: 'Metin',
+          tip: 'duyuru',
+          tarih: Timestamp.now(),
+          yetkisizAlan: 'sizma denemesi',
+        })
+      );
+    },
   },
   {
     name: 'admin duyurusu gecersiz tip degeriyle olusturulamaz',
     run: async (env) => {
       const db = testUser(env, 'admin').firestore();
-      await assertFails(setDoc(doc(db, 'duyurular/invalidTipNotice'), {
-        baslik: 'Admin',
-        icerik: 'Metin',
-        tip: 'gecersiz_kategori',
-        tarih: Timestamp.now()
-      }));
-    }
+      await assertFails(
+        setDoc(doc(db, 'duyurular/invalidTipNotice'), {
+          baslik: 'Admin',
+          icerik: 'Metin',
+          tip: 'gecersiz_kategori',
+          tarih: Timestamp.now(),
+        })
+      );
+    },
   },
   {
     // duyuruYayinla yayin aninda bildirimGonderildi:false yazar (bkz.
@@ -1614,88 +1717,104 @@ const tests: TestCase[] = [
     name: 'admin duyuruyu bildirimGonderildi:false ile olusturabilir',
     run: async (env) => {
       const db = testUser(env, 'admin').firestore();
-      await assertSucceeds(setDoc(doc(db, 'duyurular/bildirimBayrakli'), {
-        baslik: 'Admin',
-        icerik: 'Metin',
-        tip: 'duyuru',
-        tarih: Timestamp.now(),
-        bildirimGonderildi: false
-      }));
-    }
+      await assertSucceeds(
+        setDoc(doc(db, 'duyurular/bildirimBayrakli'), {
+          baslik: 'Admin',
+          icerik: 'Metin',
+          tip: 'duyuru',
+          tarih: Timestamp.now(),
+          bildirimGonderildi: false,
+        })
+      );
+    },
   },
   {
     name: 'duyurunun bildirimGonderildi alani bool disi bir degerle olusturulamaz',
     run: async (env) => {
       const db = testUser(env, 'admin').firestore();
-      await assertFails(setDoc(doc(db, 'duyurular/gecersizBildirimBayrakli'), {
-        baslik: 'Admin',
-        icerik: 'Metin',
-        tip: 'duyuru',
-        tarih: Timestamp.now(),
-        bildirimGonderildi: 'evet'
-      }));
-    }
+      await assertFails(
+        setDoc(doc(db, 'duyurular/gecersizBildirimBayrakli'), {
+          baslik: 'Admin',
+          icerik: 'Metin',
+          tip: 'duyuru',
+          tarih: Timestamp.now(),
+          bildirimGonderildi: 'evet',
+        })
+      );
+    },
   },
   {
     name: 'admin muezzin profilini sema icinde guncelleyebilir',
     run: async (env) => {
       const db = testUser(env, 'admin').firestore();
 
-      await assertSucceeds(updateDoc(doc(db, 'muezzins/muezzin1'), {
-        aktif: false,
-        onayBekliyor: false,
-        arsivlendi: true,
-        arsivTarihi: Timestamp.now()
-      }));
-    }
+      await assertSucceeds(
+        updateDoc(doc(db, 'muezzins/muezzin1'), {
+          aktif: false,
+          onayBekliyor: false,
+          arsivlendi: true,
+          arsivTarihi: Timestamp.now(),
+        })
+      );
+    },
   },
   {
     name: 'admin muezzin profiline sema disi alan ekleyemez',
     run: async (env) => {
       const db = testUser(env, 'admin').firestore();
 
-      await assertFails(updateDoc(doc(db, 'muezzins/muezzin1'), {
-        internalDebugNote: 'Sema disi alan'
-      }));
-    }
+      await assertFails(
+        updateDoc(doc(db, 'muezzins/muezzin1'), {
+          internalDebugNote: 'Sema disi alan',
+        })
+      );
+    },
   },
   {
     name: 'admin sistem ayarlarini sadece gecerli sema ile yazabilir',
     run: async (env) => {
       const db = testUser(env, 'admin').firestore();
 
-      await assertSucceeds(setDoc(doc(db, 'settings/system'), {
-        ilceId: '9148',
-        ilceAdi: 'Ceyhan',
-        hicriDuzeltme: 0
-      }));
+      await assertSucceeds(
+        setDoc(doc(db, 'settings/system'), {
+          ilceId: '9148',
+          ilceAdi: 'Ceyhan',
+          hicriDuzeltme: 0,
+        })
+      );
 
-      await assertFails(setDoc(doc(db, 'settings/system'), {
-        ilceId: '91',
-        ilceAdi: '',
-        hicriDuzeltme: 7
-      }));
-    }
+      await assertFails(
+        setDoc(doc(db, 'settings/system'), {
+          ilceId: '91',
+          ilceAdi: '',
+          hicriDuzeltme: 7,
+        })
+      );
+    },
   },
   {
     name: 'admin vakit onbellegini sadece gecerli sema ile yazabilir',
     run: async (env) => {
       const db = testUser(env, 'admin').firestore();
 
-      await assertSucceeds(setDoc(doc(db, 'vakitler/9148_2026-05'), {
-        ilceId: '9148',
-        gunler: validVakitGunleri(),
-        kaynakApi: 'diyanet',
-        guncellenmeTarihi: Timestamp.now()
-      }));
+      await assertSucceeds(
+        setDoc(doc(db, 'vakitler/9148_2026-05'), {
+          ilceId: '9148',
+          gunler: validVakitGunleri(),
+          kaynakApi: 'diyanet',
+          guncellenmeTarihi: Timestamp.now(),
+        })
+      );
 
-      await assertFails(setDoc(doc(db, 'vakitler/9148_2026-06'), {
-        ilceId: '9148',
-        gunler: {},
-        kaynakApi: 'bilinmeyen',
-        guncellenmeTarihi: Timestamp.now()
-      }));
-    }
+      await assertFails(
+        setDoc(doc(db, 'vakitler/9148_2026-06'), {
+          ilceId: '9148',
+          gunler: {},
+          kaynakApi: 'bilinmeyen',
+          guncellenmeTarihi: Timestamp.now(),
+        })
+      );
+    },
   },
   {
     // Resmi Diyanet API'si (bkz. scripts/lib/diyanetResmiApi.ts) 'diyanet'
@@ -1706,13 +1825,15 @@ const tests: TestCase[] = [
     run: async (env) => {
       const db = testUser(env, 'admin').firestore();
 
-      await assertSucceeds(setDoc(doc(db, 'vakitler/9148_2026-08'), {
-        ilceId: '9148',
-        gunler: validVakitGunleri(),
-        kaynakApi: 'diyanet-resmi',
-        guncellenmeTarihi: Timestamp.now()
-      }));
-    }
+      await assertSucceeds(
+        setDoc(doc(db, 'vakitler/9148_2026-08'), {
+          ilceId: '9148',
+          gunler: validVakitGunleri(),
+          kaynakApi: 'diyanet-resmi',
+          guncellenmeTarihi: Timestamp.now(),
+        })
+      );
+    },
   },
   {
     // aylikVakitleriGrupla, API'nin kayan penceresini gerçek takvim ayına göre
@@ -1723,47 +1844,53 @@ const tests: TestCase[] = [
     run: async (env) => {
       const db = testUser(env, 'admin').firestore();
 
-      await assertSucceeds(setDoc(doc(db, 'vakitler/9148_2026-07'), {
-        ilceId: '9148',
-        gunler: {
-          '2026-07-28': { sabah: '04:10', gunes: '05:42', ogle: '12:45', ikindi: '16:30', aksam: '19:51', yatsi: '21:18' },
-          '2026-07-29': { sabah: '04:10', gunes: '05:42', ogle: '12:45', ikindi: '16:30', aksam: '19:51', yatsi: '21:18' },
-          '2026-07-30': { sabah: '04:10', gunes: '05:42', ogle: '12:45', ikindi: '16:30', aksam: '19:51', yatsi: '21:18' }
-        },
-        kaynakApi: 'diyanet',
-        guncellenmeTarihi: Timestamp.now()
-      }));
-    }
+      await assertSucceeds(
+        setDoc(doc(db, 'vakitler/9148_2026-07'), {
+          ilceId: '9148',
+          gunler: {
+            '2026-07-28': { sabah: '04:10', gunes: '05:42', ogle: '12:45', ikindi: '16:30', aksam: '19:51', yatsi: '21:18' },
+            '2026-07-29': { sabah: '04:10', gunes: '05:42', ogle: '12:45', ikindi: '16:30', aksam: '19:51', yatsi: '21:18' },
+            '2026-07-30': { sabah: '04:10', gunes: '05:42', ogle: '12:45', ikindi: '16:30', aksam: '19:51', yatsi: '21:18' },
+          },
+          kaynakApi: 'diyanet',
+          guncellenmeTarihi: Timestamp.now(),
+        })
+      );
+    },
   },
   {
     name: 'giris yapan kullanici kendi denetim kaydini olusturabilir',
     run: async (env) => {
       const db = testUser(env, 'muezzin1').firestore();
 
-      await assertSucceeds(setDoc(doc(db, 'audit_logs/userAudit'), {
-        actionType: 'Vekalet Kabul',
-        targetName: '2026-05-22 ogle',
-        details: 'Kullanici kendisine gelen vekalet talebini kabul etti.',
-        userId: 'muezzin1',
-        userDisplayName: 'Muezzin One',
-        timestamp: Timestamp.now()
-      }));
-    }
+      await assertSucceeds(
+        setDoc(doc(db, 'audit_logs/userAudit'), {
+          actionType: 'Vekalet Kabul',
+          targetName: '2026-05-22 ogle',
+          details: 'Kullanici kendisine gelen vekalet talebini kabul etti.',
+          userId: 'muezzin1',
+          userDisplayName: 'Muezzin One',
+          timestamp: Timestamp.now(),
+        })
+      );
+    },
   },
   {
     name: 'kullanici baskasi adina denetim kaydi olusturamaz',
     run: async (env) => {
       const db = testUser(env, 'muezzin1').firestore();
 
-      await assertFails(setDoc(doc(db, 'audit_logs/forgedAudit'), {
-        actionType: 'Sahte Kayit',
-        targetName: 'Admin',
-        details: 'Baska kullanici adina audit yazma denemesi.',
-        userId: 'admin',
-        userDisplayName: 'Admin',
-        timestamp: Timestamp.now()
-      }));
-    }
+      await assertFails(
+        setDoc(doc(db, 'audit_logs/forgedAudit'), {
+          actionType: 'Sahte Kayit',
+          targetName: 'Admin',
+          details: 'Baska kullanici adina audit yazma denemesi.',
+          userId: 'admin',
+          userDisplayName: 'Admin',
+          timestamp: Timestamp.now(),
+        })
+      );
+    },
   },
   {
     name: 'denetim kayitlari sonradan degistirilemez ve sadece admin listeleyebilir',
@@ -1776,7 +1903,7 @@ const tests: TestCase[] = [
           details: 'Davet olusturuldu.',
           userId: 'admin',
           userDisplayName: 'Admin',
-          timestamp: Timestamp.now()
+          timestamp: Timestamp.now(),
         });
       });
 
@@ -1785,71 +1912,79 @@ const tests: TestCase[] = [
 
       await assertSucceeds(getDocs(query(collection(adminDb, 'audit_logs'), orderBy('timestamp', 'desc'), limit(30))));
       await assertFails(getDocs(query(collection(muezzinDb, 'audit_logs'), orderBy('timestamp', 'desc'), limit(30))));
-      await assertFails(updateDoc(doc(adminDb, 'audit_logs/existingAudit'), {
-        details: 'Degistirildi.'
-      }));
+      await assertFails(
+        updateDoc(doc(adminDb, 'audit_logs/existingAudit'), {
+          details: 'Degistirildi.',
+        })
+      );
       await assertFails(deleteDoc(doc(adminDb, 'audit_logs/existingAudit')));
-    }
+    },
   },
   {
     name: 'muezzin kendi bekleyen gorevi icin vekalet talebi acabilir',
     run: async (env) => {
       const db = testUser(env, 'muezzin1').firestore();
-      await assertSucceeds(setDoc(doc(db, 'vekalet_talepleri/W2026-05-18_2026-05-20_ogle_asil_muezzin2'), {
-        bildirimId: 'ownPendingAsil',
-        haftaId: 'W2026-05-18',
-        gonderenUid: 'muezzin1',
-        gonderenIsim: 'Muezzin One',
-        aliciUid: 'muezzin2',
-        aliciIsim: 'Muezzin Two',
-        tarih: '2026-05-20',
-        vakit: 'ogle',
-        saat: '12:45',
-        tip: 'asil',
-        durum: 'beklemede',
-        olusturmaTarihi: Timestamp.now()
-      }));
-    }
+      await assertSucceeds(
+        setDoc(doc(db, 'vekalet_talepleri/W2026-05-18_2026-05-20_ogle_asil_muezzin2'), {
+          bildirimId: 'ownPendingAsil',
+          haftaId: 'W2026-05-18',
+          gonderenUid: 'muezzin1',
+          gonderenIsim: 'Muezzin One',
+          aliciUid: 'muezzin2',
+          aliciIsim: 'Muezzin Two',
+          tarih: '2026-05-20',
+          vakit: 'ogle',
+          saat: '12:45',
+          tip: 'asil',
+          durum: 'beklemede',
+          olusturmaTarihi: Timestamp.now(),
+        })
+      );
+    },
   },
   {
     name: 'muezzin Cuma gorevi icin vekalet talebi acamaz',
     run: async (env) => {
       const db = testUser(env, 'muezzin1').firestore();
-      await assertFails(setDoc(doc(db, 'vekalet_talepleri/W2026-05-18_2026-05-22_ogle_asil_muezzin2'), {
-        bildirimId: 'fridayPendingAsil',
-        haftaId: 'W2026-05-18',
-        gonderenUid: 'muezzin1',
-        gonderenIsim: 'Muezzin One',
-        aliciUid: 'muezzin2',
-        aliciIsim: 'Muezzin Two',
-        tarih: '2026-05-22',
-        vakit: 'ogle',
-        saat: '12:45',
-        tip: 'asil',
-        durum: 'beklemede',
-        olusturmaTarihi: Timestamp.now()
-      }));
-    }
+      await assertFails(
+        setDoc(doc(db, 'vekalet_talepleri/W2026-05-18_2026-05-22_ogle_asil_muezzin2'), {
+          bildirimId: 'fridayPendingAsil',
+          haftaId: 'W2026-05-18',
+          gonderenUid: 'muezzin1',
+          gonderenIsim: 'Muezzin One',
+          aliciUid: 'muezzin2',
+          aliciIsim: 'Muezzin Two',
+          tarih: '2026-05-22',
+          vakit: 'ogle',
+          saat: '12:45',
+          tip: 'asil',
+          durum: 'beklemede',
+          olusturmaTarihi: Timestamp.now(),
+        })
+      );
+    },
   },
   {
     name: 'muezzin baskasinin gorevi icin vekalet talebi acamaz',
     run: async (env) => {
       const db = testUser(env, 'muezzin1').firestore();
-      await assertFails(setDoc(doc(db, 'vekalet_talepleri/W2026-05-18_2026-05-22_ikindi_asil_muezzin1'), {
-        bildirimId: 'otherPendingAsil',
-        haftaId: 'W2026-05-18',
-        gonderenUid: 'muezzin1',
-        gonderenIsim: 'Muezzin One',
-        aliciUid: 'muezzin1',
-        aliciIsim: 'Muezzin One',
-        tarih: '2026-05-22',
-        vakit: 'ikindi',
-        saat: '16:30',
-        tip: 'asil',
-        durum: 'beklemede',
-        olusturmaTarihi: Timestamp.now()
-      }));
-    }
+      await assertFails(
+        setDoc(doc(db, 'vekalet_talepleri/W2026-05-18_2026-05-22_ikindi_asil_muezzin1'), {
+          bildirimId: 'otherPendingAsil',
+          haftaId: 'W2026-05-18',
+          gonderenUid: 'muezzin1',
+          gonderenIsim: 'Muezzin One',
+          aliciUid: 'muezzin1',
+          aliciIsim: 'Muezzin One',
+          tarih: '2026-05-22',
+          vakit: 'ikindi',
+          saat: '16:30',
+          tip: 'asil',
+          durum: 'beklemede',
+          olusturmaTarihi: Timestamp.now(),
+        })
+      );
+    },
   },
   {
     // O10 regresyonu: vekaletTeklifEt (src/services/vekaletServisi.ts), yeni
@@ -1864,7 +1999,7 @@ const tests: TestCase[] = [
     run: async (env) => {
       const db = testUser(env, 'muezzin1').firestore();
       await assertSucceeds(getDoc(doc(db, 'vekalet_talepleri/W2026-05-18_2026-05-22_yatsi_asil_muezzin2')));
-    }
+    },
   },
   {
     // O7'nin AYNI SINIFI, cron kaynakli red yolunda:
@@ -1896,27 +2031,29 @@ const tests: TestCase[] = [
           durum: 'reddedildi',
           talepSonuc: 'reddedildi',
           bildirimUygulandi: true,
-          olusturmaTarihi: Timestamp.now()
+          olusturmaTarihi: Timestamp.now(),
         });
       });
 
       const db = testUser(env, 'muezzin1').firestore();
       await assertSucceeds(deleteDoc(doc(db, 'vekalet_talepleri/W2026-05-18_2026-05-20_ogle_asil_muezzin2')));
-      await assertSucceeds(setDoc(doc(db, 'vekalet_talepleri/W2026-05-18_2026-05-20_ogle_asil_muezzin2'), {
-        bildirimId: 'ownPendingAsil',
-        haftaId: 'W2026-05-18',
-        gonderenUid: 'muezzin1',
-        gonderenIsim: 'Muezzin One',
-        aliciUid: 'muezzin2',
-        aliciIsim: 'Muezzin Two',
-        tarih: '2026-05-20',
-        vakit: 'ogle',
-        saat: '12:45',
-        tip: 'asil',
-        durum: 'beklemede',
-        olusturmaTarihi: Timestamp.now()
-      }));
-    }
+      await assertSucceeds(
+        setDoc(doc(db, 'vekalet_talepleri/W2026-05-18_2026-05-20_ogle_asil_muezzin2'), {
+          bildirimId: 'ownPendingAsil',
+          haftaId: 'W2026-05-18',
+          gonderenUid: 'muezzin1',
+          gonderenIsim: 'Muezzin One',
+          aliciUid: 'muezzin2',
+          aliciIsim: 'Muezzin Two',
+          tarih: '2026-05-20',
+          vakit: 'ogle',
+          saat: '12:45',
+          tip: 'asil',
+          durum: 'beklemede',
+          olusturmaTarihi: Timestamp.now(),
+        })
+      );
+    },
   },
   {
     // Yukaridaki duzeltmenin kurallari GEVSETMEDIGINI kilitler: hala
@@ -1939,13 +2076,13 @@ const tests: TestCase[] = [
           saat: '12:45',
           tip: 'asil',
           durum: 'kabul_edildi',
-          olusturmaTarihi: Timestamp.now()
+          olusturmaTarihi: Timestamp.now(),
         });
       });
 
       const db = testUser(env, 'muezzin1').firestore();
       await assertFails(deleteDoc(doc(db, 'vekalet_talepleri/W2026-05-18_2026-05-20_ogle_asil_muezzin2')));
-    }
+    },
   },
   {
     name: 'vekalet alicisi talebi kabul edip bildirimi devralabilir',
@@ -1964,7 +2101,7 @@ const tests: TestCase[] = [
           saat: '12:45',
           tip: 'asil',
           durum: 'beklemede',
-          olusturmaTarihi: Timestamp.now()
+          olusturmaTarihi: Timestamp.now(),
         });
       });
 
@@ -1973,16 +2110,18 @@ const tests: TestCase[] = [
       // flip'i) artık istemci tarafında değil, scripts/vekaletDevirleriniIsle.ts'te
       // (Admin SDK) gerçekleşiyor — bkz. tests/integration/vekaletDevirleriniIsle.test.ts.
       // İstemci burada yalnızca talebi kabul eder ve dar bir niyet bayrağı yazar.
-      await assertSucceeds(runTransaction(db, async (transaction) => {
-        transaction.update(doc(db, 'vekalet_talepleri/W2026-05-18_2026-05-20_ogle_asil_muezzin2'), {
-          durum: 'kabul_edildi',
-          sonGuncelleme: Timestamp.now()
-        });
-        transaction.update(doc(db, 'bildirimler/ownPendingAsil'), {
-          vekaletDevriBekliyor: true,
-          sonGuncelleme: Timestamp.now()
-        });
-      }));
+      await assertSucceeds(
+        runTransaction(db, async (transaction) => {
+          transaction.update(doc(db, 'vekalet_talepleri/W2026-05-18_2026-05-20_ogle_asil_muezzin2'), {
+            durum: 'kabul_edildi',
+            sonGuncelleme: Timestamp.now(),
+          });
+          transaction.update(doc(db, 'bildirimler/ownPendingAsil'), {
+            vekaletDevriBekliyor: true,
+            sonGuncelleme: Timestamp.now(),
+          });
+        })
+      );
 
       // Eski doğrudan-transfer yolu artık TAMAMEN KAPALI — talep kabul
       // edilmiş olsa bile istemci uid'i doğrudan flip edemez (bkz.
@@ -1990,12 +2129,14 @@ const tests: TestCase[] = [
       // kök neden çözümü). Bu, aşağıdaki "vekalet alicisi kabul etmeden
       // bildirimi devralamaz" testinin ayna görüntüsü — burada FARKI, talep
       // GERÇEKTEN kabul edilmiş olması, yine de fark etmiyor.
-      await assertFails(updateDoc(doc(db, 'bildirimler/ownPendingAsil'), {
-        uid: 'muezzin2',
-        vekaletDevredildi: true,
-        sonGuncelleme: Timestamp.now()
-      }));
-    }
+      await assertFails(
+        updateDoc(doc(db, 'bildirimler/ownPendingAsil'), {
+          uid: 'muezzin2',
+          vekaletDevredildi: true,
+          sonGuncelleme: Timestamp.now(),
+        })
+      );
+    },
   },
   {
     // NOT ("1000 ifade tavanı" kök neden çözümü): sabit haftalık izin-günü
@@ -2005,7 +2146,7 @@ const tests: TestCase[] = [
     // Rules katmanında artık doğru davranış, izin-günü çakışmasından
     // BAĞIMSIZ olarak dar niyet bayrağı yazımının başarılı olmasıdır —
     // gerçek engelleme script'te gerçekleşir.
-    name: 'vekalet kabul niyet bayragi izin-gunu cakismasindan bagimsiz yazilabilir (kontrol script\'e tasindi)',
+    name: "vekalet kabul niyet bayragi izin-gunu cakismasindan bagimsiz yazilabilir (kontrol script'e tasindi)",
     run: async (env) => {
       await env.withSecurityRulesDisabled(async (context) => {
         const db = context.firestore();
@@ -2023,7 +2164,7 @@ const tests: TestCase[] = [
           retSebebi: null,
           olusturmaTarihi: Timestamp.now(),
           sonGuncelleme: Timestamp.now(),
-          mazeretSonBasvuru: PENCERE_ACIK()
+          mazeretSonBasvuru: PENCERE_ACIK(),
         });
         await setDoc(doc(db, 'vekalet_talepleri/W2026-05-18_2026-05-20_ogle_asil_muezzin2'), {
           bildirimId: 'wednesdayPendingAsil',
@@ -2037,22 +2178,26 @@ const tests: TestCase[] = [
           saat: '12:45',
           tip: 'asil',
           durum: 'kabul_edildi',
-          olusturmaTarihi: Timestamp.now()
+          olusturmaTarihi: Timestamp.now(),
         });
       });
 
       const db = testUser(env, 'muezzin2').firestore();
-      await assertSucceeds(updateDoc(doc(db, 'bildirimler/wednesdayPendingAsil'), {
-        vekaletDevriBekliyor: true,
-        sonGuncelleme: Timestamp.now()
-      }));
+      await assertSucceeds(
+        updateDoc(doc(db, 'bildirimler/wednesdayPendingAsil'), {
+          vekaletDevriBekliyor: true,
+          sonGuncelleme: Timestamp.now(),
+        })
+      );
       // Ama dogrudan uid transferi hala her kosulda kapali.
-      await assertFails(updateDoc(doc(db, 'bildirimler/wednesdayPendingAsil'), {
-        uid: 'muezzin2',
-        vekaletDevredildi: true,
-        sonGuncelleme: Timestamp.now()
-      }));
-    }
+      await assertFails(
+        updateDoc(doc(db, 'bildirimler/wednesdayPendingAsil'), {
+          uid: 'muezzin2',
+          vekaletDevredildi: true,
+          sonGuncelleme: Timestamp.now(),
+        })
+      );
+    },
   },
   {
     // NOT ("1000 ifade tavanı" kök neden çözümü): arşivlenmiş alıcı kontrolü
@@ -2062,7 +2207,7 @@ const tests: TestCase[] = [
     // regresyonunun taşınmış hali). Rules katmanında artık doğru davranış,
     // alıcının arşivli olmasından BAĞIMSIZ olarak dar niyet bayrağı
     // yazımının başarılı olmasıdır.
-    name: 'vekalet kabul niyet bayragi alicinin arsivli olmasindan bagimsiz yazilabilir (kontrol script\'e tasindi)',
+    name: "vekalet kabul niyet bayragi alicinin arsivli olmasindan bagimsiz yazilabilir (kontrol script'e tasindi)",
     run: async (env) => {
       await env.withSecurityRulesDisabled(async (context) => {
         const db = context.firestore();
@@ -2073,7 +2218,7 @@ const tests: TestCase[] = [
           aktif: false, // talep beklerken admin tarafından arşivlendi
           photoURL: '',
           fcmToken: null,
-          aylikVakitSayisi: 0
+          aylikVakitSayisi: 0,
         });
         await setDoc(doc(db, 'vekalet_talepleri/W2026-05-18_2026-05-20_ogle_asil_muezzin2'), {
           bildirimId: 'ownPendingAsil',
@@ -2087,22 +2232,24 @@ const tests: TestCase[] = [
           saat: '12:45',
           tip: 'asil',
           durum: 'beklemede',
-          olusturmaTarihi: Timestamp.now()
+          olusturmaTarihi: Timestamp.now(),
         });
       });
 
       const db = testUser(env, 'muezzin2').firestore();
-      await assertSucceeds(runTransaction(db, async (transaction) => {
-        transaction.update(doc(db, 'vekalet_talepleri/W2026-05-18_2026-05-20_ogle_asil_muezzin2'), {
-          durum: 'kabul_edildi',
-          sonGuncelleme: Timestamp.now()
-        });
-        transaction.update(doc(db, 'bildirimler/ownPendingAsil'), {
-          vekaletDevriBekliyor: true,
-          sonGuncelleme: Timestamp.now()
-        });
-      }));
-    }
+      await assertSucceeds(
+        runTransaction(db, async (transaction) => {
+          transaction.update(doc(db, 'vekalet_talepleri/W2026-05-18_2026-05-20_ogle_asil_muezzin2'), {
+            durum: 'kabul_edildi',
+            sonGuncelleme: Timestamp.now(),
+          });
+          transaction.update(doc(db, 'bildirimler/ownPendingAsil'), {
+            vekaletDevriBekliyor: true,
+            sonGuncelleme: Timestamp.now(),
+          });
+        })
+      );
+    },
   },
   {
     name: 'vekalet alicisi kendi bekleyen tekliflerini listeleyebilir',
@@ -2121,17 +2268,15 @@ const tests: TestCase[] = [
           saat: '12:45',
           tip: 'asil',
           durum: 'beklemede',
-          olusturmaTarihi: Timestamp.now()
+          olusturmaTarihi: Timestamp.now(),
         });
       });
 
       const db = testUser(env, 'muezzin2').firestore();
-      await assertSucceeds(getDocs(query(
-        collection(db, 'vekalet_talepleri'),
-        where('aliciUid', '==', 'muezzin2'),
-        where('durum', '==', 'beklemede')
-      )));
-    }
+      await assertSucceeds(
+        getDocs(query(collection(db, 'vekalet_talepleri'), where('aliciUid', '==', 'muezzin2'), where('durum', '==', 'beklemede')))
+      );
+    },
   },
   {
     name: 'muezzin tum vekalet taleplerini listeleyemez',
@@ -2150,13 +2295,13 @@ const tests: TestCase[] = [
           saat: '12:45',
           tip: 'asil',
           durum: 'beklemede',
-          olusturmaTarihi: Timestamp.now()
+          olusturmaTarihi: Timestamp.now(),
         });
       });
 
       const db = testUser(env, 'muezzin1').firestore();
       await assertFails(getDocs(collection(db, 'vekalet_talepleri')));
-    }
+    },
   },
   {
     name: 'vekalet alicisi kabul etmeden bildirimi devralamaz',
@@ -2175,47 +2320,53 @@ const tests: TestCase[] = [
           saat: '12:45',
           tip: 'asil',
           durum: 'beklemede',
-          olusturmaTarihi: Timestamp.now()
+          olusturmaTarihi: Timestamp.now(),
         });
       });
 
       const db = testUser(env, 'muezzin2').firestore();
-      await assertFails(updateDoc(doc(db, 'bildirimler/ownPendingAsil'), {
-        uid: 'muezzin2',
-        sonGuncelleme: Timestamp.now()
-      }));
-    }
+      await assertFails(
+        updateDoc(doc(db, 'bildirimler/ownPendingAsil'), {
+          uid: 'muezzin2',
+          sonGuncelleme: Timestamp.now(),
+        })
+      );
+    },
   },
   {
-    name: 'K1: okudum transaction\'i (yalnizca bildirim guncellemesi) basarili olur',
+    name: "K1: okudum transaction'i (yalnizca bildirim guncellemesi) basarili olur",
     run: async (env) => {
       const db = testUser(env, 'muezzin1').firestore();
       const ref = doc(db, 'bildirimler/ownPendingAsil');
-      await assertSucceeds(runTransaction(db, async (transaction) => {
-        await transaction.get(ref);
-        transaction.update(ref, { durum: 'onaylandi', pendingAck: false, sonGuncelleme: Timestamp.now() });
-      }));
-    }
+      await assertSucceeds(
+        runTransaction(db, async (transaction) => {
+          await transaction.get(ref);
+          transaction.update(ref, { durum: 'onaylandi', pendingAck: false, sonGuncelleme: Timestamp.now() });
+        })
+      );
+    },
   },
   {
-    name: 'K1 regresyon guardi: okudum transaction\'ina muezzins puan yazimi eklenirse tum transaction reddedilir',
+    name: "K1 regresyon guardi: okudum transaction'ina muezzins puan yazimi eklenirse tum transaction reddedilir",
     run: async (env) => {
       const db = testUser(env, 'muezzin1').firestore();
       const bildirimRef = doc(db, 'bildirimler/ownPendingAsil');
       const muezzinRef = doc(db, 'muezzins/muezzin1');
-      await assertFails(runTransaction(db, async (transaction) => {
-        await transaction.get(bildirimRef);
-        transaction.update(bildirimRef, { durum: 'onaylandi', pendingAck: false, sonGuncelleme: Timestamp.now() });
-        transaction.update(muezzinRef, { aylikVakitSayisi: 1 });
-      }));
-    }
+      await assertFails(
+        runTransaction(db, async (transaction) => {
+          await transaction.get(bildirimRef);
+          transaction.update(bildirimRef, { durum: 'onaylandi', pendingAck: false, sonGuncelleme: Timestamp.now() });
+          transaction.update(muezzinRef, { aylikVakitSayisi: 1 });
+        })
+      );
+    },
   },
   {
     name: 'K2: yedegi olmayan/uygun olmayan mazeret sadece alarm_bekliyor ile reddedilebilir',
     run: async (env) => {
       const db = testUser(env, 'muezzin1').firestore();
       await assertSucceeds(mazeretRetBatch(db, 'ownPendingAsil', 'muezzin1', 'Hastalik', { devirSonucu: 'alarm_bekliyor' }));
-    }
+    },
   },
   {
     // NOT ("1000 ifade tavanı" kök neden çözümü): isBackupPromotionFromMazeret
@@ -2226,21 +2377,23 @@ const tests: TestCase[] = [
     run: async (env) => {
       const db = testUser(env, 'muezzin1').firestore();
       const yedekRef = doc(db, 'bildirimler/W2026-06-01_2026-06-03_yatsi_yedek');
-      await assertFails(updateDoc(yedekRef, {
-        tip: 'asil',
-        durum: 'bekliyor',
-        pendingAck: true,
-        asilMazeretUid: 'muezzin1',
-        sonGuncelleme: Timestamp.now()
-      }));
-    }
+      await assertFails(
+        updateDoc(yedekRef, {
+          tip: 'asil',
+          durum: 'bekliyor',
+          pendingAck: true,
+          asilMazeretUid: 'muezzin1',
+          sonGuncelleme: Timestamp.now(),
+        })
+      );
+    },
   },
   {
-    name: 'K2 guvenlik: baskasinin gorevi icin mazeret transaction\'i baslatilamaz',
+    name: "K2 guvenlik: baskasinin gorevi icin mazeret transaction'i baslatilamaz",
     run: async (env) => {
       const db = testUser(env, 'muezzin2').firestore();
       await assertFails(mazeretRetBatch(db, 'W2026-06-01_2026-06-03_yatsi_asil', 'muezzin2', 'Sahte', { devirSonucu: 'yedek_atandi' }));
-    }
+    },
   },
   {
     // NOT ("1000 ifade tavanı" kök neden çözümü — DAVRANIŞ DEĞİŞİKLİĞİ):
@@ -2256,82 +2409,94 @@ const tests: TestCase[] = [
     name: 'K2: devirSonucu=yedek_atandi asil-only yazim, yedegin gercek durumundan bagimsiz kabul edilir',
     run: async (env) => {
       const db = testUser(env, 'muezzin1').firestore();
-      await assertSucceeds(mazeretRetBatch(db, 'W2026-06-01_2026-06-03_yatsi_asil', 'muezzin1', 'Hastalik', { devirSonucu: 'yedek_atandi' }));
-    }
+      await assertSucceeds(
+        mazeretRetBatch(db, 'W2026-06-01_2026-06-03_yatsi_asil', 'muezzin1', 'Hastalik', { devirSonucu: 'yedek_atandi' })
+      );
+    },
   },
   {
     name: 'K6: gecerli semali error_log olusturulabilir',
     run: async (env) => {
       const db = testUser(env, 'muezzin1').firestore();
-      await assertSucceeds(setDoc(doc(db, 'error_logs/validLog'), {
-        errorMessage: 'Test hatasi',
-        errorStack: 'Error: Test hatasi\n  at test.ts:1:1',
-        componentStack: '',
-        userId: 'muezzin1',
-        device: { os: 'Test', browser: 'Test', screenSize: '1x1', pwaMode: false, language: 'tr' },
-        breadcrumbs: [],
-        stateSnapshot: { authUid: 'muezzin1' },
-        timestamp: Timestamp.now()
-      }));
-    }
+      await assertSucceeds(
+        setDoc(doc(db, 'error_logs/validLog'), {
+          errorMessage: 'Test hatasi',
+          errorStack: 'Error: Test hatasi\n  at test.ts:1:1',
+          componentStack: '',
+          userId: 'muezzin1',
+          device: { os: 'Test', browser: 'Test', screenSize: '1x1', pwaMode: false, language: 'tr' },
+          breadcrumbs: [],
+          stateSnapshot: { authUid: 'muezzin1' },
+          timestamp: Timestamp.now(),
+        })
+      );
+    },
   },
   {
     name: 'K6: asiri buyuk error_log reddedilir',
     run: async (env) => {
       const db = testUser(env, 'muezzin1').firestore();
-      await assertFails(setDoc(doc(db, 'error_logs/tooBig'), {
-        errorMessage: 'x'.repeat(3000),
-        errorStack: '',
-        componentStack: '',
-        userId: 'muezzin1',
-        device: {},
-        breadcrumbs: [],
-        stateSnapshot: {},
-        timestamp: Timestamp.now()
-      }));
-    }
+      await assertFails(
+        setDoc(doc(db, 'error_logs/tooBig'), {
+          errorMessage: 'x'.repeat(3000),
+          errorStack: '',
+          componentStack: '',
+          userId: 'muezzin1',
+          device: {},
+          breadcrumbs: [],
+          stateSnapshot: {},
+          timestamp: Timestamp.now(),
+        })
+      );
+    },
   },
   {
     name: 'K6: baskasi adina error_log olusturulamaz',
     run: async (env) => {
       const db = testUser(env, 'muezzin1').firestore();
-      await assertFails(setDoc(doc(db, 'error_logs/forged'), {
-        errorMessage: 'Test',
-        errorStack: '',
-        componentStack: '',
-        userId: 'muezzin2',
-        device: {},
-        breadcrumbs: [],
-        stateSnapshot: {},
-        timestamp: Timestamp.now()
-      }));
-    }
+      await assertFails(
+        setDoc(doc(db, 'error_logs/forged'), {
+          errorMessage: 'Test',
+          errorStack: '',
+          componentStack: '',
+          userId: 'muezzin2',
+          device: {},
+          breadcrumbs: [],
+          stateSnapshot: {},
+          timestamp: Timestamp.now(),
+        })
+      );
+    },
   },
   {
     name: 'K6: gecerli semali telemetry_log olusturulabilir',
     run: async (env) => {
       const db = testUser(env, 'muezzin1').firestore();
-      await assertSucceeds(setDoc(doc(db, 'telemetry_logs/validEvent'), {
-        eventType: 'page_view',
-        eventName: '/profil',
-        userId: 'muezzin1',
-        metadata: { device: { os: 'Test' } },
-        timestamp: Timestamp.now()
-      }));
-    }
+      await assertSucceeds(
+        setDoc(doc(db, 'telemetry_logs/validEvent'), {
+          eventType: 'page_view',
+          eventName: '/profil',
+          userId: 'muezzin1',
+          metadata: { device: { os: 'Test' } },
+          timestamp: Timestamp.now(),
+        })
+      );
+    },
   },
   {
     name: 'K6: gecersiz eventType ile telemetry_log olusturulamaz',
     run: async (env) => {
       const db = testUser(env, 'muezzin1').firestore();
-      await assertFails(setDoc(doc(db, 'telemetry_logs/invalidType'), {
-        eventType: 'gecersiz_tip',
-        eventName: '/profil',
-        userId: 'muezzin1',
-        metadata: {},
-        timestamp: Timestamp.now()
-      }));
-    }
+      await assertFails(
+        setDoc(doc(db, 'telemetry_logs/invalidType'), {
+          eventType: 'gecersiz_tip',
+          eventName: '/profil',
+          userId: 'muezzin1',
+          metadata: {},
+          timestamp: Timestamp.now(),
+        })
+      );
+    },
   },
   {
     name: 'K2: devirSonucu sema disi bir deger olamaz',
@@ -2340,7 +2505,7 @@ const tests: TestCase[] = [
       // Eslesen mazeret_detaylari yazimi DAHIL edildi ki test yalnizca
       // gecersiz devirSonucu degerini izole etsin.
       await assertFails(mazeretRetBatch(db, 'ownPendingAsil', 'muezzin1', 'Hastalik', { devirSonucu: 'gecersiz_deger' }));
-    }
+    },
   },
   {
     // Altinci denetim turu bulgusu (regresyon kaniti): eslesen bir
@@ -2350,13 +2515,15 @@ const tests: TestCase[] = [
     name: 'mazeret_detaylari eslesen kaydi olmadan asil mazeret reddi basarisiz olur',
     run: async (env) => {
       const db = testUser(env, 'muezzin1').firestore();
-      await assertFails(updateDoc(doc(db, 'bildirimler/ownPendingAsil'), {
-        durum: 'reddedildi',
-        pendingAck: false,
-        devirSonucu: 'alarm_bekliyor',
-        sonGuncelleme: Timestamp.now()
-      }));
-    }
+      await assertFails(
+        updateDoc(doc(db, 'bildirimler/ownPendingAsil'), {
+          durum: 'reddedildi',
+          pendingAck: false,
+          devirSonucu: 'alarm_bekliyor',
+          sonGuncelleme: Timestamp.now(),
+        })
+      );
+    },
   },
   {
     // Kod denetimi guvenlik bulgusu (regresyon kaniti): `incoming().uid ==
@@ -2370,12 +2537,14 @@ const tests: TestCase[] = [
     name: 'muezzin baskasinin nobetinin mazeret_detaylari ID sini isgal edemez',
     run: async (env) => {
       const db = testUser(env, 'muezzin1').firestore();
-      await assertFails(setDoc(doc(db, 'mazeret_detaylari/otherPendingAsil'), {
-        uid: 'muezzin1',
-        retSebebi: 'Baskasinin nobetini isgal etme denemesi',
-        olusturmaTarihi: Timestamp.now()
-      }));
-    }
+      await assertFails(
+        setDoc(doc(db, 'mazeret_detaylari/otherPendingAsil'), {
+          uid: 'muezzin1',
+          retSebebi: 'Baskasinin nobetini isgal etme denemesi',
+          olusturmaTarihi: Timestamp.now(),
+        })
+      );
+    },
   },
   {
     // Premium hata analizi FR-O8 regresyonu: admin bir bildirimi tekrar
@@ -2392,18 +2561,27 @@ const tests: TestCase[] = [
       // isValidBildirim admin dalinda serbest).
       await env.withSecurityRulesDisabled(async (context) => {
         await setDoc(doc(context.firestore(), 'bildirimler/ownPendingAsil'), {
-          haftaId: 'W2026-05-18', tarih: '2026-05-20', vakit: 'ogle', uid: 'muezzin1', tip: 'asil',
-          durum: 'bekliyor', pendingAck: true, retSebebi: null,
-          olusturmaTarihi: Timestamp.now(), sonGuncelleme: Timestamp.now(),
-          mazeretSonBasvuru: PENCERE_ACIK()
+          haftaId: 'W2026-05-18',
+          tarih: '2026-05-20',
+          vakit: 'ogle',
+          uid: 'muezzin1',
+          tip: 'asil',
+          durum: 'bekliyor',
+          pendingAck: true,
+          retSebebi: null,
+          olusturmaTarihi: Timestamp.now(),
+          sonGuncelleme: Timestamp.now(),
+          mazeretSonBasvuru: PENCERE_ACIK(),
         });
       });
 
-      await assertSucceeds(mazeretRetBatch(db, 'ownPendingAsil', 'muezzin1', 'Ikinci mazeret (yeniden acildi)', { devirSonucu: 'alarm_bekliyor' }));
+      await assertSucceeds(
+        mazeretRetBatch(db, 'ownPendingAsil', 'muezzin1', 'Ikinci mazeret (yeniden acildi)', { devirSonucu: 'alarm_bekliyor' })
+      );
 
       const detay = await getDoc(doc(db, 'mazeret_detaylari/ownPendingAsil'));
       assert.equal(detay.data()?.retSebebi, 'Ikinci mazeret (yeniden acildi)');
-    }
+    },
   },
   {
     // Degismezlik korunuyor: bildirim yeniden acilmadan (hala 'reddedildi')
@@ -2413,7 +2591,7 @@ const tests: TestCase[] = [
       const db = testUser(env, 'muezzin1').firestore();
       await assertSucceeds(mazeretRetBatch(db, 'ownPendingYedek', 'muezzin1', 'Ilk mazeret', { devirSonucu: 'alarm_bekliyor' }));
       await assertFails(mazeretRetBatch(db, 'ownPendingYedek', 'muezzin1', 'Ikinci deneme', { devirSonucu: 'alarm_bekliyor' }));
-    }
+    },
   },
   {
     // Altinci denetim turu bulgusu (asil guvenlik acigi regresyon kaniti):
@@ -2427,7 +2605,7 @@ const tests: TestCase[] = [
         await setDoc(doc(db, 'mazeret_detaylari/ozelMazeretKaydi'), {
           uid: 'muezzin1',
           retSebebi: 'Cok ozel bir saglik durumu',
-          olusturmaTarihi: Timestamp.now()
+          olusturmaTarihi: Timestamp.now(),
         });
       });
 
@@ -2439,7 +2617,7 @@ const tests: TestCase[] = [
 
       const adminDb = testUser(env, 'admin').firestore();
       await assertSucceeds(getDoc(doc(adminDb, 'mazeret_detaylari/ozelMazeretKaydi')));
-    }
+    },
   },
   {
     name: 'mazeret_detaylari yalnizca admin tarafindan listelenebilir',
@@ -2449,7 +2627,7 @@ const tests: TestCase[] = [
 
       const adminDb = testUser(env, 'admin').firestore();
       await assertSucceeds(getDocs(collection(adminDb, 'mazeret_detaylari')));
-    }
+    },
   },
   {
     // vekalet_talepleri'ndeki ayni sinif bug (bkz. o kuraldaki O10 yorumu):
@@ -2461,7 +2639,7 @@ const tests: TestCase[] = [
     run: async (env) => {
       const db = testUser(env, 'muezzin1').firestore();
       await assertSucceeds(getDoc(doc(db, 'mazeret_detaylari/hicOlusturulmamisKayit')));
-    }
+    },
   },
   {
     // Varlik orakulu regresyonu: `resource == null` dali eskiden
@@ -2479,14 +2657,14 @@ const tests: TestCase[] = [
         await setDoc(doc(seedDb, 'mazeret_detaylari/ozelMazeretKaydi'), {
           uid: 'muezzin1',
           retSebebi: 'Cok ozel bir saglik durumu',
-          olusturmaTarihi: Timestamp.now()
+          olusturmaTarihi: Timestamp.now(),
         });
       });
 
       const db = env.unauthenticatedContext().firestore();
       await assertFails(getDoc(doc(db, 'mazeret_detaylari/ozelMazeretKaydi')));
       await assertFails(getDoc(doc(db, 'mazeret_detaylari/hicOlusturulmamisKayit')));
-    }
+    },
   },
   {
     name: 'config/bootstrap listesindeki e-posta ile admin yetkisi kazanilir',
@@ -2494,20 +2672,22 @@ const tests: TestCase[] = [
       await env.withSecurityRulesDisabled(async (context) => {
         const db = context.firestore();
         await setDoc(doc(db, 'config/bootstrap'), {
-          superAdminEmails: ['superadmin@example.test']
+          superAdminEmails: ['superadmin@example.test'],
         });
       });
 
       const db = testUser(env, 'superadmin').firestore();
       // isValidDuyuru eklendikten sonra gecerli sema gonderilmeli — bu
       // testin amaci yetki (bootstrap admin), sema degil.
-      await assertSucceeds(setDoc(doc(db, 'duyurular/bootstrapNotice'), {
-        baslik: 'Test',
-        icerik: 'Bootstrap admin testi',
-        tip: 'duyuru',
-        tarih: Timestamp.now()
-      }));
-    }
+      await assertSucceeds(
+        setDoc(doc(db, 'duyurular/bootstrapNotice'), {
+          baslik: 'Test',
+          icerik: 'Bootstrap admin testi',
+          tip: 'duyuru',
+          tarih: Timestamp.now(),
+        })
+      );
+    },
   },
   {
     name: 'config/bootstrap listesinde olmayan e-posta admin yetkisi kazanamaz',
@@ -2515,20 +2695,22 @@ const tests: TestCase[] = [
       await env.withSecurityRulesDisabled(async (context) => {
         const db = context.firestore();
         await setDoc(doc(db, 'config/bootstrap'), {
-          superAdminEmails: ['superadmin@example.test']
+          superAdminEmails: ['superadmin@example.test'],
         });
       });
 
       const db = testUser(env, 'digerkullanici').firestore();
       // Sema gecerli olsa bile (isValidDuyuru) yetki eksikliginden
       // reddedilmeli — bu testin amaci tam olarak bu.
-      await assertFails(setDoc(doc(db, 'duyurular/unauthorizedNotice'), {
-        baslik: 'Test',
-        icerik: 'Yetkisiz deneme',
-        tip: 'duyuru',
-        tarih: Timestamp.now()
-      }));
-    }
+      await assertFails(
+        setDoc(doc(db, 'duyurular/unauthorizedNotice'), {
+          baslik: 'Test',
+          icerik: 'Yetkisiz deneme',
+          tip: 'duyuru',
+          tarih: Timestamp.now(),
+        })
+      );
+    },
   },
   {
     name: 'siradan admin config/bootstrap yazamaz (K2 regresyonu)',
@@ -2536,21 +2718,23 @@ const tests: TestCase[] = [
       await env.withSecurityRulesDisabled(async (context) => {
         const db = context.firestore();
         await setDoc(doc(db, 'config/bootstrap'), {
-          superAdminEmails: ['gercekSuperAdmin@example.test']
+          superAdminEmails: ['gercekSuperAdmin@example.test'],
         });
         await setDoc(doc(db, 'muezzins/siradanAdmin'), {
           displayName: 'Siradan Admin',
           aktif: true,
           role: 'admin',
-          email: 'siradanadmin@example.test'
+          email: 'siradanadmin@example.test',
         });
       });
 
       const db = testUser(env, 'siradanAdmin').firestore();
-      await assertFails(setDoc(doc(db, 'config/bootstrap'), {
-        superAdminEmails: ['siradanadmin@example.test']
-      }));
-    }
+      await assertFails(
+        setDoc(doc(db, 'config/bootstrap'), {
+          superAdminEmails: ['siradanadmin@example.test'],
+        })
+      );
+    },
   },
   {
     // Yıllık izin onayı, izinler.durum ve muezzins.yillikIzinKullanilanGun'u
@@ -2569,16 +2753,18 @@ const tests: TestCase[] = [
           tip: 'yillik',
           durum: 'onay_bekliyor',
           sebep: 'Test',
-          olusturmaTarihi: Timestamp.now()
+          olusturmaTarihi: Timestamp.now(),
         });
       });
 
       const db = testUser(env, 'admin').firestore();
-      await assertSucceeds(runTransaction(db, async (transaction) => {
-        transaction.update(doc(db, 'izinler/yillikTalebi1'), { durum: 'onaylandi' });
-        transaction.update(doc(db, 'muezzins/muezzin1'), { yillikIzinKullanilanGun: 25 });
-      }));
-    }
+      await assertSucceeds(
+        runTransaction(db, async (transaction) => {
+          transaction.update(doc(db, 'izinler/yillikTalebi1'), { durum: 'onaylandi' });
+          transaction.update(doc(db, 'muezzins/muezzin1'), { yillikIzinKullanilanGun: 25 });
+        })
+      );
+    },
   },
   {
     // Kotayı aşan bir onay (28 + 5 gün = 33 > 30) SUNUCU tarafında
@@ -2597,16 +2783,18 @@ const tests: TestCase[] = [
           tip: 'yillik',
           durum: 'onay_bekliyor',
           sebep: 'Test',
-          olusturmaTarihi: Timestamp.now()
+          olusturmaTarihi: Timestamp.now(),
         });
       });
 
       const db = testUser(env, 'admin').firestore();
-      await assertFails(runTransaction(db, async (transaction) => {
-        transaction.update(doc(db, 'izinler/yillikTalebi2'), { durum: 'onaylandi' });
-        transaction.update(doc(db, 'muezzins/muezzin2'), { yillikIzinKullanilanGun: 33 });
-      }));
-    }
+      await assertFails(
+        runTransaction(db, async (transaction) => {
+          transaction.update(doc(db, 'izinler/yillikTalebi2'), { durum: 'onaylandi' });
+          transaction.update(doc(db, 'muezzins/muezzin2'), { yillikIzinKullanilanGun: 33 });
+        })
+      );
+    },
   },
   // ---------------------------------------------------------------
   // P1.5 — 'gozlemci' salt-okuma (bkz. premium denetim)
@@ -2634,17 +2822,19 @@ const tests: TestCase[] = [
           retSebebi: null,
           olusturmaTarihi: Timestamp.now(),
           sonGuncelleme: Timestamp.now(),
-          mazeretSonBasvuru: PENCERE_ACIK()
+          mazeretSonBasvuru: PENCERE_ACIK(),
         });
       });
 
       const db = testUser(env, 'gozlemci1').firestore();
-      await assertFails(updateDoc(doc(db, 'bildirimler/gozlemciEskiGorev'), {
-        durum: 'onaylandi',
-        pendingAck: false,
-        sonGuncelleme: Timestamp.now()
-      }));
-    }
+      await assertFails(
+        updateDoc(doc(db, 'bildirimler/gozlemciEskiGorev'), {
+          durum: 'onaylandi',
+          pendingAck: false,
+          sonGuncelleme: Timestamp.now(),
+        })
+      );
+    },
   },
   {
     name: 'P1.5: gozlemci kendi bildirimi icin mazeret bildiremez',
@@ -2662,15 +2852,17 @@ const tests: TestCase[] = [
           retSebebi: null,
           olusturmaTarihi: Timestamp.now(),
           sonGuncelleme: Timestamp.now(),
-          mazeretSonBasvuru: PENCERE_ACIK()
+          mazeretSonBasvuru: PENCERE_ACIK(),
         });
       });
 
       const db = testUser(env, 'gozlemci1').firestore();
-      await assertFails(mazeretRetBatch(db, 'gozlemciEskiGorev', 'gozlemci1', 'Test', {
-        devirSonucu: 'alarm_bekliyor'
-      }));
-    }
+      await assertFails(
+        mazeretRetBatch(db, 'gozlemciEskiGorev', 'gozlemci1', 'Test', {
+          devirSonucu: 'alarm_bekliyor',
+        })
+      );
+    },
   },
   {
     // GONDEREN rolu artik isValidVekaletCreate icinde de dogrulaniyor —
@@ -2692,26 +2884,28 @@ const tests: TestCase[] = [
           retSebebi: null,
           olusturmaTarihi: Timestamp.now(),
           sonGuncelleme: Timestamp.now(),
-          mazeretSonBasvuru: PENCERE_ACIK()
+          mazeretSonBasvuru: PENCERE_ACIK(),
         });
       });
 
       const db = testUser(env, 'gozlemci1').firestore();
-      await assertFails(setDoc(doc(db, 'vekalet_talepleri/W2026-05-18_2026-05-20_sabah_asil_muezzin2'), {
-        bildirimId: 'gozlemciEskiGorev',
-        haftaId: 'W2026-05-18',
-        gonderenUid: 'gozlemci1',
-        gonderenIsim: 'Gozlemci One',
-        aliciUid: 'muezzin2',
-        aliciIsim: 'Muezzin Two',
-        tarih: '2026-05-20',
-        vakit: 'sabah',
-        saat: '05:30',
-        tip: 'asil',
-        durum: 'beklemede',
-        olusturmaTarihi: Timestamp.now()
-      }));
-    }
+      await assertFails(
+        setDoc(doc(db, 'vekalet_talepleri/W2026-05-18_2026-05-20_sabah_asil_muezzin2'), {
+          bildirimId: 'gozlemciEskiGorev',
+          haftaId: 'W2026-05-18',
+          gonderenUid: 'gozlemci1',
+          gonderenIsim: 'Gozlemci One',
+          aliciUid: 'muezzin2',
+          aliciIsim: 'Muezzin Two',
+          tarih: '2026-05-20',
+          vakit: 'sabah',
+          saat: '05:30',
+          tip: 'asil',
+          durum: 'beklemede',
+          olusturmaTarihi: Timestamp.now(),
+        })
+      );
+    },
   },
   {
     // Regresyon korumasi: gonderen rol kontrolu eklenirken NORMAL muezzin
@@ -2721,21 +2915,23 @@ const tests: TestCase[] = [
     name: 'P1.5: muezzin vekalet talebi acmaya devam edebilir (regresyon)',
     run: async (env) => {
       const db = testUser(env, 'muezzin1').firestore();
-      await assertSucceeds(setDoc(doc(db, 'vekalet_talepleri/W2026-05-18_2026-05-20_ogle_asil_muezzin2'), {
-        bildirimId: 'ownPendingAsil',
-        haftaId: 'W2026-05-18',
-        gonderenUid: 'muezzin1',
-        gonderenIsim: 'Muezzin One',
-        aliciUid: 'muezzin2',
-        aliciIsim: 'Muezzin Two',
-        tarih: '2026-05-20',
-        vakit: 'ogle',
-        saat: '12:45',
-        tip: 'asil',
-        durum: 'beklemede',
-        olusturmaTarihi: Timestamp.now()
-      }));
-    }
+      await assertSucceeds(
+        setDoc(doc(db, 'vekalet_talepleri/W2026-05-18_2026-05-20_ogle_asil_muezzin2'), {
+          bildirimId: 'ownPendingAsil',
+          haftaId: 'W2026-05-18',
+          gonderenUid: 'muezzin1',
+          gonderenIsim: 'Muezzin One',
+          aliciUid: 'muezzin2',
+          aliciIsim: 'Muezzin Two',
+          tarih: '2026-05-20',
+          vakit: 'ogle',
+          saat: '12:45',
+          tip: 'asil',
+          durum: 'beklemede',
+          olusturmaTarihi: Timestamp.now(),
+        })
+      );
+    },
   },
   // ---------------------------------------------------------------
   // P1.6 — admin / super-admin ayrimi (bkz. premium denetim)
@@ -2750,7 +2946,7 @@ const tests: TestCase[] = [
       await env.withSecurityRulesDisabled(async (context) => {
         const db = context.firestore();
         await setDoc(doc(db, 'config/bootstrap'), {
-          superAdminEmails: ['superadmin@example.test']
+          superAdminEmails: ['superadmin@example.test'],
         });
         await setDoc(doc(db, 'error_logs/eskiHata'), {
           errorMessage: 'Eski hata',
@@ -2760,14 +2956,14 @@ const tests: TestCase[] = [
           device: {},
           breadcrumbs: [],
           stateSnapshot: {},
-          timestamp: Timestamp.now()
+          timestamp: Timestamp.now(),
         });
         await setDoc(doc(db, 'telemetry_logs/eskiOlay'), {
           eventType: 'page_view',
           eventName: '/profil',
           userId: 'muezzin1',
           metadata: {},
-          timestamp: Timestamp.now()
+          timestamp: Timestamp.now(),
         });
       });
 
@@ -2778,7 +2974,7 @@ const tests: TestCase[] = [
       const superDb = testUser(env, 'superadmin').firestore();
       await assertSucceeds(deleteDoc(doc(superDb, 'error_logs/eskiHata')));
       await assertSucceeds(deleteDoc(doc(superDb, 'telemetry_logs/eskiOlay')));
-    }
+    },
   },
   {
     // Daraltma yalnizca update/delete'i kapsar — admin'in hata gunluklerini
@@ -2796,7 +2992,7 @@ const tests: TestCase[] = [
           device: {},
           breadcrumbs: [],
           stateSnapshot: {},
-          timestamp: Timestamp.now()
+          timestamp: Timestamp.now(),
         });
       });
 
@@ -2806,17 +3002,19 @@ const tests: TestCase[] = [
 
       // Siradan bir muezzin hala kendi hata kaydini olusturabilmeli.
       const muezzinDb = testUser(env, 'muezzin1').firestore();
-      await assertSucceeds(setDoc(doc(muezzinDb, 'error_logs/yeniHata'), {
-        errorMessage: 'Yeni hata',
-        errorStack: '',
-        componentStack: '',
-        userId: 'muezzin1',
-        device: {},
-        breadcrumbs: [],
-        stateSnapshot: {},
-        timestamp: Timestamp.now()
-      }));
-    }
+      await assertSucceeds(
+        setDoc(doc(muezzinDb, 'error_logs/yeniHata'), {
+          errorMessage: 'Yeni hata',
+          errorStack: '',
+          componentStack: '',
+          userId: 'muezzin1',
+          device: {},
+          breadcrumbs: [],
+          stateSnapshot: {},
+          timestamp: Timestamp.now(),
+        })
+      );
+    },
   },
   {
     // veriSifirlamaServisi'nin sildigi DIGER koleksiyonlar (bildirimler,
@@ -2830,8 +3028,8 @@ const tests: TestCase[] = [
     run: async (env) => {
       const db = testUser(env, 'admin').firestore();
       await assertSucceeds(deleteDoc(doc(db, 'bildirimler/ownPendingAsil')));
-    }
-  }
+    },
+  },
 ];
 
 async function main() {
@@ -2840,8 +3038,8 @@ async function main() {
     firestore: {
       host: '127.0.0.1',
       port: 8080,
-      rules: readFileSync('firestore.rules', 'utf8')
-    }
+      rules: readFileSync('firestore.rules', 'utf8'),
+    },
   });
 
   try {

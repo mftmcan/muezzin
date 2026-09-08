@@ -4,7 +4,7 @@ import {
   kibleAcisiHesapla,
   kibleMesafesiHesapla,
   konumVakitleriniCek,
-  ilceKoordinatlariniCek
+  ilceKoordinatlariniCek,
 } from '../../src/services/gpsVakitServisi';
 import { getTurkeyDateString, getTurkeyNow } from '../../src/lib/dateUtils';
 
@@ -14,7 +14,7 @@ function gpsHatasi(code: 1 | 2 | 3): GeolocationPositionError {
     PERMISSION_DENIED: 1,
     POSITION_UNAVAILABLE: 2,
     TIMEOUT: 3,
-    message: 'test'
+    message: 'test',
   } as GeolocationPositionError;
 }
 
@@ -99,27 +99,30 @@ describe('konumVakitleriniCek', () => {
       Dhuhr: '12:47 (+03)',
       Asr: '16:34 (+03)',
       Maghrib: '19:43 (+03)',
-      Isha: '21:09 (+03)'
+      Isha: '21:09 (+03)',
     };
 
-    vi.stubGlobal('fetch', vi.fn(async (url: string) => {
-      if (url.includes('aladhan.com')) {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string) => {
+        if (url.includes('aladhan.com')) {
+          return {
+            ok: aladhanOk,
+            json: async () => ({ data: { timings } }),
+          } as Response;
+        }
+        // Nominatim reverse geocoding
+        if (geoBehavior === 'throw') throw new Error('ağ hatası');
+        if (geoBehavior === 'not-ok') return { ok: false } as Response;
         return {
-          ok: aladhanOk,
-          json: async () => ({ data: { timings } })
+          ok: true,
+          json: async () => ({
+            name: 'Test Konum',
+            address: { suburb: 'Merkez', province: 'Adana' },
+          }),
         } as Response;
-      }
-      // Nominatim reverse geocoding
-      if (geoBehavior === 'throw') throw new Error('ağ hatası');
-      if (geoBehavior === 'not-ok') return { ok: false } as Response;
-      return {
-        ok: true,
-        json: async () => ({
-          name: 'Test Konum',
-          address: { suburb: 'Merkez', province: 'Adana' }
-        })
-      } as Response;
-    }));
+      })
+    );
   }
 
   it('başarılı yolda Aladhan alanlarını doğru GunlukVakit alanlarına eşler', async () => {
@@ -136,7 +139,7 @@ describe('konumVakitleriniCek', () => {
     expect(sonuc.coords).toEqual({ latitude: 37.0298, longitude: 35.8164 });
   });
 
-  it('tarih her zaman Türkiye takvim gününe göre etiketlenir (API\'nin yerel tarihine göre değil)', async () => {
+  it("tarih her zaman Türkiye takvim gününe göre etiketlenir (API'nin yerel tarihine göre değil)", async () => {
     stubFetch({});
     const beklenenTarih = getTurkeyDateString(getTurkeyNow());
     const sonuc = await konumVakitleriniCek(37.0298, 35.8164);
@@ -147,16 +150,12 @@ describe('konumVakitleriniCek', () => {
 
   it('Aladhan yanıtı ok:false ise hata fırlatır', async () => {
     stubFetch({ aladhanOk: false });
-    await expect(konumVakitleriniCek(37.0298, 35.8164)).rejects.toThrow(
-      'Konum bazlı ezan vakitlerine erişilemiyor.'
-    );
+    await expect(konumVakitleriniCek(37.0298, 35.8164)).rejects.toThrow('Konum bazlı ezan vakitlerine erişilemiyor.');
   });
 
   it('Aladhan yanıtı beklenmeyen şekilde geldiğinde (eksik alan) hata fırlatır', async () => {
     stubFetch({ aladhanTimings: { Imsak: '04:12 (+03)' } }); // diğer alanlar eksik
-    await expect(konumVakitleriniCek(37.0298, 35.8164)).rejects.toThrow(
-      'Ezan vakti servisi beklenmeyen bir yanıt döndü.'
-    );
+    await expect(konumVakitleriniCek(37.0298, 35.8164)).rejects.toThrow('Ezan vakti servisi beklenmeyen bir yanıt döndü.');
   });
 
   it('geocoding ağ hatası atsa bile vakit hesaplaması başarısız olmaz, "Yakın Konum" fallback\'ine düşer', async () => {
@@ -192,11 +191,17 @@ describe('ilceKoordinatlariniCek', () => {
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
-  it('başarılı geocoding sonucunda koordinat döner ve sessionStorage\'a yazar', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => ({
-      ok: true,
-      json: async () => ([{ lat: '37.5', lon: '36.2' }])
-    } as Response)));
+  it("başarılı geocoding sonucunda koordinat döner ve sessionStorage'a yazar", async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        async () =>
+          ({
+            ok: true,
+            json: async () => [{ lat: '37.5', lon: '36.2' }],
+          }) as Response
+      )
+    );
 
     const sonuc = await ilceKoordinatlariniCek('Kozan');
     expect(sonuc).toEqual({ lat: 37.5, lng: 36.2 });
@@ -204,10 +209,13 @@ describe('ilceKoordinatlariniCek', () => {
   });
 
   it('ikinci çağrıda sessionStorage önbelleğini kullanır, tekrar fetch yapmaz', async () => {
-    const fetchSpy = vi.fn(async () => ({
-      ok: true,
-      json: async () => ([{ lat: '37.5', lon: '36.2' }])
-    } as Response));
+    const fetchSpy = vi.fn(
+      async () =>
+        ({
+          ok: true,
+          json: async () => [{ lat: '37.5', lon: '36.2' }],
+        }) as Response
+    );
     vi.stubGlobal('fetch', fetchSpy);
 
     await ilceKoordinatlariniCek('Kozan');
@@ -217,15 +225,26 @@ describe('ilceKoordinatlariniCek', () => {
   });
 
   it('ağ hatasında (fırlatılsa bile) null döner', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => { throw new Error('ağ hatası'); }));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => {
+        throw new Error('ağ hatası');
+      })
+    );
     expect(await ilceKoordinatlariniCek('BilinmeyenYer')).toBeNull();
   });
 
   it('sonuç boş dizi veya geçersiz koordinat içeriyorsa null döner', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => ({
-      ok: true,
-      json: async () => ([])
-    } as Response)));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        async () =>
+          ({
+            ok: true,
+            json: async () => [],
+          }) as Response
+      )
+    );
     expect(await ilceKoordinatlariniCek('OlmayanYer')).toBeNull();
   });
 });

@@ -14,11 +14,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 let seed: { tokenAdmin: string; tokenMuezzin: string };
 
 test.beforeAll(() => {
-  const raw = execFileSync(
-    'npx',
-    ['tsx', path.join(__dirname, 'seed-a11y.ts')],
-    { encoding: 'utf8', shell: process.platform === 'win32' }
-  ).trim();
+  const raw = execFileSync('npx', ['tsx', path.join(__dirname, 'seed-a11y.ts')], {
+    encoding: 'utf8',
+    shell: process.platform === 'win32',
+  }).trim();
   seed = JSON.parse(raw);
 });
 

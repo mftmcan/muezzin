@@ -13,7 +13,9 @@ if (envKey) {
   try {
     const rawKey = envKey.startsWith('{') ? envKey : Buffer.from(envKey, 'base64').toString('utf8');
     const serviceAccount = JSON.parse(rawKey);
-    console.log(`Firebase Admin: Using service account for project: ${serviceAccount.project_id} (Client Email: ${serviceAccount.client_email})`);
+    console.log(
+      `Firebase Admin: Using service account for project: ${serviceAccount.project_id} (Client Email: ${serviceAccount.client_email})`
+    );
     credential = cert(serviceAccount);
   } catch {
     // SIR SIZINTISI: yakalanan hata NESNESİ ASLA loglanmaz. Node 20+'ta
@@ -33,9 +35,9 @@ if (envKey) {
     // Loglanan tek şey sırdan türetilmeyen metadata: uzunluk ve biçim.
     throw new Error(
       'FIREBASE_SERVICE_ACCOUNT_KEY / GOOGLE_APPLICATION_CREDENTIALS_JSON ' +
-      'geçerli bir servis hesabı anahtarı olarak ayrıştırılamadı ' +
-      `(uzunluk: ${envKey.length}, biçim: ${envKey.startsWith('{') ? 'düz JSON' : 'base64'}). ` +
-      'Ayrıntılı hata metni, gerçek anahtarın bir parçasını içerebileceği için bilinçli olarak gizlendi.'
+        'geçerli bir servis hesabı anahtarı olarak ayrıştırılamadı ' +
+        `(uzunluk: ${envKey.length}, biçim: ${envKey.startsWith('{') ? 'düz JSON' : 'base64'}). ` +
+        'Ayrıntılı hata metni, gerçek anahtarın bir parçasını içerebileceği için bilinçli olarak gizlendi.'
     );
   }
 }
@@ -69,12 +71,11 @@ const app = existingApps.length
 
 // Named database usage in Admin SDK: getFirestore(databaseId)
 // If the ID is "(default)", we use the default database by passing no arguments.
-const dbId = (firebaseConfig.firestoreDatabaseId === "(default)" || !firebaseConfig.firestoreDatabaseId)
-  ? undefined
-  : firebaseConfig.firestoreDatabaseId;
+const dbId =
+  firebaseConfig.firestoreDatabaseId === '(default)' || !firebaseConfig.firestoreDatabaseId
+    ? undefined
+    : firebaseConfig.firestoreDatabaseId;
 
-export const db = dbId
-  ? getFirestore(app, dbId)
-  : getFirestore(app);
+export const db = dbId ? getFirestore(app, dbId) : getFirestore(app);
 export const auth = getAuth(app);
 export { Timestamp, FieldValue };

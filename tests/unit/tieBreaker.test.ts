@@ -42,10 +42,7 @@ describe('tieBreakerSirala', () => {
   });
 
   it('orijinal diziyi mutasyona uğratmaz', () => {
-    const muezzinler = [
-      muezzin('a', { aylikVakitSayisi: 10 }),
-      muezzin('b', { aylikVakitSayisi: 2 }),
-    ];
+    const muezzinler = [muezzin('a', { aylikVakitSayisi: 10 }), muezzin('b', { aylikVakitSayisi: 2 })];
     const originalOrder = muezzinler.map((m) => m.id);
 
     tieBreakerSirala(muezzinler, {});
@@ -67,10 +64,7 @@ describe('tieBreakerSirala', () => {
     // b: aylık 0, bu hafta 2 -> toplam 2  => her iki günde de b önde olmalı.
     // ESKİ (hatalı) davranışta Cuma'da b'nin toplamı 0 + 2*1.5 = 3'e çıkıp
     // eşitlik oluşuyor ve sıra ['a','b']'ye dönüyordu.
-    const muezzinler = [
-      muezzin('a', { aylikVakitSayisi: 3 }),
-      muezzin('b', { aylikVakitSayisi: 0 }),
-    ];
+    const muezzinler = [muezzin('a', { aylikVakitSayisi: 3 }), muezzin('b', { aylikVakitSayisi: 0 })];
     const buHaftakiYukler = { a: 0, b: 2 };
 
     const normalGun = tieBreakerSirala(muezzinler, buHaftakiYukler, [], false);
@@ -114,10 +108,7 @@ describe('tieBreakerSirala', () => {
     // aylık toplamı kazanırdı — bu da Cuma ağırlığının ay ilerledikçe
     // görünmez hale gelmesi sorunuydu. Yeni kademe bunu SOS'tan hemen sonra,
     // ağırlıklı toplamdan önce karşılaştırarak düzeltir.
-    const muezzinler = [
-      muezzin('a', { aylikVakitSayisi: 3 }),
-      muezzin('b', { aylikVakitSayisi: 10 }),
-    ];
+    const muezzinler = [muezzin('a', { aylikVakitSayisi: 3 }), muezzin('b', { aylikVakitSayisi: 10 })];
     const aylikCumaSayilari = { a: 3, b: 0 };
 
     const cumaOncesi = tieBreakerSirala(muezzinler, {}, [], true); // aylikCumaSayilari verilmedi
@@ -128,10 +119,7 @@ describe('tieBreakerSirala', () => {
   });
 
   it('Cuma adaleti kademesi, Cuma olmayan günlerde devreye girmez', () => {
-    const muezzinler = [
-      muezzin('a', { aylikVakitSayisi: 3 }),
-      muezzin('b', { aylikVakitSayisi: 10 }),
-    ];
+    const muezzinler = [muezzin('a', { aylikVakitSayisi: 3 }), muezzin('b', { aylikVakitSayisi: 10 })];
     const aylikCumaSayilari = { a: 3, b: 0 };
 
     const sirali = tieBreakerSirala(muezzinler, {}, [], false, aylikCumaSayilari);
@@ -208,10 +196,7 @@ describe('tieBreakerSirala', () => {
     //
     // Burada: SOS kimseyi engellemiyor; b art arda yedek eşiğini aşmış AMA bu
     // ay zaten 3 Cuma yapmış; c hiç Cuma yapmamış. Cuma günü asil c olmalı.
-    const muezzinler = [
-      muezzin('b', { aylikVakitSayisi: 0 }),
-      muezzin('c', { aylikVakitSayisi: 0 }),
-    ];
+    const muezzinler = [muezzin('b', { aylikVakitSayisi: 0 }), muezzin('c', { aylikVakitSayisi: 0 })];
     const ardArdaYedekSayilari = { b: ARD_ARDA_YEDEK_ESIGI };
     const aylikCumaSayilari = { b: 3, c: 0 };
 
@@ -228,10 +213,7 @@ describe('tieBreakerSirala', () => {
     // Fix'in "biri diğerini yok etmesin" koşulu: Cuma adaleti ayırt EDEMEDİĞİ
     // anda karar yine kilit kırıcıya düşmeli, yani sürekli yedek kalan kişi
     // Cuma günü de asile terfi edebilmeli.
-    const muezzinler = [
-      muezzin('b', { aylikVakitSayisi: 50 }),
-      muezzin('c', { aylikVakitSayisi: 10 }),
-    ];
+    const muezzinler = [muezzin('b', { aylikVakitSayisi: 50 }), muezzin('c', { aylikVakitSayisi: 10 })];
     const ardArdaYedekSayilari = { b: ARD_ARDA_YEDEK_ESIGI };
     const aylikCumaSayilari = { b: 2, c: 2 };
 
@@ -244,10 +226,7 @@ describe('tieBreakerSirala', () => {
     // Cuma adaletinin kilit kırıcıyı öne geçmesinin SINIRLI bir gecikme
     // olduğunu gösterir: aynı girdilerle Cumartesi (isFriday=false) çağrısında
     // b yine asile terfi eder. Yani kilit sonsuza kadar ertelenemez.
-    const muezzinler = [
-      muezzin('b', { aylikVakitSayisi: 0 }),
-      muezzin('c', { aylikVakitSayisi: 0 }),
-    ];
+    const muezzinler = [muezzin('b', { aylikVakitSayisi: 0 }), muezzin('c', { aylikVakitSayisi: 0 })];
     const ardArdaYedekSayilari = { b: ARD_ARDA_YEDEK_ESIGI + 1 }; // Cuma'da da yedek kaldı
     const aylikCumaSayilari = { b: 3, c: 0 };
 
@@ -259,10 +238,7 @@ describe('tieBreakerSirala', () => {
   it('tüm kriterler eşitse alfabetik değil, id karakter kodu toplamına göre sıralar', () => {
     // Alfabetik sırada 'aa-uid' < 'b-uid' olurdu; karakter kodu toplamına göre ise
     // 'b-uid' (465) 'aa-uid' (561) toplamından küçük olduğu için önce gelir.
-    const muezzinler = [
-      muezzin('aa-uid'),
-      muezzin('b-uid'),
-    ];
+    const muezzinler = [muezzin('aa-uid'), muezzin('b-uid')];
 
     const sirali = tieBreakerSirala(muezzinler, {});
 

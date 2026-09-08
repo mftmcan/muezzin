@@ -41,15 +41,18 @@ async function ensureUser(uid: string, displayName: string) {
     // kullanıcı yoktu, sorun değil
   }
   await auth.createUser({ uid, email: `${uid}@example.test`, displayName, emailVerified: true });
-  await db.collection('muezzins').doc(uid).set({
-    displayName,
-    email: `${uid}@example.test`,
-    role: 'muezzin',
-    aktif: true,
-    photoURL: '',
-    fcmToken: null,
-    aylikVakitSayisi: 0
-  });
+  await db
+    .collection('muezzins')
+    .doc(uid)
+    .set({
+      displayName,
+      email: `${uid}@example.test`,
+      role: 'muezzin',
+      aktif: true,
+      photoURL: '',
+      fcmToken: null,
+      aylikVakitSayisi: 0,
+    });
 }
 
 /**
@@ -76,14 +79,24 @@ function acikPencereDamgasi() {
 async function vakitleriTohumla(todayStr: string) {
   const ilceId = '9148';
   await db.collection('settings').doc('system').set({ ilceId }, { merge: true });
-  await db.collection('vakitler').doc(`${ilceId}_${todayStr.slice(0, 7)}`).set({
-    gunler: {
-      [todayStr]: {
-        sabah: '04:10', gunes: '05:42', ogle: '12:45',
-        ikindi: '16:30', aksam: '19:51', yatsi: '21:18'
-      }
-    }
-  }, { merge: true });
+  await db
+    .collection('vakitler')
+    .doc(`${ilceId}_${todayStr.slice(0, 7)}`)
+    .set(
+      {
+        gunler: {
+          [todayStr]: {
+            sabah: '04:10',
+            gunes: '05:42',
+            ogle: '12:45',
+            ikindi: '16:30',
+            aksam: '19:51',
+            yatsi: '21:18',
+          },
+        },
+      },
+      { merge: true }
+    );
 }
 
 async function seed() {
@@ -113,7 +126,7 @@ async function seed() {
     vekaletDevredildi: false,
     olusturmaTarihi: Timestamp.now(),
     sonGuncelleme: Timestamp.now(),
-    mazeretSonBasvuru: acikPencereDamgasi()
+    mazeretSonBasvuru: acikPencereDamgasi(),
   });
   // Daha önceki bir CI koşusundan kalan teklifi temizle (deterministik ID).
   await db.collection('vekalet_talepleri').doc(`${haftaId}_${todayStr}_yatsi_asil_${UID_B}`).delete();
@@ -137,7 +150,7 @@ async function seed() {
     vekaletDevredildi: false,
     olusturmaTarihi: Timestamp.now(),
     sonGuncelleme: Timestamp.now(),
-    mazeretSonBasvuru: acikPencereDamgasi()
+    mazeretSonBasvuru: acikPencereDamgasi(),
   });
   const kabulTalepId = `${haftaId}_${todayStr}_ikindi_asil_${UID_B}`;
   await db.collection('vekalet_talepleri').doc(kabulTalepId).set({
@@ -152,7 +165,7 @@ async function seed() {
     saat: '16:34',
     tip: 'asil',
     durum: 'beklemede',
-    olusturmaTarihi: Timestamp.now()
+    olusturmaTarihi: Timestamp.now(),
   });
 
   const tokenA = await auth.createCustomToken(UID_A);

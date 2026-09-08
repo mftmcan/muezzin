@@ -39,14 +39,14 @@ async function clearCollections() {
 const tamArizaGonderici: FcmGonderici = async (parca) => ({
   successCount: 0,
   failureCount: parca.length,
-  responses: parca.map(() => ({ success: false, error: { code: 'messaging/authentication-error' } }))
+  responses: parca.map(() => ({ success: false, error: { code: 'messaging/authentication-error' } })),
 });
 
 /** Tum basarisizliklar bayat token — BEKLENEN, kendiliginden duzelen durum. */
 const bayatTokenGonderici: FcmGonderici = async (parca) => ({
   successCount: 0,
   failureCount: parca.length,
-  responses: parca.map(() => ({ success: false, error: { code: 'messaging/registration-token-not-registered' } }))
+  responses: parca.map(() => ({ success: false, error: { code: 'messaging/registration-token-not-registered' } })),
 });
 
 /** Ilk mesaj gitti, ikincisi bayat token — normal kismi basarisizlik. */
@@ -54,10 +54,8 @@ const kismiGonderici: FcmGonderici = async (parca) => ({
   successCount: 1,
   failureCount: parca.length - 1,
   responses: parca.map((_, i) =>
-    i === 0
-      ? { success: true }
-      : { success: false, error: { code: 'messaging/registration-token-not-registered' } }
-  )
+    i === 0 ? { success: true } : { success: false, error: { code: 'messaging/registration-token-not-registered' } }
+  ),
 });
 
 function mesaj(token: string): FcmMessage {
@@ -81,18 +79,21 @@ const tests: TestCase[] = [
         () => fcmGonderVeTemizle([mesaj('t1'), mesaj('t2')], { t1: 'u1', t2: 'u1' }, 'Test', tamArizaGonderici),
         fcmHatasiMi
       );
-    }
+    },
   },
   {
     name: 'fcmGonderVeTemizle: tum basarisizliklar bayat token ise FIRLATMAZ (kendiliginden duzelir) ve tokenlari temizler',
     run: async () => {
       await clearCollections();
-      await db.collection('muezzins').doc('u1').set({
-        displayName: 'U1',
-        role: 'muezzin',
-        aktif: true,
-        fcmTokens: { t1: true, t2: true }
-      });
+      await db
+        .collection('muezzins')
+        .doc('u1')
+        .set({
+          displayName: 'U1',
+          role: 'muezzin',
+          aktif: true,
+          fcmTokens: { t1: true, t2: true },
+        });
 
       const sonuc = await fcmGonderVeTemizle([mesaj('t1'), mesaj('t2')], { t1: 'u1', t2: 'u1' }, 'Test', bayatTokenGonderici);
       assert.equal(sonuc.basarili, 0);
@@ -101,29 +102,41 @@ const tests: TestCase[] = [
 
       const doc = await db.collection('muezzins').doc('u1').get();
       assert.deepEqual(doc.data()?.fcmTokens, {});
-    }
+    },
   },
   {
     name: 'fcmGonderVeTemizle: kismi basarisizlik olumcul DEGIL',
     run: async () => {
       await clearCollections();
-      await db.collection('muezzins').doc('u1').set({
-        displayName: 'U1', role: 'muezzin', aktif: true, fcmTokens: { t1: true, t2: true }
-      });
+      await db
+        .collection('muezzins')
+        .doc('u1')
+        .set({
+          displayName: 'U1',
+          role: 'muezzin',
+          aktif: true,
+          fcmTokens: { t1: true, t2: true },
+        });
 
       const sonuc = await fcmGonderVeTemizle([mesaj('t1'), mesaj('t2')], { t1: 'u1', t2: 'u1' }, 'Test', kismiGonderici);
       assert.equal(sonuc.basarili, 1);
       assert.equal(sonuc.basarisiz, 1);
       assert.equal(sonuc.beklenmeyenBasarisiz, 0);
-    }
+    },
   },
   {
     name: 'Duyuru: FCM tamamen basarisiz olursa bildirimGonderildi FALSE kalir (yeniden denenir)',
     run: async () => {
       await clearCollections();
-      await db.collection('muezzins').doc('u1').set({
-        displayName: 'U1', role: 'muezzin', aktif: true, fcmTokens: { t1: true }
-      });
+      await db
+        .collection('muezzins')
+        .doc('u1')
+        .set({
+          displayName: 'U1',
+          role: 'muezzin',
+          aktif: true,
+          fcmTokens: { t1: true },
+        });
       const duyuruRef = db.collection('duyurular').doc('d1');
       await duyuruRef.set({ baslik: 'Test', icerik: 'Icerik', tip: 'duyuru', bildirimGonderildi: false });
 
@@ -131,36 +144,48 @@ const tests: TestCase[] = [
 
       const doc = await duyuruRef.get();
       assert.equal(doc.data()?.bildirimGonderildi, false);
-    }
+    },
   },
   {
     name: 'Duyuru: basarili gonderimde bildirimGonderildi true olur (kontrol grubu)',
     run: async () => {
       await clearCollections();
-      await db.collection('muezzins').doc('u1').set({
-        displayName: 'U1', role: 'muezzin', aktif: true, fcmTokens: { t1: true }
-      });
+      await db
+        .collection('muezzins')
+        .doc('u1')
+        .set({
+          displayName: 'U1',
+          role: 'muezzin',
+          aktif: true,
+          fcmTokens: { t1: true },
+        });
       const duyuruRef = db.collection('duyurular').doc('d2');
       await duyuruRef.set({ baslik: 'Test', icerik: 'Icerik', tip: 'duyuru', bildirimGonderildi: false });
 
       const basariliGonderici: FcmGonderici = async (parca) => ({
         successCount: parca.length,
         failureCount: 0,
-        responses: parca.map(() => ({ success: true }))
+        responses: parca.map(() => ({ success: true })),
       });
       await processDuyuruBildirimleri(false, basariliGonderici);
 
       const doc = await duyuruRef.get();
       assert.equal(doc.data()?.bildirimGonderildi, true);
-    }
+    },
   },
   {
     name: 'Izin durumu: FCM tamamen basarisiz olursa bildirimGonderildi FALSE kalir',
     run: async () => {
       await clearCollections();
-      await db.collection('muezzins').doc('u1').set({
-        displayName: 'U1', role: 'muezzin', aktif: true, fcmTokens: { t1: true }
-      });
+      await db
+        .collection('muezzins')
+        .doc('u1')
+        .set({
+          displayName: 'U1',
+          role: 'muezzin',
+          aktif: true,
+          fcmTokens: { t1: true },
+        });
       const izinRef = db.collection('izinler').doc('i1');
       await izinRef.set({
         uid: 'u1',
@@ -168,14 +193,14 @@ const tests: TestCase[] = [
         bitis: '2099-01-02',
         tip: 'mazeret',
         durum: 'onaylandi',
-        bildirimGonderildi: false
+        bildirimGonderildi: false,
       });
 
       await assert.rejects(() => processIzinDurumBildirimleri(false, tamArizaGonderici), fcmHatasiMi);
 
       const doc = await izinRef.get();
       assert.equal(doc.data()?.bildirimGonderildi, false);
-    }
+    },
   },
   {
     name: 'Yatsi sonu: FCM tamamen basarisiz olursa gunluk hatirlatma sentineli YAZILMAZ ve script hata ile biter',
@@ -187,19 +212,30 @@ const tests: TestCase[] = [
       yarin.setDate(yarin.getDate() + 1);
       const yarinStr = tarihStr(yarin);
 
-      await db.collection('muezzins').doc('u1').set({
-        displayName: 'U1', role: 'muezzin', aktif: true, fcmTokens: { t1: true }
-      });
+      await db
+        .collection('muezzins')
+        .doc('u1')
+        .set({
+          displayName: 'U1',
+          role: 'muezzin',
+          aktif: true,
+          fcmTokens: { t1: true },
+        });
       await db.collection('bildirimler').doc('yarin_sabah_asil').set({
-        haftaId: 'WTEST', tarih: yarinStr, vakit: 'sabah', uid: 'u1', tip: 'asil', durum: 'bekliyor'
+        haftaId: 'WTEST',
+        tarih: yarinStr,
+        vakit: 'sabah',
+        uid: 'u1',
+        tip: 'asil',
+        durum: 'bekliyor',
       });
 
       await assert.rejects(() => processYatsiSonuIslemleri(tamArizaGonderici), fcmHatasiMi);
 
       const sentinel = await db.collection('cronDurumu').doc(`gunlukHatirlatma_${yarinStr}`).get();
       assert.equal(sentinel.exists, false);
-    }
-  }
+    },
+  },
 ];
 
 async function main() {

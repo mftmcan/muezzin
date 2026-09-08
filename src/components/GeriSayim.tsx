@@ -1,11 +1,11 @@
 import React, { useMemo } from 'react';
 import {
- VAKIT_GORA_ISIMLERI,
- toTurkishUpperCase,
- calculateLastThirdOfNight,
- calculateVakitProgress,
- calculateKerahatTimes,
- isFriday as isFridayTarih,
+  VAKIT_GORA_ISIMLERI,
+  toTurkishUpperCase,
+  calculateLastThirdOfNight,
+  calculateVakitProgress,
+  calculateKerahatTimes,
+  isFriday as isFridayTarih,
 } from '../lib/dateUtils';
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'motion/react';
 import { Vakit } from '../types';
@@ -28,7 +28,7 @@ const Digit = ({ char, dim }: { char: string; dim?: boolean }) => {
           initial={{ y: 24, opacity: 0, filter: 'blur(2px)' }}
           animate={{ y: 0, opacity: dim ? 0.7 : 1, filter: 'blur(0px)' }}
           exit={{ y: -24, opacity: 0, filter: 'blur(2px)' }}
-          transition={{ type: "spring", stiffness: 380, damping: 30 }}
+          transition={{ type: 'spring', stiffness: 380, damping: 30 }}
           className="inline-block tabular-nums font-extralight tracking-tight"
         >
           {char}
@@ -49,12 +49,12 @@ const DigitPair = ({ value, dim }: { value: number; dim?: boolean }) => {
 };
 
 const VAKIT_DISPLAY_NAMES: Record<Vakit | 'gunes', string> = {
- sabah: "Sabah",
- gunes: "Güneş",
- ogle: "Öğle",
- ikindi: "İkindi",
- aksam: "Akşam",
- yatsi: "Yatsı"
+  sabah: 'Sabah',
+  gunes: 'Güneş',
+  ogle: 'Öğle',
+  ikindi: 'İkindi',
+  aksam: 'Akşam',
+  yatsi: 'Yatsı',
 };
 
 // ─────────────────────────────────────────
@@ -177,12 +177,7 @@ export function GeriSayim({
     return null;
   }, [aksamSaati, imsakSaati]);
 
-  const isTeheccud = !!(
-    teheccudBaslangic &&
-    imsakSaati &&
-    now >= teheccudBaslangic &&
-    now < imsakSaati
-  );
+  const isTeheccud = !!(teheccudBaslangic && imsakSaati && now >= teheccudBaslangic && now < imsakSaati);
 
   // ── Kerahat times ─────────────────────────────────────────────────────────
   const kerahatTimes = useMemo(() => {
@@ -222,14 +217,14 @@ export function GeriSayim({
   const auraColor = isKerahat
     ? 'var(--aura-ruby)'
     : isCumaVakti
-    ? 'var(--aura-emerald)'
-    : isTeheccud
-    ? 'var(--aura-indigo)'
-    : mevcutVakit === 'aksam' || mevcutVakit === 'yatsi'
-    ? 'var(--aura-ruby)'
-    : mevcutVakit === 'sabah'
-    ? 'var(--aura-emerald)'
-    : 'var(--aura-amber)';
+      ? 'var(--aura-emerald)'
+      : isTeheccud
+        ? 'var(--aura-indigo)'
+        : mevcutVakit === 'aksam' || mevcutVakit === 'yatsi'
+          ? 'var(--aura-ruby)'
+          : mevcutVakit === 'sabah'
+            ? 'var(--aura-emerald)'
+            : 'var(--aura-amber)';
 
   // ── Ezan is now ───────────────────────────────────────────────────────────
   if (farkMs <= 0) {
@@ -244,30 +239,25 @@ export function GeriSayim({
           className="absolute inset-0 rounded-full animate-pulse"
           style={{ background: 'radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%)' }}
         />
-        <span className="authority-title text-emerald-400 text-xs tracking-[0.6em] font-semibold text-center">
-          EZAN OKUNUYOR
-        </span>
+        <span className="authority-title text-emerald-400 text-xs tracking-[0.6em] font-semibold text-center">EZAN OKUNUYOR</span>
       </div>
     );
   }
 
   // ── Render (Google Neural Expressive UI) ──────────────────────────────────
   return (
-    <div 
-      className="relative flex flex-col items-center group w-full max-w-[420px] mx-auto select-none"
-      style={{ perspective: 1200 }}
-    >
+    <div className="relative flex flex-col items-center group w-full max-w-[420px] mx-auto select-none" style={{ perspective: 1200 }}>
       <motion.div
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
-        style={{ 
-          rotateX, 
-          rotateY, 
+        style={{
+          rotateX,
+          rotateY,
           transformStyle: 'preserve-3d',
           width: '100%',
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'center'
+          alignItems: 'center',
         }}
         className="w-full flex flex-col items-center"
       >
@@ -289,9 +279,7 @@ export function GeriSayim({
                   className="px-5 py-1.5 rounded-full bg-rose-500/10 border border-rose-500/20 flex items-center gap-2.5 shadow-lg shadow-rose-500/5"
                 >
                   <KerahatIcon size={14} className="text-rose-500 animate-pulse" />
-                  <span className="authority-title !text-2xs text-rose-500 font-bold tracking-wide">
-                    KRİTİK: KERAHAT VAKTİ
-                  </span>
+                  <span className="authority-title !text-2xs text-rose-500 font-bold tracking-wide">KRİTİK: KERAHAT VAKTİ</span>
                 </motion.div>
               ) : isTeheccud ? (
                 <motion.div
@@ -327,9 +315,9 @@ export function GeriSayim({
 
           <h2
             className="font-extralight tracking-tighter text-4xl sm:text-6xl text-[var(--text-primary)] leading-none transition-all duration-700 vibrant-text"
-            style={{ 
+            style={{
               textShadow: `0 0 40px ${auraColor}18`,
-              backgroundImage: `linear-gradient(135deg, var(--text-primary) 0%, ${auraColor} 50%, var(--text-secondary) 100%)`
+              backgroundImage: `linear-gradient(135deg, var(--text-primary) 0%, ${auraColor} 50%, var(--text-secondary) 100%)`,
             }}
           >
             {toTurkishUpperCase(VAKIT_DISPLAY_NAMES[mevcutVakit])}
@@ -350,12 +338,12 @@ export function GeriSayim({
             className="absolute inset-0 rounded-full scale-95 pointer-events-none"
             animate={{
               scale: [0.93, 1.02, 0.93],
-              opacity: [0.1, 0.18, 0.1]
+              opacity: [0.1, 0.18, 0.1],
             }}
             transition={{
               duration: 6,
               repeat: Infinity,
-              ease: "easeInOut"
+              ease: 'easeInOut',
             }}
             style={{ background: `radial-gradient(circle, ${auraColor} 0%, transparent 70%)` }}
           />
@@ -370,41 +358,45 @@ export function GeriSayim({
               transition={{
                 duration: 10,
                 repeat: Infinity,
-                ease: "easeInOut"
+                ease: 'easeInOut',
               }}
               style={{
                 width: '340px',
                 height: '340px',
                 borderRadius: '50%',
                 background: `radial-gradient(circle, ${auraColor}20 0%, transparent 70%)`,
-                position: 'absolute'
+                position: 'absolute',
               }}
             />
           </div>
 
-          <svg
-            viewBox="0 0 440 440"
-            className="w-full h-auto max-w-[260px] sm:max-w-[420px] relative z-10 overflow-visible"
-          >
+          <svg viewBox="0 0 440 440" className="w-full h-auto max-w-[260px] sm:max-w-[420px] relative z-10 overflow-visible">
             {/* Track */}
             <circle
-              cx="220" cy="220" r={radius}
-              fill="none" stroke="currentColor"
+              cx="220"
+              cy="220"
+              r={radius}
+              fill="none"
+              stroke="currentColor"
               className="text-[var(--text-primary)]"
-              strokeOpacity="0.09" strokeWidth="1"
+              strokeOpacity="0.09"
+              strokeWidth="1"
             />
             {/* Glow ring (Breathing dynamic pulse stroke) */}
             <motion.circle
-              cx="220" cy="220" r={radius}
-              fill="none" stroke={auraColor}
+              cx="220"
+              cy="220"
+              r={radius}
+              fill="none"
+              stroke={auraColor}
               animate={{
                 strokeWidth: [4, 7, 4],
-                strokeOpacity: [0.15, 0.28, 0.15]
+                strokeOpacity: [0.15, 0.28, 0.15],
               }}
               transition={{
                 duration: 4,
                 repeat: Infinity,
-                ease: "easeInOut"
+                ease: 'easeInOut',
               }}
               strokeDasharray={circumference}
               strokeDashoffset={circumference * (1 - progress)}
@@ -414,9 +406,13 @@ export function GeriSayim({
             />
             {/* Progress ring */}
             <circle
-              cx="220" cy="220" r={radius}
-              fill="none" stroke={auraColor}
-              strokeOpacity="0.95" strokeWidth="2"
+              cx="220"
+              cy="220"
+              r={radius}
+              fill="none"
+              stroke={auraColor}
+              strokeOpacity="0.95"
+              strokeWidth="2"
               strokeDasharray={circumference}
               strokeDashoffset={circumference * (1 - progress)}
               strokeLinecap="round"
@@ -425,42 +421,45 @@ export function GeriSayim({
             />
             {/* Orbit dot glow */}
             <motion.circle
-              cx="220" cy={220 - radius} r="8"
-              fill="white" fillOpacity="0.2"
+              cx="220"
+              cy={220 - radius}
+              r="8"
+              fill="white"
+              fillOpacity="0.2"
               transform={`rotate(${360 * progress} 220 220)`}
-              style={{ 
+              style={{
                 transition: 'transform 1s linear',
-                filter: `drop-shadow(0 0 8px ${auraColor})`
+                filter: `drop-shadow(0 0 8px ${auraColor})`,
               }}
             />
             {/* Orbit dot core (Elastic Pulsing Physics) */}
             <motion.circle
-              cx="220" cy={220 - radius}
+              cx="220"
+              cy={220 - radius}
               fill="white"
               animate={{
-                r: [3, 4.5, 3]
+                r: [3, 4.5, 3],
               }}
               transition={{
                 duration: 2,
                 repeat: Infinity,
-                ease: "easeInOut"
+                ease: 'easeInOut',
               }}
               transform={`rotate(${360 * progress} 220 220)`}
-              style={{ 
+              style={{
                 transition: 'transform 1s linear',
-                filter: `drop-shadow(0 0 4px white)`
+                filter: `drop-shadow(0 0 4px white)`,
               }}
             />
           </svg>
 
           {/* ── Centerpiece: digital countdown ── */}
-          <div 
+          <div
             className="absolute inset-0 flex flex-col items-center justify-center text-center z-10"
             style={{ transform: 'translateZ(40px)' }}
           >
             <div className="flex flex-col items-center gap-1 px-6 py-5 sm:px-8 sm:py-7">
               <div className="flex items-center gap-2 sm:gap-3">
-
                 {/* Hours */}
                 <div className="flex flex-col items-center">
                   <div
@@ -518,14 +517,18 @@ export function GeriSayim({
                 transition={{ delay: 0.4 }}
                 className="mt-4 sm:mt-5 flex flex-col items-center"
               >
-                <div className={`px-4 py-1.5 rounded-full border transition-all duration-700 ${
-                  isCumaVakti
-                    ? 'bg-emerald-500/10 border-emerald-500/20 shadow-[0_0_15px_rgba(52,211,153,0.08)]'
-                    : 'bg-[var(--surface-medium)] border-[var(--glass-border)]'
-                }`}>
-                  <span className={`authority-title !text-2xs tracking-wide font-semibold ${
-                    isCumaVakti ? 'text-emerald-400 opacity-100' : 'text-[var(--text-secondary)] opacity-80'
-                  }`}>
+                <div
+                  className={`px-4 py-1.5 rounded-full border transition-all duration-700 ${
+                    isCumaVakti
+                      ? 'bg-emerald-500/10 border-emerald-500/20 shadow-[0_0_15px_rgba(52,211,153,0.08)]'
+                      : 'bg-[var(--surface-medium)] border-[var(--glass-border)]'
+                  }`}
+                >
+                  <span
+                    className={`authority-title !text-2xs tracking-wide font-semibold ${
+                      isCumaVakti ? 'text-emerald-400 opacity-100' : 'text-[var(--text-secondary)] opacity-80'
+                    }`}
+                  >
                     BEKLENEN: {isCumaVakti ? 'CUMA NAMAZI' : toTurkishUpperCase(targetName)}
                   </span>
                 </div>

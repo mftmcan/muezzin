@@ -18,8 +18,8 @@ export function exportCsv(headers: string[], rows: (string | number)[][], filena
     return `"${str.replace(/"/g, '""')}"`;
   };
 
-  const csvContent = 'data:text/csv;charset=utf-8,﻿'
-    + [headers.map(escapeCell).join(','), ...rows.map((row) => row.map(escapeCell).join(','))].join('\n');
+  const csvContent =
+    'data:text/csv;charset=utf-8,﻿' + [headers.map(escapeCell).join(','), ...rows.map((row) => row.map(escapeCell).join(','))].join('\n');
 
   const encodedUri = encodeURI(csvContent);
   const link = document.createElement('a');

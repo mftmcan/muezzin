@@ -48,7 +48,7 @@ export const useGpsVakitStore = create<GpsVakitState>()(
             navigator.geolocation.getCurrentPosition(resolve, reject, {
               enableHighAccuracy: true,
               timeout: 10000,
-              maximumAge: 0
+              maximumAge: 0,
             });
           });
 
@@ -63,7 +63,7 @@ export const useGpsVakitStore = create<GpsVakitState>()(
             gpsKonumAdi: result.konumAdi,
             // result.date'ten TÜRETİLMEDEN bağımsızca hesaplanır — bkz.
             // yukarıdaki lastFetchDate alan yorumu.
-            lastFetchDate: getTurkeyDateString()
+            lastFetchDate: getTurkeyDateString(),
           });
         } catch (err) {
           set({ gpsLoading: false });
@@ -80,7 +80,7 @@ export const useGpsVakitStore = create<GpsVakitState>()(
           gpsCoords: null,
           gpsVakitler: null,
           gpsKonumAdi: null,
-          lastFetchDate: null
+          lastFetchDate: null,
         });
       },
 
@@ -108,13 +108,13 @@ export const useGpsVakitStore = create<GpsVakitState>()(
             gpsKonumAdi: result.konumAdi,
             // Türkiye takvim günü — result.date (konumun kendi yerel günü)
             // DEĞİL, bkz. lastFetchDate alan yorumu.
-            lastFetchDate: bugunStr
+            lastFetchDate: bugunStr,
           });
         } catch (err) {
           console.error('GPS vakitleri güncellenemedi:', err);
           set({ gpsLoading: false });
         }
-      }
+      },
     }),
     {
       name: 'muezzin-gps-vakit-storage',

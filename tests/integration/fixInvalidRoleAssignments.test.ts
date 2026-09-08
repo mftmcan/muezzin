@@ -43,13 +43,18 @@ async function seedGecersizGun(tarih: string) {
   await db.collection('muezzins').doc('arsiv').set({ displayName: 'Arsiv', role: 'muezzin', aktif: false });
 
   const gun: Record<string, { asil: string; yedek: string }> = {};
-  VAKITLER.forEach((v) => { gun[v] = { asil: 'arsiv', yedek: 'm2' }; });
-  await db.collection('haftaPlanlari').doc(HAFTA_ID).set({
-    haftaBaslangic: tarih,
-    haftaBitis: tarih,
-    durum: 'yayinda',
-    gunler: { [tarih]: gun }
+  VAKITLER.forEach((v) => {
+    gun[v] = { asil: 'arsiv', yedek: 'm2' };
   });
+  await db
+    .collection('haftaPlanlari')
+    .doc(HAFTA_ID)
+    .set({
+      haftaBaslangic: tarih,
+      haftaBitis: tarih,
+      durum: 'yayinda',
+      gunler: { [tarih]: gun },
+    });
 }
 
 function bildirimId(tarih: string, vakit: string, tip: string): string {
@@ -57,16 +62,19 @@ function bildirimId(tarih: string, vakit: string, tip: string): string {
 }
 
 async function seedBildirim(tarih: string, vakit: string, tip: string, ekstra: Record<string, unknown>) {
-  await db.collection('bildirimler').doc(bildirimId(tarih, vakit, tip)).set({
-    haftaId: HAFTA_ID,
-    tarih,
-    vakit,
-    uid: 'arsiv',
-    tip,
-    durum: 'bekliyor',
-    pendingAck: true,
-    ...ekstra
-  });
+  await db
+    .collection('bildirimler')
+    .doc(bildirimId(tarih, vakit, tip))
+    .set({
+      haftaId: HAFTA_ID,
+      tarih,
+      vakit,
+      uid: 'arsiv',
+      tip,
+      durum: 'bekliyor',
+      pendingAck: true,
+      ...ekstra,
+    });
 }
 
 const tests: TestCase[] = [
@@ -82,12 +90,15 @@ const tests: TestCase[] = [
       assert.equal(ozet.fixedDays, 0);
       assert.equal(ozet.pastInvalidDays, 1);
 
-      const bildirim = await db.collection('bildirimler').doc(bildirimId(tarih, 'sabah', 'asil')).get();
+      const bildirim = await db
+        .collection('bildirimler')
+        .doc(bildirimId(tarih, 'sabah', 'asil'))
+        .get();
       assert.equal(bildirim.exists, true);
       assert.equal(bildirim.data()?.puanIslendi, true, 'puanIslendi silinmemeli — aksi halde yatsiSonuIslemleri ikinci kez kredilendirir');
       assert.equal(bildirim.data()?.uid, 'arsiv');
       assert.equal(bildirim.data()?.durum, 'onaylandi');
-    }
+    },
   },
   {
     name: 'Atlanan gunun haftaPlanlari belgesi de yazilmaz (plan<->bildirim tutarsizligi olusmaz)',
@@ -103,7 +114,7 @@ const tests: TestCase[] = [
       const gun = plan.data()?.gunler?.[tarih];
       assert.equal(gun?.sabah?.asil, 'arsiv', 'atlanan gunde plan da degismemeli');
       assert.equal(gun?.yatsi?.asil, 'arsiv');
-    }
+    },
   },
   {
     name: 'Uygulanmis/bekleyen gorev devri (vekaletDevredildi) olan gun de atlanir',
@@ -116,10 +127,13 @@ const tests: TestCase[] = [
       const ozet = await fixInvalidRoleAssignments(true);
       assert.equal(ozet.fixedDays, 0);
 
-      const bildirim = await db.collection('bildirimler').doc(bildirimId(tarih, 'sabah', 'asil')).get();
+      const bildirim = await db
+        .collection('bildirimler')
+        .doc(bildirimId(tarih, 'sabah', 'asil'))
+        .get();
       assert.equal(bildirim.data()?.vekaletDevredildi, true);
       assert.equal(bildirim.data()?.uid, 'm2');
-    }
+    },
   },
   {
     name: 'Korunmasi gereken bayragi olmayan gelecek gun GERCEKTEN duzeltilir (kontrol grubu)',
@@ -137,11 +151,14 @@ const tests: TestCase[] = [
       assert.equal(plan.data()?.gunler?.[tarih]?.sabah?.asil, 'm1');
       assert.equal(plan.data()?.gunler?.[tarih]?.sabah?.yedek, 'm2');
 
-      const bildirim = await db.collection('bildirimler').doc(bildirimId(tarih, 'sabah', 'asil')).get();
+      const bildirim = await db
+        .collection('bildirimler')
+        .doc(bildirimId(tarih, 'sabah', 'asil'))
+        .get();
       assert.equal(bildirim.exists, true);
       assert.equal(bildirim.data()?.uid, 'm1');
       assert.equal(bildirim.data()?.puanIslendi, undefined);
-    }
+    },
   },
   {
     name: 'Kuru calistirma hicbir sey yazmaz',
@@ -155,10 +172,13 @@ const tests: TestCase[] = [
 
       const plan = await db.collection('haftaPlanlari').doc(HAFTA_ID).get();
       assert.equal(plan.data()?.gunler?.[tarih]?.sabah?.asil, 'arsiv');
-      const bildirim = await db.collection('bildirimler').doc(bildirimId(tarih, 'sabah', 'asil')).get();
+      const bildirim = await db
+        .collection('bildirimler')
+        .doc(bildirimId(tarih, 'sabah', 'asil'))
+        .get();
       assert.equal(bildirim.exists, false);
-    }
-  }
+    },
+  },
 ];
 
 async function main() {

@@ -23,7 +23,9 @@ import { isFriday } from '../src/lib/dateUtils.ts';
  */
 async function main() {
   const apply = process.argv.includes('--apply');
-  console.log(apply ? 'UYGULAMA MODU — belgeler yazılacak.' : 'KURU ÇALIŞTIRMA — hiçbir şey yazılmayacak (--apply ile gerçek çalıştırma yapın).');
+  console.log(
+    apply ? 'UYGULAMA MODU — belgeler yazılacak.' : 'KURU ÇALIŞTIRMA — hiçbir şey yazılmayacak (--apply ile gerçek çalıştırma yapın).'
+  );
 
   const snapshot = await db.collection('bildirimler').get();
 

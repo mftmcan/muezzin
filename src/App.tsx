@@ -33,14 +33,12 @@ const ROUTE_TITLES: Record<string, string> = {
 function handleError(rawError: unknown, info: ErrorInfo) {
   const error = toError(rawError);
   try {
-    telemetryService.addBreadcrumb(
-      `React ErrorBoundary: ${error.message.slice(0, 100)}`,
-      'system',
-      { componentStack: (info.componentStack ?? '').slice(0, 300) }
-    );
+    telemetryService.addBreadcrumb(`React ErrorBoundary: ${error.message.slice(0, 100)}`, 'system', {
+      componentStack: (info.componentStack ?? '').slice(0, 300),
+    });
     telemetryService.logError(error, info.componentStack ?? '');
   } catch (err) {
-    console.error("Telemetri hata kaydedici hatası:", err);
+    console.error('Telemetri hata kaydedici hatası:', err);
   }
 }
 
@@ -108,31 +106,31 @@ export default function App() {
     initTimeSync();
   }, []);
 
- return (
- // .index.css'teki prefers-reduced-motion bloğu yalnızca CSS
- // transition/animation'ı hedefliyordu — motion/react'in WAAPI ile
- // sürdüğü animasyonları (Modal drag/spring, rota cross-fade, layoutId
- // geçişleri) hiç etkilemiyordu (bkz. premium denetim, bölüm 1).
- // MotionConfig reducedMotion="user" tüm alt ağaca işletim sistemi
- // tercihini uygular.
- <MotionConfig reducedMotion="user">
- <ErrorBoundary
- FallbackComponent={({ error }) => <ChunkErrorFallback error={toError(error)} variant="fullPage" autoReload />}
- onError={handleError}
- >
- <BrowserRouter>
- <AuthGuard>
- <StoreInitializer />
- <Layout>
- <VakitMonitor />
- <ForegroundNotifications />
- <Suspense fallback={<LoadingState label="Sayfa Yükleniyor" heightClassName="min-h-[80vh]" size="lg" />}>
- <AnimatedRoutes />
- </Suspense>
- </Layout>
- </AuthGuard>
- </BrowserRouter>
- </ErrorBoundary>
- </MotionConfig>
- );
+  return (
+    // .index.css'teki prefers-reduced-motion bloğu yalnızca CSS
+    // transition/animation'ı hedefliyordu — motion/react'in WAAPI ile
+    // sürdüğü animasyonları (Modal drag/spring, rota cross-fade, layoutId
+    // geçişleri) hiç etkilemiyordu (bkz. premium denetim, bölüm 1).
+    // MotionConfig reducedMotion="user" tüm alt ağaca işletim sistemi
+    // tercihini uygular.
+    <MotionConfig reducedMotion="user">
+      <ErrorBoundary
+        FallbackComponent={({ error }) => <ChunkErrorFallback error={toError(error)} variant="fullPage" autoReload />}
+        onError={handleError}
+      >
+        <BrowserRouter>
+          <AuthGuard>
+            <StoreInitializer />
+            <Layout>
+              <VakitMonitor />
+              <ForegroundNotifications />
+              <Suspense fallback={<LoadingState label="Sayfa Yükleniyor" heightClassName="min-h-[80vh]" size="lg" />}>
+                <AnimatedRoutes />
+              </Suspense>
+            </Layout>
+          </AuthGuard>
+        </BrowserRouter>
+      </ErrorBoundary>
+    </MotionConfig>
+  );
 }

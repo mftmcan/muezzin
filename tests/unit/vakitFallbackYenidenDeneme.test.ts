@@ -104,7 +104,12 @@ describe('useVakitStore — fallback kilidi', () => {
 
   it('uçuştaki bir fallback varken ikinci snapshot çift çağrı ÜRETMEZ (HS-O6)', async () => {
     let cozucu: ((v: unknown) => void) | null = null;
-    aylikVakitleriCekMock.mockImplementation(() => new Promise((resolve) => { cozucu = resolve; }));
+    aylikVakitleriCekMock.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          cozucu = resolve;
+        })
+    );
     temizle = useVakitStore.getState().init();
     const cb = buAyCallback();
 

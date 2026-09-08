@@ -15,24 +15,34 @@ import { Vakit } from '../types';
  */
 export function getActiveAuraColor(vakit: Vakit | 'gunes' | null | undefined): string {
   switch (vakit) {
-    case 'aksam': return 'var(--aura-ruby)';
-    case 'yatsi': return 'var(--aura-ruby)';
+    case 'aksam':
+      return 'var(--aura-ruby)';
+    case 'yatsi':
+      return 'var(--aura-ruby)';
     case 'ogle':
     case 'ikindi':
-    case 'gunes': return 'var(--aura-amber)';
-    case 'sabah': return 'var(--aura-emerald)';
-    default: return 'var(--aura-indigo)';
+    case 'gunes':
+      return 'var(--aura-amber)';
+    case 'sabah':
+      return 'var(--aura-emerald)';
+    default:
+      return 'var(--aura-indigo)';
   }
 }
 
 /** Ana aura ile kontrast oluşturan sekonder tamamlayıcı renk. */
 export function getSecondaryAuraColor(vakit: Vakit | null | undefined): string {
   switch (vakit) {
-    case 'aksam': return 'var(--aura-indigo)';
-    case 'yatsi': return 'var(--aura-emerald)';
+    case 'aksam':
+      return 'var(--aura-indigo)';
+    case 'yatsi':
+      return 'var(--aura-emerald)';
     case 'ogle':
-    case 'ikindi': return 'var(--aura-rose)';
-    case 'sabah': return 'var(--aura-amber)';
-    default: return 'var(--aura-emerald)';
+    case 'ikindi':
+      return 'var(--aura-rose)';
+    case 'sabah':
+      return 'var(--aura-amber)';
+    default:
+      return 'var(--aura-emerald)';
   }
 }

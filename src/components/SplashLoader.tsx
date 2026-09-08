@@ -25,13 +25,12 @@ export const SplashLoader: React.FC = () => {
   return (
     <div
       className="fixed inset-0 z-[9999] flex flex-col items-center justify-center overflow-hidden transition-all duration-700"
-      style={{ 
+      style={{
         background: isDark ? 'rgba(5, 5, 5, 0.45)' : 'rgba(250, 250, 250, 0.45)',
         backdropFilter: 'blur(50px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(50px) saturate(180%)'
+        WebkitBackdropFilter: 'blur(50px) saturate(180%)',
       }}
     >
-
       {/* Dynamic Circadian Ambient Glow — Sirkadiyen Aurayı referanslar */}
       <motion.div
         initial={{ opacity: 0, scale: 0.6 }}
@@ -72,12 +71,12 @@ export const SplashLoader: React.FC = () => {
         className="absolute inset-0 pointer-events-none"
         style={{
           opacity: isDark ? 0.025 : 0.015,
-          backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",
+          backgroundImage:
+            "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",
         }}
       />
 
       <div className="relative flex flex-col items-center gap-12">
-
         {/* Logo Kartı + Dönen Halo */}
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
@@ -102,9 +101,7 @@ export const SplashLoader: React.FC = () => {
           <div
             className="w-32 h-32 md:w-40 md:h-40 flex items-center justify-center relative overflow-hidden transition-all duration-700"
             style={{
-              background: isDark
-                ? 'rgba(255,255,255,0.04)'
-                : 'rgba(255,255,255,0.72)',
+              background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.72)',
               backdropFilter: 'blur(32px) saturate(180%)',
               // --radius-card TAM OLARAK bu 40px'in tekrar tekrar elle
               // yazılmasını ortadan kaldırmak için eklenmişti (bkz.
@@ -112,9 +109,7 @@ export const SplashLoader: React.FC = () => {
               // ayarlandığında bu ekran göçe dahil edilmemişti (bkz. premium
               // denetim B21, Y3).
               borderRadius: 'var(--radius-card)',
-              border: isDark
-                ? '1px solid rgba(255,255,255,0.07)'
-                : '1px solid rgba(0,0,0,0.06)',
+              border: isDark ? '1px solid rgba(255,255,255,0.07)' : '1px solid rgba(0,0,0,0.06)',
               boxShadow: isDark
                 ? '0 0 0 0.5px rgba(255,255,255,0.06) inset, 0 40px 80px -20px rgba(0,0,0,0.8)'
                 : '0 0 0 0.5px rgba(255,255,255,0.9) inset, 0 20px 60px -15px rgba(0,0,0,0.1)',
@@ -240,7 +235,6 @@ export const SplashLoader: React.FC = () => {
             }}
           />
         </motion.div>
-
       </div>
     </div>
   );

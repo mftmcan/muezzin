@@ -23,7 +23,8 @@ interface EmptyStateProps {
 
 const TONE_CLASSES: Record<EmptyStateTone, string> = {
   neutral: 'bg-[var(--text-primary)]/[0.03] text-[var(--text-secondary)] border-[var(--glass-border)]',
-  indigo: 'bg-[var(--dynamic-aura,var(--aura-indigo))]/10 text-[var(--dynamic-aura,var(--aura-indigo))] border-[var(--dynamic-aura,var(--aura-indigo))]/20',
+  indigo:
+    'bg-[var(--dynamic-aura,var(--aura-indigo))]/10 text-[var(--dynamic-aura,var(--aura-indigo))] border-[var(--dynamic-aura,var(--aura-indigo))]/20',
   emerald: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
   rose: 'bg-rose-500/10 text-rose-500 border-rose-500/20',
   amber: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
@@ -47,7 +48,9 @@ export function EmptyState({ icon, title, description, tone = 'neutral', size = 
       animate={{ opacity: 1, scale: 1 }}
       className={`spatial-glass rounded-card text-center flex flex-col items-center max-w-2xl mx-auto border-dashed border-[var(--text-primary)]/10 ${SIZE_CLASSES[size]} ${className}`}
     >
-      <div className={`w-20 h-20 rounded-icon flex items-center justify-center mb-8 shadow-[var(--spatial-shadow)] border ${TONE_CLASSES[tone]}`}>
+      <div
+        className={`w-20 h-20 rounded-icon flex items-center justify-center mb-8 shadow-[var(--spatial-shadow)] border ${TONE_CLASSES[tone]}`}
+      >
         {icon}
       </div>
       <h3 className="text-3xl font-light text-[var(--text-primary)] tracking-tight mb-4">{title}</h3>
@@ -56,9 +59,7 @@ export function EmptyState({ icon, title, description, tone = 'neutral', size = 
           dinamik Türkçe hata metni taşıyabiliyor, tarayıcının locale'e duyarsız
           CSS uppercase'i küçük noktalı 'i'yi 'İ' yerine 'I'ya çevirirdi (bkz.
           kod denetimi — ExecutiveHeroScreen.tsx'teki AYNI sınıf düzeltme). */}
-      <p className="authority-title !text-2xs opacity-40 tracking-wide leading-relaxed mb-12 max-w-sm">
-        {toTurkishUpperCase(description)}
-      </p>
+      <p className="authority-title !text-2xs opacity-40 tracking-wide leading-relaxed mb-12 max-w-sm">{toTurkishUpperCase(description)}</p>
       {action && (
         <motion.button
           whileHover={{ y: -5, scale: 1.05 }}

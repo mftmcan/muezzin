@@ -40,8 +40,14 @@ const RTDB_HOST_PATTERN = /firebasedatabase\.app|firebaseio\.com/;
  *  genellenmiş hali. */
 async function girisYapVeHaz(page: Page, token: string) {
   await page.clock.setFixedTime(turkeyFixedMorning());
-  await page.route((url) => RTDB_HOST_PATTERN.test(url.hostname), (route) => route.abort());
-  await page.routeWebSocket((url) => RTDB_HOST_PATTERN.test(url.hostname), () => {});
+  await page.route(
+    (url) => RTDB_HOST_PATTERN.test(url.hostname),
+    (route) => route.abort()
+  );
+  await page.routeWebSocket(
+    (url) => RTDB_HOST_PATTERN.test(url.hostname),
+    () => {}
+  );
 
   await page.goto('/');
   await page.waitForFunction(() => window.__testSignIn !== undefined, { timeout: 15000 });
@@ -49,17 +55,19 @@ async function girisYapVeHaz(page: Page, token: string) {
 }
 
 test.describe('Vekalet (Görev Devri) Akışı E2E', () => {
-  test.skip(turkeyIsFridayNow(), 'Vekalet, mazeretle aynı Cuma kısıtlamasına tabi — seed bugün için görev oluşturduğundan bu akış Cuma günü test edilemez.');
+  test.skip(
+    turkeyIsFridayNow(),
+    'Vekalet, mazeretle aynı Cuma kısıtlamasına tabi — seed bugün için görev oluşturduğundan bu akış Cuma günü test edilemez.'
+  );
 
   let tokenA: string;
   let tokenB: string;
 
   test.beforeAll(() => {
-    const raw = execFileSync(
-      'npx',
-      ['tsx', path.join(__dirname, 'seed-vekalet.ts')],
-      { encoding: 'utf8', shell: process.platform === 'win32' }
-    ).trim();
+    const raw = execFileSync('npx', ['tsx', path.join(__dirname, 'seed-vekalet.ts')], {
+      encoding: 'utf8',
+      shell: process.platform === 'win32',
+    }).trim();
     ({ tokenA, tokenB } = JSON.parse(raw));
   });
 
@@ -79,7 +87,7 @@ test.describe('Vekalet (Görev Devri) Akışı E2E', () => {
     // yazarken, h3 başlığı görünen adı çevirip "YATSI" (noktasız I) yazıyor —
     // regex'te bu ikisini karıştırmak eşleşmeyi sessizce başarısız kılıyordu.
     const yatsiKarti = page.locator('div.tactile-card').filter({
-      has: page.getByRole('heading', { name: 'YATSI', exact: true })
+      has: page.getByRole('heading', { name: 'YATSI', exact: true }),
     });
     await expect(yatsiKarti).toBeVisible({ timeout: 15000 });
 
@@ -95,7 +103,8 @@ test.describe('Vekalet (Görev Devri) Akışı E2E', () => {
     // UI bildirimi tek başına yeterli değil — asıl doğrulama Firestore'da
     // gerçekten oluşan `vekalet_talepleri` belgesi (gerçek client-SDK
     // yazımı, mock değil).
-    const snap = await adminDb.collection('vekalet_talepleri')
+    const snap = await adminDb
+      .collection('vekalet_talepleri')
       .where('gonderenUid', '==', 'muezzin_e2e_vekalet_gonderen')
       .where('aliciUid', '==', 'muezzin_e2e_vekalet_alici')
       .where('vakit', '==', 'yatsi')
@@ -113,7 +122,10 @@ test.describe('Vekalet (Görev Devri) Akışı E2E', () => {
 
     await expect(page.getByText('VEKALET TEKLİFİ').first()).toBeVisible({ timeout: 15000 });
 
-    await page.getByRole('button', { name: /KABUL ET/i }).first().click();
+    await page
+      .getByRole('button', { name: /KABUL ET/i })
+      .first()
+      .click();
 
     // NOT ("1000 ifade tavanı" kök neden çözümü): kabul artık ANLIK bir
     // sahiplik transferi değil — istemci yalnızca talebi kabul eder ve
@@ -124,7 +136,8 @@ test.describe('Vekalet (Görev Devri) Akışı E2E', () => {
     // istemci tarafının doğru minimal yazımı yaptığını doğrular.
     await expect(page.locator('text=Kabulünüz Alındı').first()).toBeVisible({ timeout: 10000 });
 
-    const snap = await adminDb.collection('vekalet_talepleri')
+    const snap = await adminDb
+      .collection('vekalet_talepleri')
       .where('gonderenUid', '==', 'muezzin_e2e_vekalet_gonderen')
       .where('aliciUid', '==', 'muezzin_e2e_vekalet_alici')
       .where('vakit', '==', 'ikindi')

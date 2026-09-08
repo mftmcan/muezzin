@@ -1,5 +1,13 @@
 import { db, Timestamp } from './lib/firebaseAdminInit.ts';
-import { haftalikPlanUret, tekKisiliGunleriBul, kapsamsizGunleriBul, nobeteAtanabilirMi, oncekiHaftaninArdArdaYedekSayilariniHesapla, OnayliIzin, VAKITLER } from '../src/lib/planlamaCekirdegi.ts';
+import {
+  haftalikPlanUret,
+  tekKisiliGunleriBul,
+  kapsamsizGunleriBul,
+  nobeteAtanabilirMi,
+  oncekiHaftaninArdArdaYedekSayilariniHesapla,
+  OnayliIzin,
+  VAKITLER,
+} from '../src/lib/planlamaCekirdegi.ts';
 import { getTurkeyNow, isFriday, getOncekiHafta } from '../src/lib/dateUtils.ts';
 import { handleFirestoreError, OperationType } from './lib/errors.ts';
 import { EzanVakitOkuyucu } from './lib/ezanVakitleri.ts';
@@ -62,7 +70,7 @@ function gunPlanProjeksiyonuUygula(
 }
 
 async function main() {
-  console.log("Haftalık plan oluşturma başladı...");
+  console.log('Haftalık plan oluşturma başladı...');
 
   // `vakitler` okumalarını (ay belgeleri) çalıştırma boyunca önbellekleyen tek
   // okuyucu — 3 hafta × 7 gün × 5 vakit için ayrı okuma yapmaz.
@@ -79,18 +87,16 @@ async function main() {
   // 1. Personel Çekme (Adminler ve Müezzinler dahil, Gözlemciler hariç)
   let muezzinSnapshot;
   try {
-    muezzinSnapshot = await db.collection('muezzins')
-      .where('aktif', '==', true)
-      .get();
+    muezzinSnapshot = await db.collection('muezzins').where('aktif', '==', true).get();
   } catch (error) {
     handleFirestoreError(error, OperationType.GET, 'muezzins');
     return;
   }
-  
+
   // Sadece aktif müezzinleri alalım
   const muezzinler = muezzinSnapshot.docs
-    .map(doc => ({ id: doc.id, ...doc.data() } as Muezzin & { id: string }))
-    .filter(m => nobeteAtanabilirMi(m));
+    .map((doc) => ({ id: doc.id, ...doc.data() }) as Muezzin & { id: string })
+    .filter((m) => nobeteAtanabilirMi(m));
 
   // NOT (mimari denetim — bütünsel hata analizi): bu eşik önceden 2 idi,
   // ama src/services/planServisi.ts'teki İSTEMCİ self-healing çağırıcısı
@@ -102,14 +108,14 @@ async function main() {
   // sayısı 1'e düştüğünde (istemci sessizce yedeksiz bir plan üretip
   // yayınlayabilirken) gece cron'unun HİÇ plan üretmemesine yol açıyordu.
   if (muezzinler.length < 1) {
-    console.error("Yetersiz müezzin! Planlama yapılamıyor.");
+    console.error('Yetersiz müezzin! Planlama yapılamıyor.');
     await db.collection('adminUyarilari').add({
       tip: 'zincirTukendi',
       mesaj: 'Aktif personel sayısı planlama için yetersiz (en az 1 gerekli).',
       tarih: formatDateLocal(getTurkeyNow()),
       vakit: null,
       cozuldu: false,
-      olusturmaTarihi: Timestamp.now()
+      olusturmaTarihi: Timestamp.now(),
     });
     process.exit(1);
   }
@@ -131,22 +137,19 @@ async function main() {
   // (düşük öncelikli bulgu — filtresiz sorgu yıllar içinde birikmiş TÜM
   // onaylı izin geçmişini her çalıştırmada okuyordu). `durum+bitis` bileşik
   // index'i zaten mevcut (bkz. src/services/planServisi.ts aynı desen).
-  const izinSnapshot = await db.collection('izinler')
-    .where('durum', '==', 'onaylandi')
-    .where('bitis', '>=', bugunStr)
-    .get();
-  const onayliIzinler = izinSnapshot.docs.map(doc => doc.data() as OnayliIzin);
+  const izinSnapshot = await db.collection('izinler').where('durum', '==', 'onaylandi').where('bitis', '>=', bugunStr).get();
+  const onayliIzinler = izinSnapshot.docs.map((doc) => doc.data() as OnayliIzin);
 
   // Gelecek 3 hafta için plan oluşturmayı dene (Daha güvenli bir aralık)
   for (let weekOffset = 0; weekOffset < 3; weekOffset++) {
     const pazartesi = new Date(pazartesiTemel);
-    pazartesi.setDate(pazartesiTemel.getDate() + (weekOffset * 7));
+    pazartesi.setDate(pazartesiTemel.getDate() + weekOffset * 7);
 
     const haftaBaslangicStr = formatDateLocal(pazartesi);
     const haftaId = `W${haftaBaslangicStr}`;
-    
+
     const gunler: string[] = [];
-    for(let i=0; i<7; i++) {
+    for (let i = 0; i < 7; i++) {
       const gun = new Date(pazartesi);
       gun.setDate(pazartesi.getDate() + i);
       gunler.push(formatDateLocal(gun));
@@ -231,25 +234,45 @@ async function main() {
         if (atama.asil !== 'Sistem') {
           const bAsil = db.collection('bildirimler').doc(`${haftaId}_${gun}_${vakit}_asil`);
           batch.set(bAsil, {
-            haftaId, tarih: gun, vakit, uid: atama.asil, tip: 'asil',
-            durum: 'bekliyor', pendingAck: true, retSebebi: null, cumaMi, olusturmaTarihi: Timestamp.now(),
-            sonGuncelleme: Timestamp.now(), ...pencereAlani
+            haftaId,
+            tarih: gun,
+            vakit,
+            uid: atama.asil,
+            tip: 'asil',
+            durum: 'bekliyor',
+            pendingAck: true,
+            retSebebi: null,
+            cumaMi,
+            olusturmaTarihi: Timestamp.now(),
+            sonGuncelleme: Timestamp.now(),
+            ...pencereAlani,
           });
         }
 
         if (atama.yedek !== 'Sistem') {
           const bYedek = db.collection('bildirimler').doc(`${haftaId}_${gun}_${vakit}_yedek`);
           batch.set(bYedek, {
-            haftaId, tarih: gun, vakit, uid: atama.yedek, tip: 'yedek',
-            durum: 'bekliyor', pendingAck: true, retSebebi: null, cumaMi, olusturmaTarihi: Timestamp.now(),
-            sonGuncelleme: Timestamp.now(), ...pencereAlani
+            haftaId,
+            tarih: gun,
+            vakit,
+            uid: atama.yedek,
+            tip: 'yedek',
+            durum: 'bekliyor',
+            pendingAck: true,
+            retSebebi: null,
+            cumaMi,
+            olusturmaTarihi: Timestamp.now(),
+            sonGuncelleme: Timestamp.now(),
+            ...pencereAlani,
           });
         }
       }
     }
 
     if (eksikSonBasvuru > 0) {
-      console.warn(`${haftaId}: ${eksikSonBasvuru} slot için ezan verisi yok — mazeretSonBasvuru damgası yazılamadı; mazeret/vekalet o slotlarda veri gelene kadar KAPALI kalır (bkz. scripts/mazeretPenceresiBackfill.ts).`);
+      console.warn(
+        `${haftaId}: ${eksikSonBasvuru} slot için ezan verisi yok — mazeretSonBasvuru damgası yazılamadı; mazeret/vekalet o slotlarda veri gelene kadar KAPALI kalır (bkz. scripts/mazeretPenceresiBackfill.ts).`
+      );
     }
 
     batch.set(db.collection('haftaPlanlari').doc(haftaId), {
@@ -257,7 +280,7 @@ async function main() {
       haftaBitis: haftaBitisStr,
       durum: 'yayinda',
       olusturmaTarihi: Timestamp.now(),
-      gunler: gunPlan
+      gunler: gunPlan,
     });
 
     // Hiç kimsenin müsait olmadığı (tamamen kapsamsız) günler — sistemdeki
@@ -276,7 +299,7 @@ async function main() {
           tarih: gun,
           vakit: null,
           cozuldu: false,
-          olusturmaTarihi: Timestamp.now()
+          olusturmaTarihi: Timestamp.now(),
         });
       }
     }
@@ -293,7 +316,7 @@ async function main() {
           tarih: gun,
           vakit: null,
           cozuldu: false,
-          olusturmaTarihi: Timestamp.now()
+          olusturmaTarihi: Timestamp.now(),
         });
       }
     }
@@ -312,24 +335,24 @@ async function main() {
       const tokenToUidMap: Record<string, string> = {};
       const fcmTokens: string[] = [];
       muezzinler
-        .filter(m => m.notificationSettings?.nobetHatirlatici !== false)
-        .forEach(m => {
+        .filter((m) => m.notificationSettings?.nobetHatirlatici !== false)
+        .forEach((m) => {
           const userTokens = kullaniciFcmTokenleriniTopla(m);
-          userTokens.forEach(t => {
+          userTokens.forEach((t) => {
             tokenToUidMap[t] = m.id;
           });
           fcmTokens.push(...userTokens);
         });
 
-      const messages: FcmMessage[] = fcmTokens.map(token => ({
+      const messages: FcmMessage[] = fcmTokens.map((token) => ({
         token,
         notification: {
           title: 'Yeni Haftalık Plan Yayınlandı 🗓️',
-          body: 'Önümüzdeki haftanın ezan nöbet planı hazırlandı. Görevlerinizi kontrol etmek için dokunun.'
+          body: 'Önümüzdeki haftanın ezan nöbet planı hazırlandı. Görevlerinizi kontrol etmek için dokunun.',
         },
         data: {
-          type: 'weekly_plan_published'
-        }
+          type: 'weekly_plan_published',
+        },
       }));
 
       await fcmGonderVeTemizle(messages, tokenToUidMap, 'FCM haftalık plan bildirimi');
@@ -347,7 +370,7 @@ async function main() {
   process.exit(0);
 }
 
-main().catch(err => {
-  console.error("Kritik hata:", err);
+main().catch((err) => {
+  console.error('Kritik hata:', err);
   process.exit(1);
 });

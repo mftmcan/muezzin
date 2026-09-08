@@ -54,15 +54,7 @@ export interface SelfHealingKarariGirdisi {
 }
 
 export function selfHealingTetiklenmeliMi(girdi: SelfHealingKarariGirdisi): boolean {
-  const {
-    planVarMi,
-    planLoading,
-    sunucudanDogrulandi,
-    isAdmin,
-    haftaId,
-    dahaOnceTetiklenenHaftaId,
-    olusturuluyor = false,
-  } = girdi;
+  const { planVarMi, planLoading, sunucudanDogrulandi, isAdmin, haftaId, dahaOnceTetiklenenHaftaId, olusturuluyor = false } = girdi;
 
   if (!haftaId) return false;
   if (!isAdmin) return false;

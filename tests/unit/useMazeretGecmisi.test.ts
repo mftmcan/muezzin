@@ -61,9 +61,7 @@ function kisitlar(): Kisit[] {
 /** Çözümü test tarafından tetiklenen bir `getDoc` sözü üretir. */
 function ertelenmisGetDoc() {
   const cozucular: ((v: unknown) => void)[] = [];
-  getDocMock.mockImplementation(
-    () => new Promise((resolve) => cozucular.push(resolve))
-  );
+  getDocMock.mockImplementation(() => new Promise((resolve) => cozucular.push(resolve)));
   return {
     hepsiniCoz: (retSebebi: string | null) => {
       const kopya = [...cozucular];
@@ -126,7 +124,12 @@ describe('useMazeretGecmisi — mazeret_detaylari fan-out', () => {
     const cb = veriCallback();
 
     await act(async () => {
-      cb(snapshotIle([{ id: 'a', tarih: '2026-05-01' }, { id: 'b', tarih: '2026-04-01' }]));
+      cb(
+        snapshotIle([
+          { id: 'a', tarih: '2026-05-01' },
+          { id: 'b', tarih: '2026-04-01' },
+        ])
+      );
     });
 
     await waitFor(() => expect(result.current.gecmis[0].retSebebi).toBeDefined());
@@ -134,11 +137,13 @@ describe('useMazeretGecmisi — mazeret_detaylari fan-out', () => {
 
     // Aynı iki satır + bir yeni satır: yalnızca YENİ satır için okuma olmalı.
     await act(async () => {
-      cb(snapshotIle([
-        { id: 'a', tarih: '2026-05-01' },
-        { id: 'b', tarih: '2026-04-01' },
-        { id: 'c', tarih: '2026-03-01' },
-      ]));
+      cb(
+        snapshotIle([
+          { id: 'a', tarih: '2026-05-01' },
+          { id: 'b', tarih: '2026-04-01' },
+          { id: 'c', tarih: '2026-03-01' },
+        ])
+      );
     });
 
     await waitFor(() => expect(result.current.gecmis).toHaveLength(3));
@@ -176,7 +181,7 @@ describe('useMazeretGecmisi — mazeret_detaylari fan-out', () => {
     expect(getDocMock).toHaveBeenCalledTimes(2);
   });
 
-  it('unmount sonrası çözülen fan-out state\'e dokunmaz ve dinleyici kapatılır', async () => {
+  it("unmount sonrası çözülen fan-out state'e dokunmaz ve dinleyici kapatılır", async () => {
     const ertelenmis = ertelenmisGetDoc();
     const { result, unmount } = renderHook(() => useMazeretGecmisi());
 
@@ -199,13 +204,20 @@ describe('useMazeretGecmisi — mazeret_detaylari fan-out', () => {
     expect(result.current.gecmis[0].retSebebi).toBeUndefined();
   });
 
-  it('bayat bir fan-out, daha yeni snapshot\'ın satırlarını geri getirmez', async () => {
+  it("bayat bir fan-out, daha yeni snapshot'ın satırlarını geri getirmez", async () => {
     const ertelenmis = ertelenmisGetDoc();
     const { result } = renderHook(() => useMazeretGecmisi());
     const cb = veriCallback();
 
     // 1. snapshot: iki satır, fan-out uçuşta.
-    act(() => cb(snapshotIle([{ id: 'a', tarih: '2026-05-01' }, { id: 'b', tarih: '2026-04-01' }])));
+    act(() =>
+      cb(
+        snapshotIle([
+          { id: 'a', tarih: '2026-05-01' },
+          { id: 'b', tarih: '2026-04-01' },
+        ])
+      )
+    );
     expect(ertelenmis.bekleyenSayisi()).toBe(2);
 
     // 2. snapshot: 'b' silindi (admin arşivden kaldırdı). 'a' hâlâ uçuşta

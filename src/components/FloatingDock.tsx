@@ -32,7 +32,7 @@ const ALL_NAV_ITEMS = [
   { path: '/admin', label: 'Yönetim', icon: LayoutDashboard, adminOnly: true, component: () => import('../pages/admin/AdminPanel') },
 ];
 
-const AppNavItem = memo(({ item, isActive }: { item: typeof ALL_NAV_ITEMS[0], isActive: boolean }) => {
+const AppNavItem = memo(({ item, isActive }: { item: (typeof ALL_NAV_ITEMS)[0]; isActive: boolean }) => {
   const Icon = item.icon;
   const navigate = useNavigate();
 
@@ -75,52 +75,47 @@ const AppNavItem = memo(({ item, isActive }: { item: typeof ALL_NAV_ITEMS[0], is
         className="relative flex flex-col items-center justify-center w-full h-full select-none touch-manipulation z-10 py-1 group"
         style={{ WebkitTapHighlightColor: 'transparent' }}
       >
-      <motion.div
-        whileTap={{ scale: 0.85 }}
-        className="relative flex flex-col items-center justify-center w-full h-full"
-      >
-        {isActive && (
-          <motion.div
-            layoutId="activeNavIndicator"
-            className="absolute inset-[6px] sm:inset-0 bg-[var(--text-primary)]/[0.06] rounded-card shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] border transition-all duration-1000"
-            style={{
-              borderColor: 'color-mix(in srgb, var(--dynamic-aura, var(--text-primary)) 20%, transparent)',
-              boxShadow: '0 0 25px -4px color-mix(in srgb, var(--dynamic-aura, var(--text-primary)) 15%, transparent)'
-            }}
-            transition={{ type: 'spring', bounce: 0, duration: 0.3 }}
-          />
-        )}
+        <motion.div whileTap={{ scale: 0.85 }} className="relative flex flex-col items-center justify-center w-full h-full">
+          {isActive && (
+            <motion.div
+              layoutId="activeNavIndicator"
+              className="absolute inset-[6px] sm:inset-0 bg-[var(--text-primary)]/[0.06] rounded-card shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] border transition-all duration-1000"
+              style={{
+                borderColor: 'color-mix(in srgb, var(--dynamic-aura, var(--text-primary)) 20%, transparent)',
+                boxShadow: '0 0 25px -4px color-mix(in srgb, var(--dynamic-aura, var(--text-primary)) 15%, transparent)',
+              }}
+              transition={{ type: 'spring', bounce: 0, duration: 0.3 }}
+            />
+          )}
 
-        <div className="relative z-20 flex flex-col items-center justify-center gap-0 sm:gap-1 pointer-events-none">
-          <Icon
-            size={isActive ? 20 : 22}
-            strokeWidth={isActive ? 2.5 : 1.5}
-            className={`transition-all duration-500 ${
-              isActive
-                ? 'text-[var(--text-primary)]'
-                : 'text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]'
-            }`}
-          />
-          <AnimatePresence mode="wait">
-            {isActive && (
-              <motion.div
-                key="active-dock-indicator"
-                layoutId="active-dock-indicator"
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0 }}
-                className="w-1.5 h-1.5 rounded-full bg-[var(--text-primary)] shadow-[0_0_8px_rgba(255,255,255,0.7)] mt-1.5"
-                transition={{ type: 'spring', stiffness: 450, damping: 32 }}
-              />
-            )}
-          </AnimatePresence>
+          <div className="relative z-20 flex flex-col items-center justify-center gap-0 sm:gap-1 pointer-events-none">
+            <Icon
+              size={isActive ? 20 : 22}
+              strokeWidth={isActive ? 2.5 : 1.5}
+              className={`transition-all duration-500 ${
+                isActive ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]'
+              }`}
+            />
+            <AnimatePresence mode="wait">
+              {isActive && (
+                <motion.div
+                  key="active-dock-indicator"
+                  layoutId="active-dock-indicator"
+                  initial={{ opacity: 0, scale: 0 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0 }}
+                  className="w-1.5 h-1.5 rounded-full bg-[var(--text-primary)] shadow-[0_0_8px_rgba(255,255,255,0.7)] mt-1.5"
+                  transition={{ type: 'spring', stiffness: 450, damping: 32 }}
+                />
+              )}
+            </AnimatePresence>
+          </div>
+        </motion.div>
+
+        <div className="hidden sm:block absolute -top-14 left-1/2 -translate-x-1/2 px-4 py-2 bg-[var(--app-bg)] text-[var(--text-primary)] text-2xs font-sans font-extralight tracking-wide rounded-[14px] opacity-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none -translate-y-2 group-hover:translate-y-0 scale-90 shadow-[var(--spatial-shadow)] border border-[var(--glass-border)] backdrop-blur-xl">
+          {item.label}
+          <div className="absolute bottom-[-5px] left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-[var(--app-bg)] rotate-45 border-r border-b border-[var(--glass-border)]" />
         </div>
-      </motion.div>
-
-      <div className="hidden sm:block absolute -top-14 left-1/2 -translate-x-1/2 px-4 py-2 bg-[var(--app-bg)] text-[var(--text-primary)] text-2xs font-sans font-extralight tracking-wide rounded-[14px] opacity-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none -translate-y-2 group-hover:translate-y-0 scale-90 shadow-[var(--spatial-shadow)] border border-[var(--glass-border)] backdrop-blur-xl">
-        {item.label}
-        <div className="absolute bottom-[-5px] left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-[var(--app-bg)] rotate-45 border-r border-b border-[var(--glass-border)]" />
-      </div>
       </Link>
     </motion.div>
   );
@@ -139,39 +134,42 @@ AppNavItem.displayName = 'AppNavItem';
 export function FloatingDock() {
   const location = useLocation();
   const navigate = useNavigate();
-  const isAdmin = useAuthStore(state => state.isAdmin);
+  const isAdmin = useAuthStore((state) => state.isAdmin);
   const isAdminRoute = location.pathname.startsWith('/admin');
   const [dockRadius] = useState(readDockRadius);
   const { theme, toggleTheme } = useThemeStore();
 
   const [searchParams, setSearchParams] = useSearchParams();
   const activeAdminTab = toActiveModule(searchParams.get('tab'));
-  const setActiveAdminTab = useCallback((tab: ActiveModule) => {
-    setSearchParams(prev => {
-      const newParams = new URLSearchParams(prev);
-      newParams.set('tab', tab);
-      newParams.delete('subtab');
-      newParams.delete('sub');
-      return newParams;
-    });
-  }, [setSearchParams]);
+  const setActiveAdminTab = useCallback(
+    (tab: ActiveModule) => {
+      setSearchParams((prev) => {
+        const newParams = new URLSearchParams(prev);
+        newParams.set('tab', tab);
+        newParams.delete('subtab');
+        newParams.delete('sub');
+        return newParams;
+      });
+    },
+    [setSearchParams]
+  );
 
-  const pendingIzinler = useAdminIzinlerStore(s => s.izinler.filter(i => i.durum === 'onay_bekliyor').length);
-  const cozulmamisSayisi = useKrizAlarmlariStore(s => s.cozulmamisSayisi);
+  const pendingIzinler = useAdminIzinlerStore((s) => s.izinler.filter((i) => i.durum === 'onay_bekliyor').length);
+  const cozulmamisSayisi = useKrizAlarmlariStore((s) => s.cozulmamisSayisi);
 
-  const navigateApp = useCallback((path: string) => {
-    playClick();
-    React.startTransition(() => navigate(path));
-  }, [navigate]);
+  const navigateApp = useCallback(
+    (path: string) => {
+      playClick();
+      React.startTransition(() => navigate(path));
+    },
+    [navigate]
+  );
 
-  const handleAdminPointerAction = useCallback((
-    event: React.PointerEvent<HTMLButtonElement>,
-    action: () => void,
-    isMedium = false
-  ) => {
+  const handleAdminPointerAction = useCallback((event: React.PointerEvent<HTMLButtonElement>, action: () => void, isMedium = false) => {
     if (event.pointerType === 'mouse') return;
     event.preventDefault();
-    if (isMedium) hapticMedium(); else playClick();
+    if (isMedium) hapticMedium();
+    else playClick();
     action();
   }, []);
 
@@ -210,7 +208,7 @@ export function FloatingDock() {
     e.currentTarget.style.setProperty('--mouse-y', '50%');
   };
 
-  const navItems = ALL_NAV_ITEMS.filter(item => !item.adminOnly || isAdmin);
+  const navItems = ALL_NAV_ITEMS.filter((item) => !item.adminOnly || isAdmin);
   const adminNavItems = getAdminNavItems({ cozulmamisSayisi, pendingIzinler });
 
   // Kabın GÖRÜNÜR şekli (`flex` mi `grid` mi, hangi boyut sınıfları) `isAdminRoute`
@@ -247,7 +245,10 @@ export function FloatingDock() {
                 aria-label={`${item.label} sayfasına git`}
                 title={item.label}
                 onPointerDown={(event) => handleAdminPointerAction(event, () => navigateApp(item.path))}
-                onClick={() => { playClick(); navigateApp(item.path); }}
+                onClick={() => {
+                  playClick();
+                  navigateApp(item.path);
+                }}
                 className="min-w-[42px] h-[38px] px-2 rounded-[14px] flex items-center justify-center text-[var(--text-primary)]/45 hover:text-[var(--text-primary)] hover:bg-[var(--text-primary)]/[0.04] transition-all touch-manipulation"
               >
                 <item.icon size={16} strokeWidth={1.7} />
@@ -262,7 +263,10 @@ export function FloatingDock() {
                 görünür hem de kolay erişilir hale getirildi. */}
             <button
               type="button"
-              onClick={(event) => { playClick(); toggleTheme(event); }}
+              onClick={(event) => {
+                playClick();
+                toggleTheme(event);
+              }}
               onPointerDown={(event) => handleAdminPointerAction(event, () => toggleTheme())}
               aria-label={theme === 'dark' ? 'Aydınlık temaya geç' : 'Karanlık temaya geç'}
               title={theme === 'dark' ? 'Aydınlık temaya geç' : 'Karanlık temaya geç'}
@@ -285,7 +289,10 @@ export function FloatingDock() {
         // framer-motion'ın FLIP sırasında düzgün interpolasyon yapabilmesi için
         // JS tarafında bir sayı olmalı, CSS değişkenini burada okuyamıyoruz.
         animate={{ borderRadius: dockRadius }}
-        transition={{ layout: { type: 'spring', bounce: 0.15, duration: 0.5 }, borderRadius: { type: 'spring', bounce: 0.15, duration: 0.5 } }}
+        transition={{
+          layout: { type: 'spring', bounce: 0.15, duration: 0.5 },
+          borderRadius: { type: 'spring', bounce: 0.15, duration: 0.5 },
+        }}
         // Dock sabit (fixed) konumda kaldığı için sayfa kaydırılırken altındaki
         // içerik (ör. Vakit Görevlileri kartı) üst kenarında keskin bir şekilde
         // kesilip yarım kalabiliyordu (bkz. görsel tasarım denetimi). Üst 16px'i
@@ -305,7 +312,10 @@ export function FloatingDock() {
         <div className="absolute inset-0 bg-gradient-to-b from-[var(--text-primary)]/5 to-transparent opacity-0 group-hover/nav:opacity-100 transition-opacity duration-700 pointer-events-none" />
         <div
           className="absolute inset-0 opacity-[0.08] pointer-events-none transition-all duration-1000"
-          style={{ background: 'radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), var(--dynamic-aura, var(--text-primary)), transparent 50%)' }}
+          style={{
+            background:
+              'radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), var(--dynamic-aura, var(--text-primary)), transparent 50%)',
+          }}
         />
 
         {/* `wait`: eski ikon seti tamamen solup bitmeden yenisi hiç render
@@ -315,69 +325,60 @@ export function FloatingDock() {
             "içerik gidiyor → kap yeniden şekilleniyor → içerik geliyor"
             sıralı hissini veriyor. */}
         <AnimatePresence mode="wait" onExitComplete={() => setContainerIsAdmin(isAdminRoute)}>
-          {isAdminRoute ? (
-            adminNavItems.map((item) => {
-              const isActive = activeAdminTab === item.id;
-              return (
-                <motion.button
-                  type="button"
-                  key={item.id}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.15 }}
-                  aria-label={item.fullLabel}
-                  aria-current={isActive ? 'page' : undefined}
-                  onPointerDown={(event) => handleAdminPointerAction(event, () => setActiveAdminTab(item.id))}
-                  onClick={() => { playClick(); setActiveAdminTab(item.id); }}
-                  title={item.fullLabel}
-                  className={`relative min-w-[44px] min-h-[44px] sm:min-w-[54px] sm:min-h-[54px] p-2 sm:p-3 rounded-2xl sm:rounded-[20px] transition-all duration-150 z-10 flex flex-col items-center justify-center gap-1 group touch-manipulation ${
-                    isActive
-                      ? 'text-[var(--dynamic-aura,var(--aura-indigo))] scale-110'
-                      : 'text-faint hover:text-[var(--text-primary)]/60'
-                  }`}
-                >
-                  <div className="relative z-10 transition-transform duration-500">
-                    <item.icon strokeWidth={isActive ? 2 : 1.5} size={20} />
-                    {item.badge > 0 && (
-                      <div className="badge-pulse-danger -top-2 -right-2 w-3.5 h-3.5 !text-2xs">
-                        {item.badge}
-                      </div>
-                    )}
-                  </div>
+          {isAdminRoute
+            ? adminNavItems.map((item) => {
+                const isActive = activeAdminTab === item.id;
+                return (
+                  <motion.button
+                    type="button"
+                    key={item.id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.15 }}
+                    aria-label={item.fullLabel}
+                    aria-current={isActive ? 'page' : undefined}
+                    onPointerDown={(event) => handleAdminPointerAction(event, () => setActiveAdminTab(item.id))}
+                    onClick={() => {
+                      playClick();
+                      setActiveAdminTab(item.id);
+                    }}
+                    title={item.fullLabel}
+                    className={`relative min-w-[44px] min-h-[44px] sm:min-w-[54px] sm:min-h-[54px] p-2 sm:p-3 rounded-2xl sm:rounded-[20px] transition-all duration-150 z-10 flex flex-col items-center justify-center gap-1 group touch-manipulation ${
+                      isActive
+                        ? 'text-[var(--dynamic-aura,var(--aura-indigo))] scale-110'
+                        : 'text-faint hover:text-[var(--text-primary)]/60'
+                    }`}
+                  >
+                    <div className="relative z-10 transition-transform duration-500">
+                      <item.icon strokeWidth={isActive ? 2 : 1.5} size={20} />
+                      {item.badge > 0 && <div className="badge-pulse-danger -top-2 -right-2 w-3.5 h-3.5 !text-2xs">{item.badge}</div>}
+                    </div>
 
-                  {isActive && (
-                    <>
-                      <motion.div
-                        layoutId="active-dock-tab"
-                        className="absolute inset-0 bg-[var(--surface-medium)] rounded-card -z-10 border border-[var(--glass-border)]"
-                        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                      />
-                      <motion.div
-                        layoutId="active-dock-glow"
-                        className="absolute inset-0 bg-[var(--dynamic-aura,var(--aura-indigo))]/10 blur-xl -z-20"
-                        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                      />
-                      <motion.div
-                        layoutId="active-admin-dock-indicator"
-                        className="w-1 h-1 rounded-full bg-[var(--dynamic-aura,var(--aura-indigo))] shadow-[0_0_8px_color-mix(in_srgb,var(--dynamic-aura,var(--aura-indigo))_80%,transparent)] mt-0.5"
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                      />
-                    </>
-                  )}
-                </motion.button>
-              );
-            })
-          ) : (
-            navItems.map((item) => (
-              <AppNavItem
-                key={item.path}
-                item={item}
-                isActive={location.pathname === item.path}
-              />
-            ))
-          )}
+                    {isActive && (
+                      <>
+                        <motion.div
+                          layoutId="active-dock-tab"
+                          className="absolute inset-0 bg-[var(--surface-medium)] rounded-card -z-10 border border-[var(--glass-border)]"
+                          transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                        />
+                        <motion.div
+                          layoutId="active-dock-glow"
+                          className="absolute inset-0 bg-[var(--dynamic-aura,var(--aura-indigo))]/10 blur-xl -z-20"
+                          transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                        />
+                        <motion.div
+                          layoutId="active-admin-dock-indicator"
+                          className="w-1 h-1 rounded-full bg-[var(--dynamic-aura,var(--aura-indigo))] shadow-[0_0_8px_color-mix(in_srgb,var(--dynamic-aura,var(--aura-indigo))_80%,transparent)] mt-0.5"
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                        />
+                      </>
+                    )}
+                  </motion.button>
+                );
+              })
+            : navItems.map((item) => <AppNavItem key={item.path} item={item} isActive={location.pathname === item.path} />)}
         </AnimatePresence>
       </motion.nav>
     </div>

@@ -14,9 +14,18 @@ export interface HijriDateParts {
 }
 
 const HICRI_AY_ISIMLERI = [
-  'Muharrem', 'Safer', 'Rebiülevvel', 'Rebiülahir',
-  'Cemaziyelevvel', 'Cemaziyelahir', 'Recep', 'Şaban',
-  'Ramazan', 'Şevval', 'Zilkade', 'Zilhicce'
+  'Muharrem',
+  'Safer',
+  'Rebiülevvel',
+  'Rebiülahir',
+  'Cemaziyelevvel',
+  'Cemaziyelahir',
+  'Recep',
+  'Şaban',
+  'Ramazan',
+  'Şevval',
+  'Zilkade',
+  'Zilhicce',
 ];
 
 /**

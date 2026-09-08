@@ -37,32 +37,32 @@ const MUEZZIN_MADDELERI: KilavuzMaddesi[] = [
   {
     icon: Home,
     title: 'Vakit (Ana Ekran)',
-    desc: 'Şu anki ve sıradaki ezan vaktini, bugünün asil/yedek görevlilerini gösterir. Kendi göreviniz varsa burada vurgulanır; gelen vekalet teklifleri de bu ekrandan kabul/red edilir.'
+    desc: 'Şu anki ve sıradaki ezan vaktini, bugünün asil/yedek görevlilerini gösterir. Kendi göreviniz varsa burada vurgulanır; gelen vekalet teklifleri de bu ekrandan kabul/red edilir.',
   },
   {
     icon: ListChecks,
     title: 'Görev Kartı: Onay, Mazeret, Devir',
-    desc: '"Okudum Onayla" ile görevi teyit edin. Gelemeyecekseniz "Mazeret Bildir" ile bildirin — yedek personel otomatik devreye girer (bu işlem geri alınamaz). "Görevi Devret" ile görevinizi başka bir müezzine teklif edebilirsiniz.'
+    desc: '"Okudum Onayla" ile görevi teyit edin. Gelemeyecekseniz "Mazeret Bildir" ile bildirin — yedek personel otomatik devreye girer (bu işlem geri alınamaz). "Görevi Devret" ile görevinizi başka bir müezzine teklif edebilirsiniz.',
   },
   {
     icon: CalendarClock,
     title: 'İzin & Mazeret Talebi',
-    desc: 'Vakit ekranındaki karttan haftalık, yıllık veya mazeret izni talep edin. Yıllık izinde kalan kotanız gösterilir; talep yönetici onayına gider, onay bekleyenler iptal edilebilir.'
+    desc: 'Vakit ekranındaki karttan haftalık, yıllık veya mazeret izni talep edin. Yıllık izinde kalan kotanız gösterilir; talep yönetici onayına gider, onay bekleyenler iptal edilebilir.',
   },
   {
     icon: Calendar,
     title: 'Takvim',
-    desc: 'Seçtiğiniz haftanın tüm günlerinde asil ve yedek görevlileri listeler. Bugün mavi, sizin göreviniz olan günler sarı renkle vurgulanır; önceki/sonraki haftaya geçilebilir.'
+    desc: 'Seçtiğiniz haftanın tüm günlerinde asil ve yedek görevlileri listeler. Bugün mavi, sizin göreviniz olan günler sarı renkle vurgulanır; önceki/sonraki haftaya geçilebilir.',
   },
   {
     icon: User,
     title: 'Profil',
-    desc: 'Ad-soyad, hesap durumu, görev biriminiz (ilçe) ve aylık kaç vakitte hizmet ettiğiniz burada görünür. Ad-soyadınızı buradan düzenleyebilirsiniz.'
+    desc: 'Ad-soyad, hesap durumu, görev biriminiz (ilçe) ve aylık kaç vakitte hizmet ettiğiniz burada görünür. Ad-soyadınızı buradan düzenleyebilirsiniz.',
   },
   {
     icon: Settings,
     title: 'Ayarlar',
-    desc: 'Bildirim tercihlerini, koyu/açık temayı ve sesli bildirim okumayı buradan yönetirsiniz. Bildirim geçmişinize ve bu kılavuza da buradan ulaşılır.'
+    desc: 'Bildirim tercihlerini, koyu/açık temayı ve sesli bildirim okumayı buradan yönetirsiniz. Bildirim geçmişinize ve bu kılavuza da buradan ulaşılır.',
   },
 ];
 
@@ -70,22 +70,22 @@ const ADMIN_MADDELERI: KilavuzMaddesi[] = [
   {
     icon: LayoutDashboard,
     title: 'Genel Bakış',
-    desc: 'Sistem sağlığı skorunu, ekip sayısını, bekleyen davet/izin onaylarını ve aktif kriz uyarılarını özetler. Bekleyen izin taleplerini doğrudan buradan onaylayıp reddedebilirsiniz.'
+    desc: 'Sistem sağlığı skorunu, ekip sayısını, bekleyen davet/izin onaylarını ve aktif kriz uyarılarını özetler. Bekleyen izin taleplerini doğrudan buradan onaylayıp reddedebilirsiniz.',
   },
   {
     icon: CalendarDays,
     title: 'Hizmet Cetveli',
-    desc: 'Haftalık nöbet dağılımını düzenlediğiniz ekran — her gün/vakit için asil ve yedek atarsınız ("Dizge Otomatik" veya elle seçim). İzinli personel otomatik devre dışı gösterilir; plan yeniden üretilebilir veya CSV olarak dışa aktarılabilir.'
+    desc: 'Haftalık nöbet dağılımını düzenlediğiniz ekran — her gün/vakit için asil ve yedek atarsınız ("Dizge Otomatik" veya elle seçim). İzinli personel otomatik devre dışı gösterilir; plan yeniden üretilebilir veya CSV olarak dışa aktarılabilir.',
   },
   {
     icon: Users,
     title: 'Kadro Yönetimi',
-    desc: 'Ekibinizdeki müezzinleri ekler, düzenler, aktif/pasif yaparsınız. Bekleyen davetler ve alt sekmedeki izin/mazeret kayıtları da buradan onaylanır.'
+    desc: 'Ekibinizdeki müezzinleri ekler, düzenler, aktif/pasif yaparsınız. Bekleyen davetler ve alt sekmedeki izin/mazeret kayıtları da buradan onaylanır.',
   },
   {
     icon: SlidersHorizontal,
     title: 'Dizge Ayarları',
-    desc: 'Görev biriminizin ilçesini ve Hicri takvim düzeltmesini ayarlar, ezan vakti önbelleğini günceller, sistem loglarını görüntülersiniz.'
+    desc: 'Görev biriminizin ilçesini ve Hicri takvim düzeltmesini ayarlar, ezan vakti önbelleğini günceller, sistem loglarını görüntülersiniz.',
   },
 ];
 
@@ -108,12 +108,12 @@ function KilavuzListesi({ maddeler }: { maddeler: KilavuzMaddesi[] }) {
 }
 
 export const KullanimKilavuzuModal: React.FC<KullanimKilavuzuModalProps> = ({ isOpen, onClose }) => {
-  const isAdmin = useAuthStore(s => s.isAdmin);
+  const isAdmin = useAuthStore((s) => s.isAdmin);
   // GOZLEMCI_SALT_OKUMA_IPUCU birinci şahıs ("Gözlemci ROLÜNDESİNİZ") — bu
   // notu `!isAdmin` gibi geniş bir koşulla göstermek, sıradan bir müezzine
   // de yanlışlıkla "siz gözlemcisiniz" derdi. Yalnızca GERÇEKTEN gözlemci
   // rolündeki kullanıcıya (isReadOnly) gösteriliyor.
-  const isReadOnly = useAuthStore(s => s.isReadOnly);
+  const isReadOnly = useAuthStore((s) => s.isReadOnly);
   const [aktifSekme, setAktifSekme] = useState<'muezzin' | 'admin'>('muezzin');
 
   return (
@@ -127,9 +127,9 @@ export const KullanimKilavuzuModal: React.FC<KullanimKilavuzuModalProps> = ({ is
           {(
             [
               { id: 'muezzin', label: 'Müezzin Ekranları' },
-              { id: 'admin', label: 'Yönetim Paneli' }
+              { id: 'admin', label: 'Yönetim Paneli' },
             ] as const
-          ).map(sekme => (
+          ).map((sekme) => (
             <button
               type="button"
               key={sekme.id}

@@ -33,7 +33,9 @@ export function OfflineBanner() {
             </div>
             <div className="flex flex-col">
               <span className="text-2xs font-bold tracking-wide text-[var(--text-primary)]">ÇEVRİMDIŞI MOD</span>
-              <span className="text-2xs text-[var(--text-secondary)] opacity-80 leading-tight">Değişiklikler bağlantı sağlandığında eşitlenecek.</span>
+              <span className="text-2xs text-[var(--text-secondary)] opacity-80 leading-tight">
+                Değişiklikler bağlantı sağlandığında eşitlenecek.
+              </span>
             </div>
           </div>
         </motion.div>

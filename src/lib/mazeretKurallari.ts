@@ -129,7 +129,7 @@ export function mazeretKapaliMi(girdi: MazeretZamanGirdisi, suAn: Date): Mazeret
   if (!sonBasvuru) {
     return {
       kapali: true,
-      sebep: 'Bu görevin ezan vakti bilinmediği için mazeret bildirimi/görev devri penceresi doğrulanamıyor.'
+      sebep: 'Bu görevin ezan vakti bilinmediği için mazeret bildirimi/görev devri penceresi doğrulanamıyor.',
     };
   }
 
@@ -138,7 +138,7 @@ export function mazeretKapaliMi(girdi: MazeretZamanGirdisi, suAn: Date): Mazeret
       kapali: true,
       sebep: sabahIstisnasi
         ? 'Sabah vakti için mazeret bildirimi süresi (yatsıdan 1 saat sonrası) doldu.'
-        : 'Ezan vaktine 1 saatten az kaldığı için görev devri/mazeret bildirimi kapalıdır.'
+        : 'Ezan vaktine 1 saatten az kaldığı için görev devri/mazeret bildirimi kapalıdır.',
     };
   }
 

@@ -2,7 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { db } from '../../../lib/firebase';
 import { collection, query, limit, getDocs, waitForPendingWrites } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'motion/react';
-import { RefreshCw, Database, BellRing, Layers, Wifi, Play, Sparkles, CheckCircle2, XCircle, Info, ChevronDown, ChevronUp, Terminal, ShieldAlert } from 'lucide-react';
+import {
+  RefreshCw,
+  Database,
+  BellRing,
+  Layers,
+  Wifi,
+  Play,
+  Sparkles,
+  CheckCircle2,
+  XCircle,
+  Info,
+  ChevronDown,
+  ChevronUp,
+  Terminal,
+  ShieldAlert,
+} from 'lucide-react';
 import { ConfirmModal } from '../../../components/ui/ConfirmModal';
 import { telemetryService } from '../../../services/telemetryService';
 import type { LogTab } from '../modules/SistemLoglari';
@@ -51,18 +66,24 @@ function SelfCheckCard({ icon: Icon, idleIconColorClass, title, subtitle, state,
     <motion.div
       layout
       className={`spatial-glass border p-4 sm:p-6 rounded-card flex flex-col justify-between h-64 transition-all duration-500 ${
-        state === 'success' ? 'border-emerald-500/30 shadow-[0_0_20px_rgba(16,185,129,0.03)]' :
-        state === 'error' ? 'border-rose-500/30 shadow-[0_0_20px_rgba(244,63,94,0.03)]' :
-        'border-[var(--glass-border)]'
+        state === 'success'
+          ? 'border-emerald-500/30 shadow-[0_0_20px_rgba(16,185,129,0.03)]'
+          : state === 'error'
+            ? 'border-rose-500/30 shadow-[0_0_20px_rgba(244,63,94,0.03)]'
+            : 'border-[var(--glass-border)]'
       }`}
     >
       <div className="flex justify-between items-start">
         <div className="flex items-center gap-3">
-          <div className={`w-10 h-10 rounded-2xl flex items-center justify-center border transition-all ${
-            state === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' :
-            state === 'error' ? 'bg-rose-500/10 border-rose-500/20 text-rose-400' :
-            `bg-[var(--text-primary)]/[0.03] border-[var(--glass-border)] ${idleIconColorClass}`
-          }`}>
+          <div
+            className={`w-10 h-10 rounded-2xl flex items-center justify-center border transition-all ${
+              state === 'success'
+                ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
+                : state === 'error'
+                  ? 'bg-rose-500/10 border-rose-500/20 text-rose-400'
+                  : `bg-[var(--text-primary)]/[0.03] border-[var(--glass-border)] ${idleIconColorClass}`
+            }`}
+          >
             <Icon size={18} />
           </div>
           <div>
@@ -72,10 +93,22 @@ function SelfCheckCard({ icon: Icon, idleIconColorClass, title, subtitle, state,
         </div>
 
         <div>
-          {state === 'idle' && <span className="px-2 py-1 bg-[var(--text-primary)]/[0.03] border border-[var(--glass-border)] text-2xs font-bold tracking-wider rounded-lg text-[var(--text-secondary)]/60">HAZIR</span>}
+          {state === 'idle' && (
+            <span className="px-2 py-1 bg-[var(--text-primary)]/[0.03] border border-[var(--glass-border)] text-2xs font-bold tracking-wider rounded-lg text-[var(--text-secondary)]/60">
+              HAZIR
+            </span>
+          )}
           {state === 'running' && <RefreshCw size={14} className="animate-spin text-[var(--dynamic-aura,var(--aura-indigo))]" />}
-          {state === 'success' && <span className="px-2 py-1 bg-emerald-500/10 border border-emerald-500/20 text-2xs font-bold tracking-wider rounded-lg text-emerald-400 flex items-center gap-1">{successLabel} <CheckCircle2 size={10} /></span>}
-          {state === 'error' && errorLabel && <span className="px-2 py-1 bg-rose-500/10 border border-rose-500/20 text-2xs font-bold tracking-wider rounded-lg text-rose-400 flex items-center gap-1">{errorLabel} <XCircle size={10} /></span>}
+          {state === 'success' && (
+            <span className="px-2 py-1 bg-emerald-500/10 border border-emerald-500/20 text-2xs font-bold tracking-wider rounded-lg text-emerald-400 flex items-center gap-1">
+              {successLabel} <CheckCircle2 size={10} />
+            </span>
+          )}
+          {state === 'error' && errorLabel && (
+            <span className="px-2 py-1 bg-rose-500/10 border border-rose-500/20 text-2xs font-bold tracking-wider rounded-lg text-rose-400 flex items-center gap-1">
+              {errorLabel} <XCircle size={10} />
+            </span>
+          )}
         </div>
       </div>
 
@@ -125,7 +158,7 @@ export const SistemTestleriSekmesi = React.memo(({ setActiveTab }: { setActiveTa
       clearTimeout(timeout);
       setSyncState('synced');
     } catch (e) {
-      console.error("Sync outbox check error:", e);
+      console.error('Sync outbox check error:', e);
       setSyncState('synced');
     }
   };
@@ -153,7 +186,7 @@ export const SistemTestleriSekmesi = React.memo(({ setActiveTab }: { setActiveTa
         setSwUpdateWaiting(!!reg.waiting);
       }
     } catch (e) {
-      console.warn("SW update check error:", e);
+      console.warn('SW update check error:', e);
     } finally {
       setCheckingUpdate(false);
     }
@@ -231,9 +264,7 @@ export const SistemTestleriSekmesi = React.memo(({ setActiveTab }: { setActiveTa
     // Hatayı global olarak fırlatmak yerine telemetri pipeline'ı güvenli şekilde test ediyoruz.
     // setTimeout + throw, React ErrorBoundary'yi atlatarak tarayıcıyı çökertir;
     // bunun yerine gerçek hata objesini oluşturup Firestore'a kaydediyoruz.
-    const simulatedError = new Error(
-      `Dizge Teşhisi Simülasyon Hatası - Saat: ${new Date().toLocaleTimeString('tr-TR')}`
-    );
+    const simulatedError = new Error(`Dizge Teşhisi Simülasyon Hatası - Saat: ${new Date().toLocaleTimeString('tr-TR')}`);
     simulatedError.stack = `Error: Simülasyon\n    at executeSimulateError (SistemTestleriSekmesi.tsx:260)\n    at onClick (SistemTestleriSekmesi.tsx:530)`;
     telemetryService.addBreadcrumb('Admin: Hata simülasyonu tetiklendi', 'user_action');
     telemetryService.logError(simulatedError, 'ADMIN_SIMULATION').catch(() => {
@@ -427,14 +458,22 @@ export const SistemTestleriSekmesi = React.memo(({ setActiveTab }: { setActiveTa
             <div className="flex flex-col gap-1">
               <div className="flex justify-between text-2xs">
                 <span className="text-[var(--text-secondary)]/60">Eşitleme Kuyruğu (Outbox):</span>
-                <span className={`font-semibold ${syncState === 'pending' ? 'text-amber-400 font-bold animate-pulse' : syncState === 'checking' ? 'text-muted' : 'text-emerald-400'}`}>
-                  {syncState === 'pending' ? 'Eşitleme Bekleyen İşlemler Var' : syncState === 'checking' ? 'Sorgulanıyor...' : 'Tüm Veriler Eşitlendi ✓'}
+                <span
+                  className={`font-semibold ${syncState === 'pending' ? 'text-amber-400 font-bold animate-pulse' : syncState === 'checking' ? 'text-muted' : 'text-emerald-400'}`}
+                >
+                  {syncState === 'pending'
+                    ? 'Eşitleme Bekleyen İşlemler Var'
+                    : syncState === 'checking'
+                      ? 'Sorgulanıyor...'
+                      : 'Tüm Veriler Eşitlendi ✓'}
                 </span>
               </div>
               {networkTestState === 'success' && (
                 <div className="flex justify-between text-2xs">
                   <span className="text-[var(--text-secondary)]/60">Ping Gecikmesi:</span>
-                  <span className={`font-semibold ${networkLatency !== null && networkLatency < 100 ? 'text-emerald-400' : 'text-amber-500'}`}>
+                  <span
+                    className={`font-semibold ${networkLatency !== null && networkLatency < 100 ? 'text-emerald-400' : 'text-amber-500'}`}
+                  >
                     {networkLatency} ms
                   </span>
                 </div>
@@ -442,7 +481,8 @@ export const SistemTestleriSekmesi = React.memo(({ setActiveTab }: { setActiveTa
             </div>
             {networkTestState === 'idle' && (
               <p className="text-2xs text-muted leading-relaxed font-light">
-                Cihazın internet gecikmesini test eder ve Firebase'e yazılmış ancak henüz sunucuya ulaşmamış bekleyen çevrimdışı işlemleri doğrular.
+                Cihazın internet gecikmesini test eder ve Firebase'e yazılmış ancak henüz sunucuya ulaşmamış bekleyen çevrimdışı işlemleri
+                doğrular.
               </p>
             )}
           </div>
@@ -450,7 +490,10 @@ export const SistemTestleriSekmesi = React.memo(({ setActiveTab }: { setActiveTa
           <motion.button
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.99 }}
-            onClick={() => { runNetworkTest(); runSyncCheck(); }}
+            onClick={() => {
+              runNetworkTest();
+              runSyncCheck();
+            }}
             disabled={networkTestState === 'running'}
             className="w-full py-3 bg-[var(--text-primary)]/[0.03] hover:bg-[var(--text-primary)]/[0.06] border border-[var(--glass-border)] rounded-xl text-2xs font-bold uppercase tracking-wide text-[var(--text-primary)] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
           >
@@ -465,25 +508,35 @@ export const SistemTestleriSekmesi = React.memo(({ setActiveTab }: { setActiveTa
           <Info size={16} className="text-[var(--dynamic-aura,var(--aura-indigo))]" />
           <h5 className="text-xs font-semibold text-[var(--text-primary)]">İstemci ve Tarayıcı Sağlık Detayları</h5>
         </div>
-        
+
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           <div className="space-y-1">
             <span className="text-2xs text-muted font-bold uppercase tracking-wider block">İşletim Sistemi</span>
-            <span className="text-xs font-medium text-[var(--text-primary)]">{typeof navigator !== 'undefined' ? ((navigator as NavigatorWithUAData).userAgentData?.platform || navigator.platform || 'Algılanamadı') : 'Bilinmiyor'}</span>
+            <span className="text-xs font-medium text-[var(--text-primary)]">
+              {typeof navigator !== 'undefined'
+                ? (navigator as NavigatorWithUAData).userAgentData?.platform || navigator.platform || 'Algılanamadı'
+                : 'Bilinmiyor'}
+            </span>
           </div>
           <div className="space-y-1">
             <span className="text-2xs text-muted font-bold uppercase tracking-wider block">Ekran Çözünürlüğü</span>
-            <span className="text-xs font-medium text-[var(--text-primary)]">{typeof window !== 'undefined' ? `${window.innerWidth}x${window.innerHeight}` : 'Bilinmiyor'}</span>
+            <span className="text-xs font-medium text-[var(--text-primary)]">
+              {typeof window !== 'undefined' ? `${window.innerWidth}x${window.innerHeight}` : 'Bilinmiyor'}
+            </span>
           </div>
           <div className="space-y-1">
             <span className="text-2xs text-muted font-bold uppercase tracking-wider block">Çevrimiçi Durumu</span>
-            <span className={`text-xs font-bold uppercase ${typeof navigator !== 'undefined' && navigator.onLine ? 'text-emerald-400' : 'text-rose-400'}`}>
+            <span
+              className={`text-xs font-bold uppercase ${typeof navigator !== 'undefined' && navigator.onLine ? 'text-emerald-400' : 'text-rose-400'}`}
+            >
               {typeof navigator !== 'undefined' && navigator.onLine ? 'BAĞLI' : 'ÇEVRİMDIŞI'}
             </span>
           </div>
           <div className="space-y-1">
             <span className="text-2xs text-muted font-bold uppercase tracking-wider block">Dil / Yerel Ayar</span>
-            <span className="text-xs font-medium text-[var(--text-primary)]">{typeof navigator !== 'undefined' ? navigator.language : 'tr-TR'}</span>
+            <span className="text-xs font-medium text-[var(--text-primary)]">
+              {typeof navigator !== 'undefined' ? navigator.language : 'tr-TR'}
+            </span>
           </div>
         </div>
       </div>
@@ -498,11 +551,9 @@ export const SistemTestleriSekmesi = React.memo(({ setActiveTab }: { setActiveTa
             <Terminal size={16} className="text-muted" />
             <h5 className="text-xs font-semibold text-[var(--text-secondary)]/70">Geliştirici Sandbox & Test Araçları</h5>
           </div>
-          <div className="text-muted">
-            {showSandbox ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-          </div>
+          <div className="text-muted">{showSandbox ? <ChevronUp size={16} /> : <ChevronDown size={16} />}</div>
         </button>
-        
+
         <AnimatePresence>
           {showSandbox && (
             <motion.div
@@ -517,10 +568,11 @@ export const SistemTestleriSekmesi = React.memo(({ setActiveTab }: { setActiveTa
                     <ShieldAlert size={13} /> React Error Boundary & Hata Günlüğü Testi
                   </h6>
                   <p className="text-2xs text-[var(--text-secondary)]/60 leading-relaxed font-light max-w-xl">
-                    Bu araç, sistem hata kayıt altyapısını test etmek için yapay bir Javascript hatası fırlatır. Hata fırlatıldığında uygulama hatayı yakalayarak Firestore loglarına yazacak ve sizi hata izleme sekmesine yönlendirecektir.
+                    Bu araç, sistem hata kayıt altyapısını test etmek için yapay bir Javascript hatası fırlatır. Hata fırlatıldığında
+                    uygulama hatayı yakalayarak Firestore loglarına yazacak ve sizi hata izleme sekmesine yönlendirecektir.
                   </p>
                 </div>
-                
+
                 <motion.button
                   whileHover={{ scale: 1.02, y: -1 }}
                   whileTap={{ scale: 0.98 }}

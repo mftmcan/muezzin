@@ -66,7 +66,16 @@ type TestCase = {
 };
 
 async function clearCollections() {
-  const collections = ['muezzins', 'bildirimler', 'haftaPlanlari', 'adminUyarilari', 'vekalet_talepleri', 'audit_logs', 'vakitler', 'settings'];
+  const collections = [
+    'muezzins',
+    'bildirimler',
+    'haftaPlanlari',
+    'adminUyarilari',
+    'vekalet_talepleri',
+    'audit_logs',
+    'vakitler',
+    'settings',
+  ];
   for (const collection of collections) {
     const snapshot = await db.collection(collection).get();
     const batch = db.batch();
@@ -82,26 +91,28 @@ async function clearCollections() {
  * (bildirimler.uid flip'i) burada, taze veriyle yeniden doğrulayarak kuran
  * fixture — bkz. scripts/vekaletDevirleriniIsle.ts yorumu.
  */
-async function seedKabulEdilmisTalep(overrides: {
-  aliciAktif?: boolean;
-  aliciOnayBekliyor?: boolean;
-  aliciHaftalikIzinGunu?: number;
-  bildirimCumaMi?: boolean;
-  bildirimDurum?: string;
-  /** Varsayılan GELECEK_GUN — Cuma testleri gibi tarihin GERÇEKTEN belirli
-   * bir haftanın gününe denk gelmesi gereken senaryolar için override edilir. */
-  tarih?: string;
-  /** Varsayılan 'ogle' — sabah vaktine özel ezanVaktiGecmisMi regresyonu
-   * için override edilir. */
-  vakit?: string;
-  /** Tohumlanacak ezan saati. `null` verilirse `vakitler` belgesine HİÇ saat
-   * yazılmaz (fail-closed senaryosu); bozuk bir dizge ("9:05", "abc")
-   * verilerek biçim doğrulaması da test edilebilir. */
-  ezanSaati?: string | null;
-  /** Talep belgesindeki alanları bildirimden desenkronize etmek için
-   * (Fix 3 — "script talep/bildirim alanlarını karıştırıyor" regresyonu). */
-  talepOverrides?: Record<string, unknown>;
-} = {}) {
+async function seedKabulEdilmisTalep(
+  overrides: {
+    aliciAktif?: boolean;
+    aliciOnayBekliyor?: boolean;
+    aliciHaftalikIzinGunu?: number;
+    bildirimCumaMi?: boolean;
+    bildirimDurum?: string;
+    /** Varsayılan GELECEK_GUN — Cuma testleri gibi tarihin GERÇEKTEN belirli
+     * bir haftanın gününe denk gelmesi gereken senaryolar için override edilir. */
+    tarih?: string;
+    /** Varsayılan 'ogle' — sabah vaktine özel ezanVaktiGecmisMi regresyonu
+     * için override edilir. */
+    vakit?: string;
+    /** Tohumlanacak ezan saati. `null` verilirse `vakitler` belgesine HİÇ saat
+     * yazılmaz (fail-closed senaryosu); bozuk bir dizge ("9:05", "abc")
+     * verilerek biçim doğrulaması da test edilebilir. */
+    ezanSaati?: string | null;
+    /** Talep belgesindeki alanları bildirimden desenkronize etmek için
+     * (Fix 3 — "script talep/bildirim alanlarını karıştırıyor" regresyonu). */
+    talepOverrides?: Record<string, unknown>;
+  } = {}
+) {
   const tarih = overrides.tarih ?? GELECEK_GUN;
   const vakit = overrides.vakit ?? 'ogle';
   const ezanSaati = overrides.ezanSaati === undefined ? '12:45' : overrides.ezanSaati;
@@ -113,15 +124,21 @@ async function seedKabulEdilmisTalep(overrides: {
     await db.collection('settings').doc('system').set({ ilceId: '9148' }, { merge: true });
   }
   await db.collection('muezzins').doc('muezzin1').set({
-    displayName: 'Muezzin One', role: 'muezzin', aktif: true, onayBekliyor: false
-  });
-  await db.collection('muezzins').doc('muezzin2').set({
-    displayName: 'Muezzin Two',
+    displayName: 'Muezzin One',
     role: 'muezzin',
-    aktif: overrides.aliciAktif ?? true,
-    onayBekliyor: overrides.aliciOnayBekliyor ?? false,
-    ...(overrides.aliciHaftalikIzinGunu !== undefined ? { haftalikIzinGunu: overrides.aliciHaftalikIzinGunu } : {})
+    aktif: true,
+    onayBekliyor: false,
   });
+  await db
+    .collection('muezzins')
+    .doc('muezzin2')
+    .set({
+      displayName: 'Muezzin Two',
+      role: 'muezzin',
+      aktif: overrides.aliciAktif ?? true,
+      onayBekliyor: overrides.aliciOnayBekliyor ?? false,
+      ...(overrides.aliciHaftalikIzinGunu !== undefined ? { haftalikIzinGunu: overrides.aliciHaftalikIzinGunu } : {}),
+    });
 
   const bildirimRef = db.collection('bildirimler').doc(`W2026-05-18_${tarih}_${vakit}_asil`);
   await bildirimRef.set({
@@ -133,7 +150,7 @@ async function seedKabulEdilmisTalep(overrides: {
     durum: overrides.bildirimDurum ?? 'bekliyor',
     pendingAck: true,
     cumaMi: overrides.bildirimCumaMi ?? false,
-    vekaletDevriBekliyor: true
+    vekaletDevriBekliyor: true,
   });
 
   const talepRef = db.collection('vekalet_talepleri').doc(`W2026-05-18_${tarih}_${vakit}_asil_muezzin2`);
@@ -149,7 +166,7 @@ async function seedKabulEdilmisTalep(overrides: {
     saat: '12:45',
     tip: 'asil',
     durum: 'kabul_edildi',
-    ...(overrides.talepOverrides ?? {})
+    ...(overrides.talepOverrides ?? {}),
   });
 
   return { bildirimRef, talepRef };
@@ -161,9 +178,15 @@ async function seedKabulEdilmisTalep(overrides: {
 async function ezanVaktiTohumla(tarih: string, vakit: string, saat: string, ilceId = '9148') {
   await db.collection('settings').doc('system').set({ ilceId }, { merge: true });
   const ay = tarih.slice(0, 7);
-  await db.collection('vakitler').doc(`${ilceId}_${ay}`).set({
-    gunler: { [tarih]: { [vakit]: saat } }
-  }, { merge: true });
+  await db
+    .collection('vakitler')
+    .doc(`${ilceId}_${ay}`)
+    .set(
+      {
+        gunler: { [tarih]: { [vakit]: saat } },
+      },
+      { merge: true }
+    );
 }
 
 const tests: TestCase[] = [
@@ -192,7 +215,7 @@ const tests: TestCase[] = [
       const auditSnap = await db.collection('audit_logs').get();
       assert.equal(auditSnap.size, 1);
       assert.equal(auditSnap.docs[0]!.data().userId, 'muezzin2');
-    }
+    },
   },
   {
     name: 'Ayni kabul edilmis talebi tekrar transfer etmez (idempotent)',
@@ -213,7 +236,7 @@ const tests: TestCase[] = [
       // Ikinci calistirma yeni bir audit-log yazmamali.
       const auditSnap = await db.collection('audit_logs').get();
       assert.equal(auditSnap.size, 1);
-    }
+    },
   },
   {
     // Devreye alma penceresi güvenliği: rules+istemci deploy'u ile bu
@@ -242,7 +265,7 @@ const tests: TestCase[] = [
       assert.equal(alarmSnap.size, 0);
       const auditSnap = await db.collection('audit_logs').get();
       assert.equal(auditSnap.size, 0);
-    }
+    },
   },
   {
     // Talep oluşturulduğunda alıcının aktif müezzin olduğu doğrulanmıştı
@@ -281,7 +304,7 @@ const tests: TestCase[] = [
       const alarmSnap = await db.collection('adminUyarilari').where('cozuldu', '==', false).get();
       assert.equal(alarmSnap.size, 1);
       assert.equal(alarmSnap.docs[0]!.data().tip, 'zincirTukendi');
-    }
+    },
   },
   {
     // Sabit haftalık izin gününde asla atama yok kısıtlaması (bkz.
@@ -303,7 +326,7 @@ const tests: TestCase[] = [
       const talepDoc = await talepRef.get();
       assert.equal(talepDoc.data()?.bildirimUygulandi, true);
       assert.equal(talepDoc.data()?.talepSonuc, 'reddedildi');
-    }
+    },
   },
   {
     name: 'Cuma gorevi icin kabul transferi engellenir',
@@ -319,7 +342,7 @@ const tests: TestCase[] = [
       const talepDoc = await talepRef.get();
       assert.equal(talepDoc.data()?.bildirimUygulandi, true);
       assert.equal(talepDoc.data()?.talepSonuc, 'reddedildi');
-    }
+    },
   },
   {
     // Premium hata analizi MV-O1 regresyon guardı: `cumaMi` alanı EKSİK
@@ -343,7 +366,7 @@ const tests: TestCase[] = [
       const talepDoc = await talepRef.get();
       assert.equal(talepDoc.data()?.bildirimUygulandi, true);
       assert.equal(talepDoc.data()?.talepSonuc, 'reddedildi');
-    }
+    },
   },
   {
     // Bildirim script calisana kadar baska bir yolla (ör. mazeretle)
@@ -362,7 +385,7 @@ const tests: TestCase[] = [
       const talepDoc = await talepRef.get();
       assert.equal(talepDoc.data()?.bildirimUygulandi, true);
       assert.equal(talepDoc.data()?.talepSonuc, 'reddedildi');
-    }
+    },
   },
   {
     // "Bilinçli olarak dışarıda bırakılanlar" listesinden kapatılan bulgu:
@@ -384,7 +407,7 @@ const tests: TestCase[] = [
       const talepDoc = await talepRef.get();
       assert.equal(talepDoc.data()?.bildirimUygulandi, true);
       assert.equal(talepDoc.data()?.talepSonuc, 'reddedildi');
-    }
+    },
   },
   {
     name: 'sabah vakti icin ezan henuz gecmediyse kabul transferi normal uygulanir',
@@ -402,7 +425,7 @@ const tests: TestCase[] = [
       const talepDoc = await talepRef.get();
       assert.equal(talepDoc.data()?.bildirimUygulandi, true);
       assert.equal(talepDoc.data()?.talepSonuc, 'uygulandi');
-    }
+    },
   },
   // ---------------------------------------------------------------
   // Fix 2 — ezan saati BİÇİM ASİMETRİSİ (fail-open) regresyonları
@@ -427,7 +450,7 @@ const tests: TestCase[] = [
       assert.equal(bildirimDoc.data()?.uid, 'muezzin1');
       const talepDoc = await talepRef.get();
       assert.equal(talepDoc.data()?.talepSonuc, 'reddedildi');
-    }
+    },
   },
   {
     name: 'FIX2: tek haneli saatli ("9:05") GELECEK ezan yanlislikla "gecmis" sayilmaz',
@@ -444,7 +467,7 @@ const tests: TestCase[] = [
       assert.equal(bildirimDoc.data()?.uid, 'muezzin2');
       const talepDoc = await talepRef.get();
       assert.equal(talepDoc.data()?.talepSonuc, 'uygulandi');
-    }
+    },
   },
   {
     name: 'FIX2: ayristirilamayan ezan saati ("abc") FAIL-CLOSED transferi engeller',
@@ -460,7 +483,7 @@ const tests: TestCase[] = [
       assert.equal(talepDoc.data()?.talepSonuc, 'reddedildi');
       const alarmSnap = await db.collection('adminUyarilari').where('cozuldu', '==', false).get();
       assert.equal(alarmSnap.size, 1);
-    }
+    },
   },
   {
     name: 'FIX2: ezan verisi hic yoksa FAIL-CLOSED transferi engeller',
@@ -474,7 +497,7 @@ const tests: TestCase[] = [
       assert.equal(bildirimDoc.data()?.uid, 'muezzin1');
       const talepDoc = await talepRef.get();
       assert.equal(talepDoc.data()?.talepSonuc, 'reddedildi');
-    }
+    },
   },
   // ---------------------------------------------------------------
   // Fix 3 — talep/bildirim alan kaynagi tutarliligi
@@ -496,7 +519,7 @@ const tests: TestCase[] = [
       const { bildirimRef, talepRef } = await seedKabulEdilmisTalep({
         tarih: TARIH_1,
         ezanSaati: '12:45',
-        talepOverrides: { tarih: GELECEK_GUN }
+        talepOverrides: { tarih: GELECEK_GUN },
       });
       await ezanVaktiTohumla(GELECEK_GUN, 'ogle', '12:45');
 
@@ -513,7 +536,7 @@ const tests: TestCase[] = [
       assert.equal(alarmSnap.size, 1);
       assert.equal(alarmSnap.docs[0]!.data().tarih, TARIH_1);
       assert.equal(alarmSnap.docs[0]!.data().vakit, 'ogle');
-    }
+    },
   },
   {
     name: 'FIX3: talep.vakit bildirimden desenkronize edilmisse transfer reddedilir',
@@ -521,7 +544,7 @@ const tests: TestCase[] = [
       await clearCollections();
       const { bildirimRef, talepRef } = await seedKabulEdilmisTalep({
         tarih: GELECEK_GUN,
-        talepOverrides: { vakit: 'yatsi' }
+        talepOverrides: { vakit: 'yatsi' },
       });
 
       await processVekaletDevirleri(false);
@@ -530,20 +553,23 @@ const tests: TestCase[] = [
       assert.equal(bildirimDoc.data()?.uid, 'muezzin1');
       const talepDoc = await talepRef.get();
       assert.equal(talepDoc.data()?.talepSonuc, 'reddedildi');
-    }
+    },
   },
   {
     name: 'Kabul edilen vekalet devri haftaPlanlari onbellegini senkronize eder',
     run: async () => {
       await clearCollections();
 
-      await db.collection('haftaPlanlari').doc('W2026-05-18').set({
-        gunler: {
-          [TARIH_1]: {
-            ogle: { asil: 'muezzin1', yedek: 'Sistem' }
-          }
-        }
-      });
+      await db
+        .collection('haftaPlanlari')
+        .doc('W2026-05-18')
+        .set({
+          gunler: {
+            [TARIH_1]: {
+              ogle: { asil: 'muezzin1', yedek: 'Sistem' },
+            },
+          },
+        });
 
       // vekaletKabulEt (istemci) zaten bildirim.uid'yi degistirip
       // vekaletDevredildi:true yazmis olarak kabul edilir — bu is yalnizca
@@ -556,7 +582,7 @@ const tests: TestCase[] = [
         uid: 'muezzin2', // devralan
         tip: 'asil',
         durum: 'bekliyor', // vekalet kabulunde durum DEGISMEZ
-        vekaletDevredildi: true
+        vekaletDevredildi: true,
       });
 
       await processVekaletDevirleri(false);
@@ -566,20 +592,23 @@ const tests: TestCase[] = [
 
       const haftaDoc = await db.collection('haftaPlanlari').doc('W2026-05-18').get();
       assert.equal(haftaDoc.data()?.gunler[TARIH_1].ogle.asil, 'muezzin2');
-    }
+    },
   },
   {
     name: 'Ayni kaydi tekrar isleme yapmaz (idempotent)',
     run: async () => {
       await clearCollections();
 
-      await db.collection('haftaPlanlari').doc('W2026-05-18').set({
-        gunler: {
-          [TARIH_1]: {
-            ogle: { asil: 'muezzin2', yedek: 'Sistem' }
-          }
-        }
-      });
+      await db
+        .collection('haftaPlanlari')
+        .doc('W2026-05-18')
+        .set({
+          gunler: {
+            [TARIH_1]: {
+              ogle: { asil: 'muezzin2', yedek: 'Sistem' },
+            },
+          },
+        });
 
       const bildirimRef = db.collection('bildirimler').doc(`W2026-05-18_${TARIH_1}_ogle_asil`);
       await bildirimRef.set({
@@ -590,7 +619,7 @@ const tests: TestCase[] = [
         tip: 'asil',
         durum: 'bekliyor',
         vekaletDevredildi: true,
-        vekaletPlanSenkronEdildi: true // onceki bir calistirmada zaten islenmis
+        vekaletPlanSenkronEdildi: true, // onceki bir calistirmada zaten islenmis
       });
 
       await processVekaletDevirleri(false);
@@ -598,7 +627,7 @@ const tests: TestCase[] = [
       // Plan degismeden kalmali — is bu kaydi zaten islenmis sayip atlamali.
       const haftaDoc = await db.collection('haftaPlanlari').doc('W2026-05-18').get();
       assert.equal(haftaDoc.data()?.gunler[TARIH_1].ogle.asil, 'muezzin2');
-    }
+    },
   },
   {
     // Y2 regresyonu (ters yon): bu belge daha once bir MAZERET olayiyla
@@ -609,13 +638,16 @@ const tests: TestCase[] = [
     run: async () => {
       await clearCollections();
 
-      await db.collection('haftaPlanlari').doc('W2026-05-18').set({
-        gunler: {
-          [TARIH_1]: {
-            ogle: { asil: 'muezzin1', yedek: 'Sistem' }
-          }
-        }
-      });
+      await db
+        .collection('haftaPlanlari')
+        .doc('W2026-05-18')
+        .set({
+          gunler: {
+            [TARIH_1]: {
+              ogle: { asil: 'muezzin1', yedek: 'Sistem' },
+            },
+          },
+        });
 
       const bildirimRef = db.collection('bildirimler').doc(`W2026-05-18_${TARIH_1}_ogle_asil`);
       await bildirimRef.set({
@@ -629,7 +661,7 @@ const tests: TestCase[] = [
         // Bu belge GECMISTE bir mazeret olayiyla senkronlanmis (baska bir
         // hafta dongusunde) — paylasilan bayrak kullanilsaydi bu is
         // belgeyi "zaten islenmis" sanirdi.
-        mazeretPlanSenkronEdildi: true
+        mazeretPlanSenkronEdildi: true,
       });
 
       await processVekaletDevirleri(false);
@@ -639,7 +671,7 @@ const tests: TestCase[] = [
 
       const haftaDoc = await db.collection('haftaPlanlari').doc('W2026-05-18').get();
       assert.equal(haftaDoc.data()?.gunler[TARIH_1].ogle.asil, 'muezzin2');
-    }
+    },
   },
   {
     name: 'Plan belgesi henuz yoksa yine de isaretlenir (sonsuz tekrar onlenir)',
@@ -655,14 +687,14 @@ const tests: TestCase[] = [
         uid: 'muezzin2',
         tip: 'asil',
         durum: 'bekliyor',
-        vekaletDevredildi: true
+        vekaletDevredildi: true,
       });
 
       await processVekaletDevirleri(false);
 
       const bildirimDoc = await bildirimRef.get();
       assert.equal(bildirimDoc.data()?.vekaletPlanSenkronEdildi, true);
-    }
+    },
   },
   {
     // KÖK NEDEN (kod denetimi): `vekaletDevriBekliyor`u temizleyen TEK yol bu
@@ -686,7 +718,7 @@ const tests: TestCase[] = [
         durum: 'bekliyor',
         vekaletDevriBekliyor: true,
         // 5 gun once yazilmis bir bayrak — 48 saatlik esigin cok otesinde.
-        sonGuncelleme: Timestamp.fromMillis(Date.now() - 5 * 24 * 60 * 60 * 1000)
+        sonGuncelleme: Timestamp.fromMillis(Date.now() - 5 * 24 * 60 * 60 * 1000),
       });
 
       await processVekaletDevirleri(false);
@@ -696,21 +728,15 @@ const tests: TestCase[] = [
       // Sahiplik DEGISMEZ — devir uygulanmadi, yalnizca kilit acildi.
       assert.equal(bildirimDoc.data()?.uid, 'muezzin1');
 
-      const alarmSnap = await db.collection('adminUyarilari')
-        .where('tarih', '==', eskiTarih)
-        .where('vakit', '==', 'ogle')
-        .get();
+      const alarmSnap = await db.collection('adminUyarilari').where('tarih', '==', eskiTarih).where('vakit', '==', 'ogle').get();
       assert.equal(alarmSnap.size, 1);
       assert.equal(alarmSnap.docs[0]?.data().cozuldu, false);
 
       // Idempotent: ikinci calistirma yeni bir alarm uretmez.
       await processVekaletDevirleri(false);
-      const alarmSnap2 = await db.collection('adminUyarilari')
-        .where('tarih', '==', eskiTarih)
-        .where('vakit', '==', 'ogle')
-        .get();
+      const alarmSnap2 = await db.collection('adminUyarilari').where('tarih', '==', eskiTarih).where('vakit', '==', 'ogle').get();
       assert.equal(alarmSnap2.size, 1);
-    }
+    },
   },
   {
     name: 'Taze (esik altindaki) vekaletDevriBekliyor bayragina DOKUNULMAZ',
@@ -725,7 +751,7 @@ const tests: TestCase[] = [
         tip: 'asil',
         durum: 'bekliyor',
         vekaletDevriBekliyor: true,
-        sonGuncelleme: Timestamp.fromMillis(Date.now() - 10 * 60 * 1000) // 10 dk
+        sonGuncelleme: Timestamp.fromMillis(Date.now() - 10 * 60 * 1000), // 10 dk
       });
 
       await processVekaletDevirleri(false);
@@ -734,7 +760,7 @@ const tests: TestCase[] = [
       assert.equal(bildirimDoc.data()?.vekaletDevriBekliyor, true);
       const alarmSnap = await db.collection('adminUyarilari').get();
       assert.equal(alarmSnap.empty, true);
-    }
+    },
   },
   {
     // FAIL-CLOSED: yasini bilemedigimiz bir bayragi bayat sayip gercek bir
@@ -750,15 +776,15 @@ const tests: TestCase[] = [
         uid: 'muezzin1',
         tip: 'asil',
         durum: 'bekliyor',
-        vekaletDevriBekliyor: true
+        vekaletDevriBekliyor: true,
       });
 
       await processVekaletDevirleri(false);
 
       const bildirimDoc = await bildirimRef.get();
       assert.equal(bildirimDoc.data()?.vekaletDevriBekliyor, true);
-    }
-  }
+    },
+  },
 ];
 
 async function main() {

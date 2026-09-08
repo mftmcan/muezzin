@@ -53,7 +53,8 @@ type MuezzinData = {
  */
 
 async function alarmVarMi(tarih: string, vakit: string): Promise<boolean> {
-  const alarmSnap = await db.collection('adminUyarilari')
+  const alarmSnap = await db
+    .collection('adminUyarilari')
     .where('tarih', '==', tarih)
     .where('vakit', '==', vakit)
     .where('cozuldu', '==', false)
@@ -75,18 +76,19 @@ async function alarmOlustur(mazeret: BildirimData, mazeretRef: DocumentReference
   const batch = db.batch();
   batch.set(db.collection('adminUyarilari').doc(), {
     tip: 'zincirTukendi',
-    mesaj: mazeret.tip === 'yedek'
-      ? 'Yedek gorevli mazeret bildirdi; bu vakit icin artik yedek gorevli bulunmuyor. Admin mudahalesi gerekir.'
-      : 'Mazeret sonrasi gorevi devralacak uygun yedek bulunamadi. Admin mudahalesi gerekir.',
+    mesaj:
+      mazeret.tip === 'yedek'
+        ? 'Yedek gorevli mazeret bildirdi; bu vakit icin artik yedek gorevli bulunmuyor. Admin mudahalesi gerekir.'
+        : 'Mazeret sonrasi gorevi devralacak uygun yedek bulunamadi. Admin mudahalesi gerekir.',
     tarih: mazeret.tarih,
     vakit: mazeret.vakit,
     cozuldu: false,
-    olusturmaTarihi: Timestamp.now()
+    olusturmaTarihi: Timestamp.now(),
   });
   batch.update(mazeretRef, {
     devirSonucu: 'alarm_uretildi',
     mazeretPlanSenkronEdildi: true,
-    sonGuncelleme: Timestamp.now()
+    sonGuncelleme: Timestamp.now(),
   });
   await batch.commit();
   return 'alarm_uretildi';
@@ -109,10 +111,7 @@ export async function processMazeretDevirleri(dryRun = false) {
   // RETENTION_DAYS ile aynı — bu işten daha eski bir görev tarihi zaten
   // geçmişte kalmıştır, yeniden uzlaştırılacak bir şey kalmaz.
   const otuzGunOnce = getTurkeyDateString(new Date(getTurkeyNow().getTime() - 30 * 24 * 60 * 60 * 1000));
-  const mazeretSnap = await db.collection('bildirimler')
-    .where('durum', '==', 'reddedildi')
-    .where('tarih', '>=', otuzGunOnce)
-    .get();
+  const mazeretSnap = await db.collection('bildirimler').where('durum', '==', 'reddedildi').where('tarih', '>=', otuzGunOnce).get();
 
   const islenecekler = mazeretSnap.docs.filter((docSnap) => {
     const data = docSnap.data() as BildirimData;
@@ -150,9 +149,7 @@ export async function processMazeretDevirleri(dryRun = false) {
         // yeniden doğrulanıyor — istemcinin `devirSonucu: 'yedek_atandi'`
         // ipucusuna GÜVENİLMİYOR (bkz. src/services/mazeretServisi.ts
         // `yedekUygun` hesaplamasıyla AYNI kriterler).
-        const yedekBelgeUygun = !!promotedData &&
-          promotedData.durum !== 'reddedildi' &&
-          promotedData.uid !== mazeret.uid;
+        const yedekBelgeUygun = !!promotedData && promotedData.durum !== 'reddedildi' && promotedData.uid !== mazeret.uid;
 
         let yedekMuezzin: MuezzinData | null = null;
         if (yedekBelgeUygun) {
@@ -160,10 +157,7 @@ export async function processMazeretDevirleri(dryRun = false) {
           yedekMuezzin = yedekMuezzinSnap.exists ? (yedekMuezzinSnap.data() as MuezzinData) : null;
         }
 
-        const atanabilir = yedekBelgeUygun &&
-          !!yedekMuezzin &&
-          yedekMuezzin.role === 'muezzin' &&
-          yedekMuezzin.aktif === true;
+        const atanabilir = yedekBelgeUygun && !!yedekMuezzin && yedekMuezzin.role === 'muezzin' && yedekMuezzin.aktif === true;
 
         if (atanabilir) {
           transaction.update(promotedRef, {
@@ -171,15 +165,15 @@ export async function processMazeretDevirleri(dryRun = false) {
             durum: 'bekliyor',
             pendingAck: true,
             asilMazeretUid: mazeret.uid,
-            sonGuncelleme: Timestamp.now()
+            sonGuncelleme: Timestamp.now(),
           });
           transaction.update(db.collection('haftaPlanlari').doc(mazeret.haftaId), {
             [`gunler.${mazeret.tarih}.${mazeret.vakit}.asil`]: promotedData!.uid,
-            [`gunler.${mazeret.tarih}.${mazeret.vakit}.yedek`]: 'Sistem'
+            [`gunler.${mazeret.tarih}.${mazeret.vakit}.yedek`]: 'Sistem',
           });
           transaction.update(mazeretDoc.ref, {
             mazeretPlanSenkronEdildi: true,
-            sonGuncelleme: Timestamp.now()
+            sonGuncelleme: Timestamp.now(),
           });
           sonuc = 'terfi';
         } else {
@@ -199,14 +193,17 @@ export async function processMazeretDevirleri(dryRun = false) {
       // zinciri kırar.
       const finalSonuc = sonuc as 'terfi' | 'fallback-alarm' | 'atlandi';
       if (finalSonuc === 'terfi') {
-        console.log(`${mazeret.tarih} ${mazeret.vakit}: yedek terfisi + haftaPlanlari senkronu uygulandı (${mazeret.uid} -> yedek terfisi).`);
+        console.log(
+          `${mazeret.tarih} ${mazeret.vakit}: yedek terfisi + haftaPlanlari senkronu uygulandı (${mazeret.uid} -> yedek terfisi).`
+        );
         terfiUygulandi++;
         continue;
       }
       if (finalSonuc === 'fallback-alarm') {
         console.log(`${mazeret.tarih} ${mazeret.vakit}: yedek artık uygun değil, alarm_bekliyor'a düşürüldü.`);
         const alarmSonucu = await alarmOlustur({ ...mazeret, devirSonucu: 'alarm_bekliyor' }, mazeretDoc.ref);
-        if (alarmSonucu === 'alarm_uretildi') alarmUretildi++; else atlandi++;
+        if (alarmSonucu === 'alarm_uretildi') alarmUretildi++;
+        else atlandi++;
         continue;
       }
       continue;

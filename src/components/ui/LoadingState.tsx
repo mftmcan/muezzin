@@ -20,7 +20,9 @@ export function LoadingState({ label, heightClassName = 'h-[500px]', size = 'md'
   return (
     <div className={`flex ${heightClassName} items-center justify-center`}>
       <div className="flex flex-col items-center gap-6">
-        <div className={`${spinnerSizeClass} border-4 border-[var(--dynamic-aura,var(--aura-indigo))]/10 border-t-[var(--dynamic-aura,var(--aura-indigo))] rounded-full animate-spin shadow-[var(--spatial-shadow)]`} />
+        <div
+          className={`${spinnerSizeClass} border-4 border-[var(--dynamic-aura,var(--aura-indigo))]/10 border-t-[var(--dynamic-aura,var(--aura-indigo))] rounded-full animate-spin shadow-[var(--spatial-shadow)]`}
+        />
         <p className="authority-title !text-2xs opacity-30 tracking-wide uppercase">{label}</p>
       </div>
     </div>

@@ -51,15 +51,18 @@ async function ensureUser(uid: string, displayName: string, role: 'admin' | 'mue
     // kullanıcı yoktu, sorun değil
   }
   await auth.createUser({ uid, email: `${uid}@example.test`, displayName, emailVerified: true });
-  await db.collection('muezzins').doc(uid).set({
-    displayName,
-    email: `${uid}@example.test`,
-    role,
-    aktif: true,
-    photoURL: '',
-    fcmToken: null,
-    aylikVakitSayisi: 0
-  });
+  await db
+    .collection('muezzins')
+    .doc(uid)
+    .set({
+      displayName,
+      email: `${uid}@example.test`,
+      role,
+      aktif: true,
+      photoURL: '',
+      fcmToken: null,
+      aylikVakitSayisi: 0,
+    });
 }
 
 async function clearWeekBildirimleri(haftaId: string) {
@@ -108,28 +111,56 @@ async function seed() {
     durum: 'yayinda',
     olusturmaTarihi: Timestamp.now(),
     sonGuncelleme: Timestamp.now(),
-    gunler: gunlerAObj
+    gunler: gunlerAObj,
   });
 
   await db.collection('bildirimler').doc(`${haftaIdA}_${pazartesiA}_ogle_asil`).set({
-    haftaId: haftaIdA, tarih: pazartesiA, vakit: 'ogle', uid: uid1, tip: 'asil',
-    durum: 'bekliyor', pendingAck: true, retSebebi: null,
-    olusturmaTarihi: Timestamp.now(), sonGuncelleme: Timestamp.now()
+    haftaId: haftaIdA,
+    tarih: pazartesiA,
+    vakit: 'ogle',
+    uid: uid1,
+    tip: 'asil',
+    durum: 'bekliyor',
+    pendingAck: true,
+    retSebebi: null,
+    olusturmaTarihi: Timestamp.now(),
+    sonGuncelleme: Timestamp.now(),
   });
   await db.collection('bildirimler').doc(`${haftaIdA}_${pazartesiA}_ogle_yedek`).set({
-    haftaId: haftaIdA, tarih: pazartesiA, vakit: 'ogle', uid: uid2, tip: 'yedek',
-    durum: 'bekliyor', pendingAck: true, retSebebi: null,
-    olusturmaTarihi: Timestamp.now(), sonGuncelleme: Timestamp.now()
+    haftaId: haftaIdA,
+    tarih: pazartesiA,
+    vakit: 'ogle',
+    uid: uid2,
+    tip: 'yedek',
+    durum: 'bekliyor',
+    pendingAck: true,
+    retSebebi: null,
+    olusturmaTarihi: Timestamp.now(),
+    sonGuncelleme: Timestamp.now(),
   });
   await db.collection('bildirimler').doc(`${haftaIdA}_${pazartesiA}_ikindi_asil`).set({
-    haftaId: haftaIdA, tarih: pazartesiA, vakit: 'ikindi', uid: uid3, tip: 'asil',
-    durum: 'onaylandi', pendingAck: false, retSebebi: null,
-    olusturmaTarihi: Timestamp.now(), sonGuncelleme: Timestamp.now()
+    haftaId: haftaIdA,
+    tarih: pazartesiA,
+    vakit: 'ikindi',
+    uid: uid3,
+    tip: 'asil',
+    durum: 'onaylandi',
+    pendingAck: false,
+    retSebebi: null,
+    olusturmaTarihi: Timestamp.now(),
+    sonGuncelleme: Timestamp.now(),
   });
   await db.collection('bildirimler').doc(`${haftaIdA}_${pazartesiA}_ikindi_yedek`).set({
-    haftaId: haftaIdA, tarih: pazartesiA, vakit: 'ikindi', uid: uid4, tip: 'yedek',
-    durum: 'onaylandi', pendingAck: false, retSebebi: null,
-    olusturmaTarihi: Timestamp.now(), sonGuncelleme: Timestamp.now()
+    haftaId: haftaIdA,
+    tarih: pazartesiA,
+    vakit: 'ikindi',
+    uid: uid4,
+    tip: 'yedek',
+    durum: 'onaylandi',
+    pendingAck: false,
+    retSebebi: null,
+    olusturmaTarihi: Timestamp.now(),
+    sonGuncelleme: Timestamp.now(),
   });
 
   // --- Hafta B: haftaPlanlari YOK, tek bir 'onaylandi' slot var ---
@@ -139,22 +170,41 @@ async function seed() {
   await db.collection('haftaPlanlari').doc(haftaIdB).delete();
 
   await db.collection('bildirimler').doc(`${haftaIdB}_${pazartesiB}_ogle_asil`).set({
-    haftaId: haftaIdB, tarih: pazartesiB, vakit: 'ogle', uid: uid1, tip: 'asil',
-    durum: 'onaylandi', pendingAck: false, retSebebi: null,
-    olusturmaTarihi: Timestamp.now(), sonGuncelleme: Timestamp.now()
+    haftaId: haftaIdB,
+    tarih: pazartesiB,
+    vakit: 'ogle',
+    uid: uid1,
+    tip: 'asil',
+    durum: 'onaylandi',
+    pendingAck: false,
+    retSebebi: null,
+    olusturmaTarihi: Timestamp.now(),
+    sonGuncelleme: Timestamp.now(),
   });
   await db.collection('bildirimler').doc(`${haftaIdB}_${pazartesiB}_ogle_yedek`).set({
-    haftaId: haftaIdB, tarih: pazartesiB, vakit: 'ogle', uid: uid2, tip: 'yedek',
-    durum: 'onaylandi', pendingAck: false, retSebebi: null,
-    olusturmaTarihi: Timestamp.now(), sonGuncelleme: Timestamp.now()
+    haftaId: haftaIdB,
+    tarih: pazartesiB,
+    vakit: 'ogle',
+    uid: uid2,
+    tip: 'yedek',
+    durum: 'onaylandi',
+    pendingAck: false,
+    retSebebi: null,
+    olusturmaTarihi: Timestamp.now(),
+    sonGuncelleme: Timestamp.now(),
   });
 
   const tokenAdmin = await auth.createCustomToken(ADMIN_UID);
   return {
     tokenAdmin,
-    haftaIdA, pazartesiA,
-    haftaIdB, pazartesiB,
-    uid1, uid2, uid3, uid4
+    haftaIdA,
+    pazartesiA,
+    haftaIdB,
+    pazartesiB,
+    uid1,
+    uid2,
+    uid3,
+    uid4,
   };
 }
 

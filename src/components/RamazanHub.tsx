@@ -47,7 +47,13 @@ const MoonPhaseView: React.FC<{ day: number }> = ({ day }) => {
   } else if (day >= 12 && day < 18) {
     // Şişkin Ay / Dolunay (14-15-16. Günler)
     return (
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-amber-300 filter drop-shadow-[0_0_4px_rgba(251,191,36,0.4)]">
+      <svg
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        className="text-amber-300 filter drop-shadow-[0_0_4px_rgba(251,191,36,0.4)]"
+      >
         <circle cx="12" cy="12" r="9" fill="currentColor" fillOpacity="0.9" stroke="currentColor" strokeWidth="1.5" />
       </svg>
     );
@@ -105,7 +111,7 @@ export const RamazanHub: React.FC = () => {
     return {
       cuz: `muezzin_ramazan_cuz_${gunAnahtari}`,
       teravih: `muezzin_ramazan_teravih_${gunAnahtari}`,
-      oruc: `muezzin_ramazan_oruc_${gunAnahtari}`
+      oruc: `muezzin_ramazan_oruc_${gunAnahtari}`,
     };
   }, [bugunVakitler?.tarih, hijriGunu.day]);
 
@@ -116,7 +122,7 @@ export const RamazanHub: React.FC = () => {
     return {
       cuzOkundu: localStorage.getItem(keys.cuz) === 'true',
       teravihRekat: Number(localStorage.getItem(keys.teravih) || '0'),
-      orucTutuldu: localStorage.getItem(keys.oruc) === 'true'
+      orucTutuldu: localStorage.getItem(keys.oruc) === 'true',
     };
   };
 
@@ -162,7 +168,7 @@ export const RamazanHub: React.FC = () => {
     const imsakDate = parseVakitToDate(bugunVakitler.tarih, bugunVakitler.sabah);
     const iftarDate = parseVakitToDate(bugunVakitler.tarih, bugunVakitler.aksam);
     const yatsiDate = parseVakitToDate(bugunVakitler.tarih, bugunVakitler.yatsi);
-    
+
     if (!imsakDate || !iftarDate || !yatsiDate) {
       return { mod: 'gunduz' as const, yuzde: 0, kalanSaniye: 0, metin: '00:00:00', etiket: 'İftara Kalan' };
     }
@@ -185,7 +191,7 @@ export const RamazanHub: React.FC = () => {
         yuzde,
         kalanSaniye,
         metin: `${h}:${m}:${s}`,
-        etiket: 'İftara Kalan'
+        etiket: 'İftara Kalan',
       };
     }
 
@@ -205,7 +211,7 @@ export const RamazanHub: React.FC = () => {
     if (time < imsakDate.getTime()) {
       bitisMs = imsakDate.getTime();
       // Başlangıç: dün akşamki iftar
-      baslangicMs = imsakDate.getTime() - 8 * 60 * 60 * 1000; 
+      baslangicMs = imsakDate.getTime() - 8 * 60 * 60 * 1000;
     }
 
     const toplamMs = bitisMs - baslangicMs;
@@ -222,7 +228,7 @@ export const RamazanHub: React.FC = () => {
       yuzde,
       kalanSaniye,
       metin: `${h}:${m}:${s}`,
-      etiket: 'Sahura Kalan'
+      etiket: 'Sahura Kalan',
     };
   }, [now, bugunVakitler, yarinVakitler, loading]);
 
@@ -262,9 +268,11 @@ export const RamazanHub: React.FC = () => {
             <Star size={10} className="text-amber-500 fill-amber-500 animate-pulse" />
             <span className="text-2xs font-black uppercase tracking-[0.25em] text-amber-500/95 font-sans">{RAMAZAN_LABELS.baslik}</span>
           </div>
-          <h2 className="text-xs sm:text-sm font-black text-[var(--text-primary)] tracking-wide font-sans mt-0.5">{hijriGunu.day}. Gün Hub</h2>
+          <h2 className="text-xs sm:text-sm font-black text-[var(--text-primary)] tracking-wide font-sans mt-0.5">
+            {hijriGunu.day}. Gün Hub
+          </h2>
         </div>
-        
+
         {/* Ay Fazı Göstergesi */}
         <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/[0.04] border border-amber-500/10">
           <span className="text-2xs font-bold tracking-wider text-[var(--text-secondary)] uppercase">{ramazanGunuStr}</span>
@@ -276,17 +284,18 @@ export const RamazanHub: React.FC = () => {
 
       {/* 2. Merkez: Dairesel SVG İlerleme Göstergesi */}
       <div className="my-5 sm:my-6 flex flex-col sm:flex-row justify-center items-center gap-5 sm:gap-8 z-10 relative">
-        
         {/* İlerleme Çemberi */}
         <div className="relative w-28 h-28 flex-shrink-0">
           <svg className="w-full h-full transform -rotate-90">
             <circle cx="56" cy="56" r="48" className="stroke-violet-950/40 fill-none" strokeWidth="5.5" />
-            <motion.circle 
-              cx="56" cy="56" r="48" 
+            <motion.circle
+              cx="56"
+              cy="56"
+              r="48"
               className={`fill-none transition-all duration-1000 ${
                 zamanVerileri.mod === 'gunduz' ? 'stroke-amber-500' : 'stroke-violet-400'
               }`}
-              strokeWidth="5.5" 
+              strokeWidth="5.5"
               strokeLinecap="round"
               strokeDasharray={strokeCircumference}
               initial={{ strokeDashoffset: strokeCircumference }}
@@ -295,8 +304,12 @@ export const RamazanHub: React.FC = () => {
             />
           </svg>
           <div className="absolute inset-0 flex flex-col justify-center items-center text-center">
-            <span className="text-2xs font-extrabold text-[var(--text-secondary)]/85 uppercase tracking-[0.12em]">{zamanVerileri.etiket}</span>
-            <span className="text-lg font-black font-mono text-[var(--text-primary)] tracking-tight leading-none mt-1">{zamanVerileri.metin}</span>
+            <span className="text-2xs font-extrabold text-[var(--text-secondary)]/85 uppercase tracking-[0.12em]">
+              {zamanVerileri.etiket}
+            </span>
+            <span className="text-lg font-black font-mono text-[var(--text-primary)] tracking-tight leading-none mt-1">
+              {zamanVerileri.metin}
+            </span>
             <span className="text-2xs font-black text-amber-500 uppercase tracking-widest mt-1">%{Math.round(zamanVerileri.yuzde)}</span>
           </div>
         </div>
@@ -304,8 +317,8 @@ export const RamazanHub: React.FC = () => {
         {/* Günlük Oruç Durumu & Teşvik */}
         <div className="flex flex-col text-center sm:text-left gap-2 sm:gap-2.5">
           <h3 className="text-2xs sm:text-xs font-extrabold text-[var(--text-primary)] leading-tight">
-            {zamanVerileri.mod === 'gunduz' 
-              ? 'Niyetliyiz, Ruhumuzu ve Bedenimizi Arındırıyoruz' 
+            {zamanVerileri.mod === 'gunduz'
+              ? 'Niyetliyiz, Ruhumuzu ve Bedenimizi Arındırıyoruz'
               : 'İftar Edildi, Şükürler Olsun. Sahur Hazırlığı'}
           </h3>
           <p className="text-2xs sm:text-2xs text-[var(--text-secondary)]/70 leading-relaxed max-w-[220px]">
@@ -313,19 +326,21 @@ export const RamazanHub: React.FC = () => {
               ? 'Rabbimiz oruçlarımızı kabul eylesin. Akşam ezanı vakti ile iftar şerefine nail olacağız.'
               : 'Sahura kadar beslenmemize dikkat edip, ibadet ve teheccüd vakitlerini gözleyelim.'}
           </p>
-          
+
           {/* Hızlı Oruç Kontrol Checkbox */}
-          <button 
+          <button
             onClick={toggleOruc}
             className={`flex items-center justify-center sm:justify-start gap-1.5 self-center sm:self-start text-2xs font-bold px-3 py-1 rounded-full border transition-all duration-300 ${
-              orucTutuldu 
-                ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' 
+              orucTutuldu
+                ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
                 : 'bg-amber-500/[0.04] border-amber-500/15 text-amber-300/70 hover:bg-amber-500/[0.08]'
             }`}
           >
-            <div className={`w-3.5 h-3.5 rounded-md border flex items-center justify-center transition-all ${
-              orucTutuldu ? 'bg-emerald-500/20 border-emerald-500' : 'border-amber-500/30'
-            }`}>
+            <div
+              className={`w-3.5 h-3.5 rounded-md border flex items-center justify-center transition-all ${
+                orucTutuldu ? 'bg-emerald-500/20 border-emerald-500' : 'border-amber-500/30'
+              }`}
+            >
               {orucTutuldu && <Check size={10} strokeWidth={3} />}
             </div>
             <span>{orucTutuldu ? 'Bugünkü Oruç Tamamlandı' : 'Bugün Oruçluyum'}</span>
@@ -335,19 +350,20 @@ export const RamazanHub: React.FC = () => {
 
       {/* 3. Alt: Mukabele & Teravih İnteraktif Görev Kartları */}
       <div className="grid grid-cols-2 gap-2.5 mt-3 pt-3.5 border-t border-amber-500/10 z-10 relative">
-        
         {/* Mukabele Kartı */}
         <button
           onClick={toggleCuz}
           className={`group flex items-center gap-2.5 p-2.5 rounded-2xl border transition-all duration-300 ${
-            cuzOkundu 
-              ? 'bg-emerald-500/[0.07] border-emerald-500/25 text-emerald-400' 
+            cuzOkundu
+              ? 'bg-emerald-500/[0.07] border-emerald-500/25 text-emerald-400'
               : 'bg-amber-500/[0.03] border-amber-500/12 text-amber-200/90 hover:bg-amber-500/[0.06] hover:border-amber-500/20'
           }`}
         >
-          <div className={`w-7 h-7 rounded-xl flex items-center justify-center flex-shrink-0 transition-all ${
-            cuzOkundu ? 'bg-emerald-500/15 text-emerald-400' : 'bg-amber-500/10 text-amber-400'
-          }`}>
+          <div
+            className={`w-7 h-7 rounded-xl flex items-center justify-center flex-shrink-0 transition-all ${
+              cuzOkundu ? 'bg-emerald-500/15 text-emerald-400' : 'bg-amber-500/10 text-amber-400'
+            }`}
+          >
             <BookOpen size={14} strokeWidth={2} />
           </div>
           <div className="flex flex-col text-left overflow-hidden">
@@ -372,10 +388,16 @@ export const RamazanHub: React.FC = () => {
             </span>
           )}
 
-          <div className={`w-7 h-7 rounded-xl flex items-center justify-center flex-shrink-0 transition-all ${
-            teravihRekat > 0 ? 'bg-amber-500/15 text-amber-400' : 'bg-amber-500/10 text-amber-400'
-          }`}>
-            {teravihRekat === 20 ? <Award size={14} strokeWidth={2} /> : <Flame size={14} strokeWidth={2} className={teravihRekat > 0 ? 'animate-pulse' : ''} />}
+          <div
+            className={`w-7 h-7 rounded-xl flex items-center justify-center flex-shrink-0 transition-all ${
+              teravihRekat > 0 ? 'bg-amber-500/15 text-amber-400' : 'bg-amber-500/10 text-amber-400'
+            }`}
+          >
+            {teravihRekat === 20 ? (
+              <Award size={14} strokeWidth={2} />
+            ) : (
+              <Flame size={14} strokeWidth={2} className={teravihRekat > 0 ? 'animate-pulse' : ''} />
+            )}
           </div>
           <div className="flex flex-col text-left overflow-hidden">
             <span className="text-2xs font-black uppercase tracking-wider text-amber-500/80 leading-none">Sünnet-i Müekkede</span>

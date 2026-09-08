@@ -20,12 +20,12 @@ interface KiblePusulasiModalProps {
 // (bkz. tasarım denetimi) tanınmayan her ilçe sessizce Ceyhan açısını
 // gösteriyordu.
 const FALLBACK_KOORDINATLAR: Record<string, { lat: number; lng: number }> = {
-  "ceyhan": { lat: 37.0298, lng: 35.8164 },
-  "seyhan": { lat: 36.9934, lng: 35.3256 },
-  "adana": { lat: 36.9914, lng: 35.3308 },
-  "ankara": { lat: 39.9334, lng: 32.8597 },
-  "istanbul": { lat: 41.0082, lng: 28.9784 },
-  "izmir": { lat: 38.4192, lng: 27.1287 }
+  ceyhan: { lat: 37.0298, lng: 35.8164 },
+  seyhan: { lat: 36.9934, lng: 35.3256 },
+  adana: { lat: 36.9914, lng: 35.3308 },
+  ankara: { lat: 39.9334, lng: 32.8597 },
+  istanbul: { lat: 41.0082, lng: 28.9784 },
+  izmir: { lat: 38.4192, lng: 27.1287 },
 };
 const VARSAYILAN_KOORDINAT = FALLBACK_KOORDINATLAR.ceyhan;
 
@@ -56,9 +56,9 @@ const CompactCompassDial = React.memo(({ dialRef, qiblaAngle }: CompassDialProps
     <div
       ref={dialRef}
       className="w-full h-full rounded-full border border-[var(--glass-border)] bg-[var(--card-elevated-bg)] shadow-[inset_0_2px_8px_rgba(0,0,0,0.12),var(--spatial-shadow)] relative flex items-center justify-center will-change-transform"
-      style={{ 
+      style={{
         transform: 'rotate(0deg)',
-        backfaceVisibility: 'hidden'
+        backfaceVisibility: 'hidden',
       }}
     >
       {/* 4 Cardinal Directions only for Apple HIG Widget Minimalism */}
@@ -101,17 +101,17 @@ const CompactCompassNeedle = React.memo(({ needleRef, qiblaAngle, isAligned }: C
     <div
       ref={needleRef}
       className="absolute w-[200px] h-[200px] pointer-events-none flex items-center justify-center z-20 will-change-transform"
-      style={{ 
+      style={{
         transform: `rotate(${qiblaAngle}deg)`,
-        backfaceVisibility: 'hidden'
+        backfaceVisibility: 'hidden',
       }}
     >
       {/* Luxury Dual-Tone Prismatic Pointer Arrow */}
       <div className="absolute top-0 flex flex-col items-center">
         {/* Outer Alignment Halo (glowing green/amber ring) */}
-        <div 
+        <div
           className={`absolute w-6 h-6 rounded-full blur-[4px] -top-4 transition-all duration-[1s] ${
-            isAligned 
+            isAligned
               ? 'bg-[var(--aura-emerald)]/40 shadow-[0_0_12px_color-mix(in_srgb,var(--aura-emerald)_50%,transparent)]'
               : 'bg-[var(--aura-amber)]/10'
           }`}
@@ -127,7 +127,10 @@ const CompactCompassNeedle = React.memo(({ needleRef, qiblaAngle, isAligned }: C
           {/* Left Prism Facet: Golden Amber */}
           <polygon points="10,0 10,40 0,12" fill="currentColor" opacity="0.9" />
           {/* Right Prism Facet: Dark Gold Shadow */}
-          <polygon points="10,0 20,12 10,40" fill={isAligned ? 'color-mix(in srgb, var(--aura-emerald) 65%, black)' : 'color-mix(in srgb, var(--aura-amber) 65%, black)'} />
+          <polygon
+            points="10,0 20,12 10,40"
+            fill={isAligned ? 'color-mix(in srgb, var(--aura-emerald) 65%, black)' : 'color-mix(in srgb, var(--aura-amber) 65%, black)'}
+          />
         </svg>
 
         {/* Minimalist Kaaba Medallion */}
@@ -139,7 +142,7 @@ const CompactCompassNeedle = React.memo(({ needleRef, qiblaAngle, isAligned }: C
           }`}
         >
           <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="currentColor">
-            <path d="M12 2L3 7v10l9 5 9-5V7l-9-5zm0 2.5l7 3.8-7 3.8-7-3.8 7-3.8zM5 9.7l6 3.3V20l-6-3.3V9.7zm8 10.3v-7l6-3.3v7l-6 3.3z"/>
+            <path d="M12 2L3 7v10l9 5 9-5V7l-9-5zm0 2.5l7 3.8-7 3.8-7-3.8 7-3.8zM5 9.7l6 3.3V20l-6-3.3V9.7zm8 10.3v-7l6-3.3v7l-6 3.3z" />
           </svg>
         </div>
       </div>
@@ -152,7 +155,6 @@ const CompactCompassNeedle = React.memo(({ needleRef, qiblaAngle, isAligned }: C
   );
 });
 CompactCompassNeedle.displayName = 'CompactCompassNeedle';
-
 
 export const KiblePusulasiModal: React.FC<KiblePusulasiModalProps> = ({ isOpen, onClose }) => {
   const { gpsEnabled, gpsCoords, gpsKonumAdi, gpsLoading, enableGps } = useGpsVakitStore();
@@ -208,11 +210,12 @@ export const KiblePusulasiModal: React.FC<KiblePusulasiModalProps> = ({ isOpen, 
 
   // iOS Safari'de requestPermission() zorunludur; bu tarayıcı özelliği
   // oturum boyunca sabittir, bir kez tespit edilip saklanır.
-  const [isIOSDevice] = useState(() =>
-    typeof window !== 'undefined' &&
-    typeof DeviceOrientationEvent !== 'undefined' &&
-    // @ts-expect-error requestPermission yalnızca iOS Safari'de mevcut, lib.dom.d.ts'te yok
-    typeof DeviceOrientationEvent.requestPermission === 'function'
+  const [isIOSDevice] = useState(
+    () =>
+      typeof window !== 'undefined' &&
+      typeof DeviceOrientationEvent !== 'undefined' &&
+      // @ts-expect-error requestPermission yalnızca iOS Safari'de mevcut, lib.dom.d.ts'te yok
+      typeof DeviceOrientationEvent.requestPermission === 'function'
   );
 
   const [permissionGranted, setPermissionGranted] = useState<boolean | null>(null);
@@ -246,10 +249,12 @@ export const KiblePusulasiModal: React.FC<KiblePusulasiModalProps> = ({ isOpen, 
 
     let cancelled = false;
     geocodeAttemptedForRef.current = ilceAdi;
-    ilceKoordinatlariniCek(ilceAdi).then(result => {
+    ilceKoordinatlariniCek(ilceAdi).then((result) => {
       if (!cancelled && result) setGeocodedCoords(result);
     });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [gpsEnabled, settings.ilceAdi]);
 
   // Resolve Active Coordinates (GPS > bilinen sabit ilçe > geocode edilmiş ilçe > varsayılan)
@@ -310,7 +315,7 @@ export const KiblePusulasiModal: React.FC<KiblePusulasiModalProps> = ({ isOpen, 
         const absDiff = Math.abs(diff);
         const adaptiveLerp = 0.025 + Math.min(0.125, (absDiff / 45) * 0.09);
         currentHeadingRef.current += diff * adaptiveLerp;
-        
+
         if (currentHeadingRef.current < 0) currentHeadingRef.current += 360;
         if (currentHeadingRef.current >= 360) currentHeadingRef.current -= 360;
 
@@ -479,18 +484,15 @@ export const KiblePusulasiModal: React.FC<KiblePusulasiModalProps> = ({ isOpen, 
     };
   }, [isOpen, isIOSDevice, handleOrientation, handleOrientationAbsolute]);
 
-  const locationText = gpsEnabled && gpsKonumAdi
-    ? `${gpsKonumAdi} (GPS)`
-    : coords.kaynak === 'varsayilan'
-      ? 'Varsayılan Konum (Ceyhan)'
-      : `${settings.ilceAdi || 'Ceyhan'} İlçe Merkezi`;
+  const locationText =
+    gpsEnabled && gpsKonumAdi
+      ? `${gpsKonumAdi} (GPS)`
+      : coords.kaynak === 'varsayilan'
+        ? 'Varsayılan Konum (Ceyhan)'
+        : `${settings.ilceAdi || 'Ceyhan'} İlçe Merkezi`;
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Kıble Yönü Pusulası"
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title="Kıble Yönü Pusulası">
       <div className="flex flex-col items-center pt-6 pb-4 relative text-center">
         {/* Compact Circadian Aura Glow */}
         <div
@@ -499,17 +501,13 @@ export const KiblePusulasiModal: React.FC<KiblePusulasiModalProps> = ({ isOpen, 
             background: isAligned
               ? 'radial-gradient(circle, var(--aura-emerald) 0%, transparent 70%)'
               : 'radial-gradient(circle, var(--aura-amber) 0%, transparent 70%)',
-            opacity: hasHeading ? (isAligned ? 0.35 : 0.12) : 0.05
+            opacity: hasHeading ? (isAligned ? 0.35 : 0.12) : 0.05,
           }}
         />
 
-        <p className="text-2xs label-primary mb-1">
-          Hassas Yön Tayini
-        </p>
+        <p className="text-2xs label-primary mb-1">Hassas Yön Tayini</p>
         <div className="flex items-center gap-1.5">
-          <h3 className="text-sm font-light text-[var(--text-primary)] tracking-tight">
-            {locationText}
-          </h3>
+          <h3 className="text-sm font-light text-[var(--text-primary)] tracking-tight">{locationText}</h3>
           {gpsEnabled && (
             <button
               type="button"
@@ -529,18 +527,14 @@ export const KiblePusulasiModal: React.FC<KiblePusulasiModalProps> = ({ isOpen, 
               İlçeniz için konum bulunamadı, açı varsayılan konuma göre hesaplandı. Kesin sonuç için GPS'i etkinleştirin.
             </p>
           )}
-          {refreshError && (
-            <p className="text-2xs text-[var(--aura-ruby)] font-medium leading-snug max-w-[220px]">
-              {refreshError}
-            </p>
-          )}
+          {refreshError && <p className="text-2xs text-[var(--aura-ruby)] font-medium leading-snug max-w-[220px]">{refreshError}</p>}
         </div>
 
         {/* COMPASS COMPACT SCREEN - 220PX ULTRA-PREMIUM APPLE WIDGET DESIGN */}
         <div className="relative w-[220px] h-[220px] flex items-center justify-center z-10 mb-8 select-none">
           {/* Bezel Ring: Compact Matte Sandblasted Metal Frame */}
           <div className="absolute inset-[-4px] rounded-full bg-gradient-to-b from-zinc-200/90 to-zinc-400/90 dark:from-zinc-800/80 dark:to-zinc-950/80 border border-[var(--text-primary)]/5 dark:border-[var(--text-primary)]/10 shadow-[0_12px_28px_rgba(0,0,0,0.25),inset_0_1px_1.5px_rgba(255,255,255,0.12)] pointer-events-none z-0" />
-          
+
           {/* Compass Dial Outer Ring */}
           <CompactCompassDial dialRef={dialRef} qiblaAngle={qiblaAngle} />
 
@@ -550,13 +544,15 @@ export const KiblePusulasiModal: React.FC<KiblePusulasiModalProps> = ({ isOpen, 
           {/* Central Bearing: Red Ruby Jewel with Steel Bezel (Precision watches detail) */}
           <div className="absolute w-6.5 h-6.5 rounded-full bg-gradient-to-b from-zinc-300 to-zinc-500 dark:from-zinc-700 dark:to-zinc-900 border border-zinc-400/30 shadow-[0_2px_4px_rgba(0,0,0,0.3)] flex items-center justify-center z-30 pointer-events-none">
             {/* Jewel Cap */}
-            <div 
-              className="w-2.5 h-2.5 rounded-full border shadow-inner transition-all duration-[1s]" 
+            <div
+              className="w-2.5 h-2.5 rounded-full border shadow-inner transition-all duration-[1s]"
               style={{
                 background: isAligned
                   ? 'radial-gradient(circle at 35% 35%, var(--aura-emerald) 0%, color-mix(in srgb, var(--aura-emerald) 70%, black) 60%, color-mix(in srgb, var(--aura-emerald) 40%, black) 100%)'
                   : 'radial-gradient(circle at 35% 35%, var(--aura-ruby) 0%, color-mix(in srgb, var(--aura-ruby) 70%, black) 60%, color-mix(in srgb, var(--aura-ruby) 40%, black) 100%)',
-                borderColor: isAligned ? 'color-mix(in srgb, var(--aura-emerald) 60%, white)' : 'color-mix(in srgb, var(--aura-ruby) 60%, white)'
+                borderColor: isAligned
+                  ? 'color-mix(in srgb, var(--aura-emerald) 60%, white)'
+                  : 'color-mix(in srgb, var(--aura-ruby) 60%, white)',
               }}
             />
           </div>
@@ -609,7 +605,8 @@ export const KiblePusulasiModal: React.FC<KiblePusulasiModalProps> = ({ isOpen, 
                 exit={{ opacity: 0 }}
                 className="text-2xs text-[var(--text-secondary)]/75 font-light"
               >
-                Telefonunuzu çevirerek ibreyi <strong className="text-[var(--aura-amber)] font-medium">KIBLE (Altın Nokta)</strong> yönüne hizalayın.
+                Telefonunuzu çevirerek ibreyi <strong className="text-[var(--aura-amber)] font-medium">KIBLE (Altın Nokta)</strong> yönüne
+                hizalayın.
               </motion.div>
             ) : (
               <motion.div
@@ -621,7 +618,9 @@ export const KiblePusulasiModal: React.FC<KiblePusulasiModalProps> = ({ isOpen, 
               >
                 <Info size={16} className="text-[var(--aura-amber)] shrink-0 mt-0.5" />
                 <div>
-                  <strong className="font-bold">Masaüstü ve Statik Mod:</strong> Yön sensörü bulunmayan cihazlarda, Kabe haritadaki <strong>kuzeyden saat yönünde doğuya doğru {qiblaAngle.toFixed(1)}°</strong> açıda yer alır. Telefonunuzu bu açıya göre hizalayabilirsiniz.
+                  <strong className="font-bold">Masaüstü ve Statik Mod:</strong> Yön sensörü bulunmayan cihazlarda, Kabe haritadaki{' '}
+                  <strong>kuzeyden saat yönünde doğuya doğru {qiblaAngle.toFixed(1)}°</strong> açıda yer alır. Telefonunuzu bu açıya göre
+                  hizalayabilirsiniz.
                 </div>
               </motion.div>
             )}
@@ -633,9 +632,7 @@ export const KiblePusulasiModal: React.FC<KiblePusulasiModalProps> = ({ isOpen, 
           {/* Qibla Angle Card */}
           <div className="p-4 rounded-card spatial-glass flex flex-col items-center">
             <span className="text-2xs label-tertiary mb-1">KIBLE DERECESİ</span>
-            <span className="text-lg font-mono font-medium text-[var(--text-primary)]">
-              {qiblaAngle.toFixed(1)}°
-            </span>
+            <span className="text-lg font-mono font-medium text-[var(--text-primary)]">{qiblaAngle.toFixed(1)}°</span>
             <span className="text-2xs font-medium text-subtle mt-0.5">Kuzeyden Doğuya</span>
           </div>
 

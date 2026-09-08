@@ -140,7 +140,7 @@ export const useAdminIzinlerStore = create<AdminIzinlerState>((set, get) => ({
       const data = sonIzinlerDocs.map(({ id, data: d }) => ({
         id,
         ...d,
-        ...(sonSebepMap[id] !== undefined ? { sebep: sonSebepMap[id] } : {})
+        ...(sonSebepMap[id] !== undefined ? { sebep: sonSebepMap[id] } : {}),
       })) as (Izin & { id: string })[];
 
       data.sort((a, b) => {
@@ -152,22 +152,28 @@ export const useAdminIzinlerStore = create<AdminIzinlerState>((set, get) => ({
       set({ izinler: data, loading: false, initializing: false, initialized: true, error: null });
     };
 
-    const unsubscribeIzinler = onSnapshot(q, (snapshot) => {
-      sonIzinlerDocs = snapshot.docs.map(doc => ({ id: doc.id, data: doc.data() }));
-      izinlerYuklendi = true;
-      birlestirVeYaz();
-    }, (err) => {
-      // handleFirestoreError'ın DÖNÜŞ değeri kullanılır — ham err.message
-      // değil, aksi halde ham SDK metni admin'e sızabilir (bkz.
-      // useKrizAlarmlariStore.ts'teki AYNI düzeltme, firestore-errors.ts).
-      const friendly = handleFirestoreError(err, OperationType.LIST, path);
-      // `initialized:true` YAZILMAZ — onSnapshot hata callback'i dinleyiciyi
-      // KALICI olarak sonlandırdığından (SDK otomatik yeniden bağlanmaz),
-      // bunu yazmak init()'in guard'ını süresiz kilitleyip store'u oturum
-      // boyunca ölü bırakıyordu (premium hata analizi HS-O1).
-      set({ error: friendly.message, loading: false, initializing: false });
-      setTimeout(() => { if (!get().initialized) get().init(); }, YENIDEN_ABONE_MS);
-    });
+    const unsubscribeIzinler = onSnapshot(
+      q,
+      (snapshot) => {
+        sonIzinlerDocs = snapshot.docs.map((doc) => ({ id: doc.id, data: doc.data() }));
+        izinlerYuklendi = true;
+        birlestirVeYaz();
+      },
+      (err) => {
+        // handleFirestoreError'ın DÖNÜŞ değeri kullanılır — ham err.message
+        // değil, aksi halde ham SDK metni admin'e sızabilir (bkz.
+        // useKrizAlarmlariStore.ts'teki AYNI düzeltme, firestore-errors.ts).
+        const friendly = handleFirestoreError(err, OperationType.LIST, path);
+        // `initialized:true` YAZILMAZ — onSnapshot hata callback'i dinleyiciyi
+        // KALICI olarak sonlandırdığından (SDK otomatik yeniden bağlanmaz),
+        // bunu yazmak init()'in guard'ını süresiz kilitleyip store'u oturum
+        // boyunca ölü bırakıyordu (premium hata analizi HS-O1).
+        set({ error: friendly.message, loading: false, initializing: false });
+        setTimeout(() => {
+          if (!get().initialized) get().init();
+        }, YENIDEN_ABONE_MS);
+      }
+    );
 
     // İkincil dinleyici: hatası ana izin listesini ENGELLEMEMELİ (bu kısım
     // kasıtlıydı ve korunuyor) — ama önceden hatada YENİDEN DE DENEMİYORDU.
@@ -184,27 +190,31 @@ export const useAdminIzinlerStore = create<AdminIzinlerState>((set, get) => ({
 
     const detaylariDinle = () => {
       if (detaylarKapatildi) return;
-      detayUnsubscribe = onSnapshot(collection(db, 'izin_detaylari'), (snapshot) => {
-        const map: Record<string, string> = {};
-        snapshot.docs.forEach((d) => {
-          const sebepDeger = d.data().sebep;
-          if (typeof sebepDeger === 'string') map[d.id] = sebepDeger;
-        });
-        sonSebepMap = map;
-        detayDenemeSayisi = 0;
-        if (get().detaylarHatasi) set({ detaylarHatasi: false });
-        birlestirVeYaz();
-      }, (err) => {
-        handleFirestoreError(err, OperationType.LIST, 'izin_detaylari');
-        // Hata anında HEMEN işaretlenir (yeniden deneme başarılı olursa geri
-        // alınır) — aksi halde admin, yeniden deneme penceresi boyunca boş
-        // `sebep` alanlarını "belirtilmedi" sanardı.
-        if (!get().detaylarHatasi) set({ detaylarHatasi: true });
-        if (detaylarKapatildi) return;
-        if (detayDenemeSayisi >= DETAY_MAX_YENIDEN_DENEME) return;
-        detayDenemeSayisi++;
-        setTimeout(detaylariDinle, YENIDEN_ABONE_MS);
-      });
+      detayUnsubscribe = onSnapshot(
+        collection(db, 'izin_detaylari'),
+        (snapshot) => {
+          const map: Record<string, string> = {};
+          snapshot.docs.forEach((d) => {
+            const sebepDeger = d.data().sebep;
+            if (typeof sebepDeger === 'string') map[d.id] = sebepDeger;
+          });
+          sonSebepMap = map;
+          detayDenemeSayisi = 0;
+          if (get().detaylarHatasi) set({ detaylarHatasi: false });
+          birlestirVeYaz();
+        },
+        (err) => {
+          handleFirestoreError(err, OperationType.LIST, 'izin_detaylari');
+          // Hata anında HEMEN işaretlenir (yeniden deneme başarılı olursa geri
+          // alınır) — aksi halde admin, yeniden deneme penceresi boyunca boş
+          // `sebep` alanlarını "belirtilmedi" sanardı.
+          if (!get().detaylarHatasi) set({ detaylarHatasi: true });
+          if (detaylarKapatildi) return;
+          if (detayDenemeSayisi >= DETAY_MAX_YENIDEN_DENEME) return;
+          detayDenemeSayisi++;
+          setTimeout(detaylariDinle, YENIDEN_ABONE_MS);
+        }
+      );
     };
 
     detaylariDinle();
@@ -308,10 +318,7 @@ export const useAdminIzinlerStore = create<AdminIzinlerState>((set, get) => ({
         await runTransaction(db, async (transaction) => {
           const izinRef = doc(db, 'izinler', id);
           const muezzinRef = doc(db, 'muezzins', izinData.uid);
-          const [tazeIzinSnap, muezzinSnap] = await Promise.all([
-            transaction.get(izinRef),
-            transaction.get(muezzinRef),
-          ]);
+          const [tazeIzinSnap, muezzinSnap] = await Promise.all([transaction.get(izinRef), transaction.get(muezzinRef)]);
           if (!tazeIzinSnap.exists()) throw new Error('İzin talebi bulunamadı.');
 
           // bildirimGonderildi silinir — geri alınan bir karar tekrar
@@ -336,7 +343,7 @@ export const useAdminIzinlerStore = create<AdminIzinlerState>((set, get) => ({
         await updateDoc(doc(db, 'izinler', id), { durum: 'onay_bekliyor', bildirimGonderildi: deleteField() });
       }
 
-      await telemetryService.logAudit('İzin Talebi Kararı Geri Alındı', id, 'Talep durumu tekrar \'ONAY BEKLİYOR\' olarak ayarlandı.');
+      await telemetryService.logAudit('İzin Talebi Kararı Geri Alındı', id, "Talep durumu tekrar 'ONAY BEKLİYOR' olarak ayarlandı.");
       // Geri alınan bir onay da plan yenilemesi gerektirir — kişi artık
       // yeniden atanabilir olmalı (bkz. mimari denetim Y1).
       await izinEtkilenenHaftalariYenile(id);

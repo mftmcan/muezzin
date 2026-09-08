@@ -56,7 +56,7 @@ async function bildirimTohumla(tarih: string, vakit: string, ek: Record<string, 
     tip: 'asil',
     durum: 'bekliyor',
     pendingAck: true,
-    ...ek
+    ...ek,
   });
   return ref;
 }
@@ -74,7 +74,7 @@ const tests: TestCase[] = [
       const veri = (await ref.get()).data()!;
       // 12:45 TRT − 1sa = 11:45 TRT = 08:45 UTC
       assert.equal(veri.mazeretSonBasvuru.toDate().toISOString(), `${YARIN}T08:45:00.000Z`);
-    }
+    },
   },
   {
     name: 'Sabah vakti icin damga, ONCEKI gunun yatsisindan 1 saat SONRASI olur',
@@ -83,7 +83,7 @@ const tests: TestCase[] = [
       const oncekiGun = oncekiGunTarihi(YARIN)!;
       await vakitTohumla({
         [oncekiGun]: { yatsi: '21:18' },
-        [YARIN]: { sabah: '04:10', yatsi: '21:19' }
+        [YARIN]: { sabah: '04:10', yatsi: '21:19' },
       });
       const ref = await bildirimTohumla(YARIN, 'sabah');
 
@@ -93,7 +93,7 @@ const tests: TestCase[] = [
       // Onceki gun 21:18 TRT + 1sa = 22:18 TRT = 19:18 UTC. Sabahin KENDI
       // saatine (04:10) veya AYNI gunun yatsisina gore hesaplanmamali.
       assert.equal(veri.mazeretSonBasvuru.toDate().toISOString(), `${oncekiGun}T19:18:00.000Z`);
-    }
+    },
   },
   {
     name: 'Bozuk ("abc") ezan saatinde damga YAZILMAZ (fail-closed)',
@@ -105,7 +105,7 @@ const tests: TestCase[] = [
       await backfillMazeretPenceresi(false);
 
       assert.equal((await ref.get()).data()!.mazeretSonBasvuru, undefined);
-    }
+    },
   },
   {
     name: 'Tek haneli saatli ("9:05") deger normalize edilerek yazilir',
@@ -119,7 +119,7 @@ const tests: TestCase[] = [
       const veri = (await ref.get()).data()!;
       // 09:05 TRT − 1sa = 08:05 TRT = 05:05 UTC
       assert.equal(veri.mazeretSonBasvuru.toDate().toISOString(), `${YARIN}T05:05:00.000Z`);
-    }
+    },
   },
   {
     name: 'Bozuk veri, ONCEDEN yazilmis gecerli bir damgayi silmez/bozmaz',
@@ -133,7 +133,7 @@ const tests: TestCase[] = [
 
       const veri = (await ref.get()).data()!;
       assert.equal(veri.mazeretSonBasvuru.toMillis(), oncekiDamga.toMillis());
-    }
+    },
   },
   {
     name: 'Ezan verisi degisirse damga guncellenir (idempotent, degismezse yazmaz)',
@@ -149,7 +149,7 @@ const tests: TestCase[] = [
       await vakitTohumla({ [YARIN]: { aksam: '19:41' } });
       await backfillMazeretPenceresi(false);
       assert.equal((await ref.get()).data()!.mazeretSonBasvuru.toDate().toISOString(), `${YARIN}T15:41:00.000Z`);
-    }
+    },
   },
   {
     name: 'Gecmis gunlere ait bildirimler islenmez (gereksiz kota harcanmaz)',
@@ -161,7 +161,7 @@ const tests: TestCase[] = [
       await backfillMazeretPenceresi(false);
 
       assert.equal((await ref.get()).data()!.mazeretSonBasvuru, undefined);
-    }
+    },
   },
   {
     name: 'Kuru calistirma hicbir sey yazmaz',
@@ -173,8 +173,8 @@ const tests: TestCase[] = [
       await backfillMazeretPenceresi(true);
 
       assert.equal((await ref.get()).data()!.mazeretSonBasvuru, undefined);
-    }
-  }
+    },
+  },
 ];
 
 async function main() {

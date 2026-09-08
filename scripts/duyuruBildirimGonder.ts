@@ -1,5 +1,11 @@
 import { db, FieldValue, Timestamp } from './lib/firebaseAdminInit.ts';
-import { fcmGonderVeTemizle, FcmGonderimBasarisizHatasi, kullaniciFcmTokenleriniTopla, type FcmMessage, type FcmGonderici } from './lib/fcmNotify.ts';
+import {
+  fcmGonderVeTemizle,
+  FcmGonderimBasarisizHatasi,
+  kullaniciFcmTokenleriniTopla,
+  type FcmMessage,
+  type FcmGonderici,
+} from './lib/fcmNotify.ts';
 import { parcaliBatchUygula, type BatchIslemi } from './lib/firestoreBatch.ts';
 import { GONDERIM_CLAIM_ALANI, gonderimClaimBayatMi, gonderimClaimSerbestBirak, gonderimClaimYaz } from './lib/gonderimClaim.ts';
 
@@ -44,9 +50,7 @@ export async function processDuyuruBildirimleri(
 ): Promise<{ duyuruSayisi: number; mesajSayisi: number }> {
   console.log(`Duyuru bildirimleri gönderiliyor${dryRun ? ' (dry-run)' : ''}...`);
 
-  const duyuruSnap = await db.collection('duyurular')
-    .where('bildirimGonderildi', '==', false)
-    .get();
+  const duyuruSnap = await db.collection('duyurular').where('bildirimGonderildi', '==', false).get();
 
   if (duyuruSnap.empty) {
     console.log('Bildirilecek yeni duyuru yok.');
@@ -76,7 +80,9 @@ export async function processDuyuruBildirimleri(
     const m = docSnap.data() as MuezzinData;
     if (m.notificationSettings?.duyurular === false) return;
     const tokens = kullaniciFcmTokenleriniTopla(m);
-    tokens.forEach((t) => { tokenToUidMap[t] = docSnap.id; });
+    tokens.forEach((t) => {
+      tokenToUidMap[t] = docSnap.id;
+    });
     alicilarinFcmTokenleri.push(...tokens);
   });
 
@@ -86,15 +92,14 @@ export async function processDuyuruBildirimleri(
   islenecekler.forEach((docSnap) => {
     const duyuru = docSnap.data() as DuyuruData;
 
-    const icerikOnizleme = duyuru.icerik.length > ICERIK_ONIZLEME_UZUNLUGU
-      ? `${duyuru.icerik.slice(0, ICERIK_ONIZLEME_UZUNLUGU)}…`
-      : duyuru.icerik;
+    const icerikOnizleme =
+      duyuru.icerik.length > ICERIK_ONIZLEME_UZUNLUGU ? `${duyuru.icerik.slice(0, ICERIK_ONIZLEME_UZUNLUGU)}…` : duyuru.icerik;
 
     alicilarinFcmTokenleri.forEach((token) => {
       tumMesajlar.push({
         token,
         notification: { title: duyuru.baslik, body: icerikOnizleme },
-        data: { type: 'duyuru_yayinlandi', duyuruId: docSnap.id, duyuruTip: duyuru.tip }
+        data: { type: 'duyuru_yayinlandi', duyuruId: docSnap.id, duyuruTip: duyuru.tip },
       });
     });
   });
@@ -133,9 +138,11 @@ export async function processDuyuruBildirimleri(
 
   // 3. FAZ — MARK: bayrak yazılır, damga silinir (belge kalıcı olarak
   // fazladan bir alan taşımasın — bkz. firestore.rules `isValidDuyuru`).
-  await parcaliBatchUygula(islenecekler.map<BatchIslemi>((docSnap) => (batch) => {
-    batch.update(docSnap.ref, { bildirimGonderildi: true, [GONDERIM_CLAIM_ALANI]: FieldValue.delete() });
-  }));
+  await parcaliBatchUygula(
+    islenecekler.map<BatchIslemi>((docSnap) => (batch) => {
+      batch.update(docSnap.ref, { bildirimGonderildi: true, [GONDERIM_CLAIM_ALANI]: FieldValue.delete() });
+    })
+  );
   console.log(`Tamamlandi. duyuruSayisi=${duyuruSayisi}`);
   return { duyuruSayisi, mesajSayisi: tumMesajlar.length };
 }

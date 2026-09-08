@@ -14,21 +14,21 @@ import { useCircadianTheme } from '../hooks/useCircadianTheme';
  * or when the user closes the tab.
  */
 export const StoreInitializer = () => {
- const initialized = useRef(false);
+  const initialized = useRef(false);
 
- // Initialize global Google Neural Expressive circadian theme engine
- useCircadianTheme();
+  // Initialize global Google Neural Expressive circadian theme engine
+  useCircadianTheme();
 
- useEffect(() => {
- // Guard: only ever run once across the app lifetime
- if (initialized.current) return;
- initialized.current = true;
+  useEffect(() => {
+    // Guard: only ever run once across the app lifetime
+    if (initialized.current) return;
+    initialized.current = true;
 
- useSystemSettingsStore.getState().init();
- useMuezzinStore.getState().init();
- useVakitStore.getState().init();
- useAktifIzinlerStore.getState().init();
- }, []); // Empty deps: run once only
+    useSystemSettingsStore.getState().init();
+    useMuezzinStore.getState().init();
+    useVakitStore.getState().init();
+    useAktifIzinlerStore.getState().init();
+  }, []); // Empty deps: run once only
 
- return null;
+  return null;
 };

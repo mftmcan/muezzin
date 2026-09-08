@@ -9,7 +9,7 @@ const SistemAyarlari = lazy(() => import('./SistemAyarlari'));
 const SistemLoglari = lazy(() => import('./SistemLoglari'));
 
 const SUBTAB_IDS = ['ayarlar', 'onbellek', 'loglar'] as const;
-type SubTab = typeof SUBTAB_IDS[number];
+type SubTab = (typeof SUBTAB_IDS)[number];
 
 export default function AyarlarHub() {
   const { activeTab, setActiveTab, isPending } = useUrlTab<SubTab>('subtab', SUBTAB_IDS, 'ayarlar');
@@ -17,7 +17,7 @@ export default function AyarlarHub() {
   const navItems = [
     { id: 'ayarlar', label: 'Dizge Ayarları' },
     { id: 'onbellek', label: 'Ezan Önbelleği' },
-    { id: 'loglar', label: 'Dizge Logları' }
+    { id: 'loglar', label: 'Dizge Logları' },
   ];
 
   return (

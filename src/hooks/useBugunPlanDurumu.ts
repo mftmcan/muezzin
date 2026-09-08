@@ -17,7 +17,7 @@ function bildirimZamani(bildirim: Bildirim) {
 
 function aktifBildirimSec(bildirimler: Bildirim[], tip: Bildirim['tip']) {
   return bildirimler
-    .filter(b => b.tip === tip && b.durum !== 'reddedildi')
+    .filter((b) => b.tip === tip && b.durum !== 'reddedildi')
     .sort((a, b) => {
       const statusDiff = (a.durum === 'onaylandi' ? 0 : 1) - (b.durum === 'onaylandi' ? 0 : 1);
       if (statusDiff !== 0) return statusDiff;
@@ -40,7 +40,7 @@ export function useBugunPlanDurumu(planDateStr: string, vakitKeyForPlan: Vakit) 
   const haftaId = useMemo(() => `W${format(haftaBaslangic, 'yyyy-MM-dd')}`, [haftaBaslangic]);
 
   const { plan, loading: planLoading, sunucudanDogrulandi } = useHaftaPlan(haftaId);
-  const isAdmin = useAuthStore(state => state.isAdmin);
+  const isAdmin = useAuthStore((state) => state.isAdmin);
 
   // Race condition kilidi: bu hook ve HaftalikCizelge aynı anda
   // haftalikPlanOlustur çağırmasın — yalnızca bir kez tetikle.
@@ -58,20 +58,22 @@ export function useBugunPlanDurumu(planDateStr: string, vakitKeyForPlan: Vakit) 
     // `sunucudanDogrulandi` şartı, çevrimdışı/bayat önbellekten gelen
     // yanlış-negatif bir "plan yok" okumasının yayınlanmış çizelgeyi ezmesini
     // engeller.
-    if (selfHealingTetiklenmeliMi({
-      planVarMi: !!plan,
-      planLoading,
-      sunucudanDogrulandi,
-      isAdmin,
-      haftaId,
-      dahaOnceTetiklenenHaftaId: selfHealingFiredHaftaIdRef.current,
-    })) {
+    if (
+      selfHealingTetiklenmeliMi({
+        planVarMi: !!plan,
+        planLoading,
+        sunucudanDogrulandi,
+        isAdmin,
+        haftaId,
+        dahaOnceTetiklenenHaftaId: selfHealingFiredHaftaIdRef.current,
+      })
+    ) {
       selfHealingFiredHaftaIdRef.current = haftaId;
       if (import.meta.env.DEV) {
         console.log(`[Self-Healing] Hafta planı bulunamadı (${haftaId}). Yönetici yetkisiyle otomatik oluşturuluyor...`);
       }
       import('../services/planServisi').then(({ haftalikPlanOlustur }) => {
-        haftalikPlanOlustur(haftaId).catch(err => {
+        haftalikPlanOlustur(haftaId).catch((err) => {
           console.error('[Self-Healing] Otomatik plan oluşturma başarısız:', err);
           if (selfHealingFiredHaftaIdRef.current === haftaId) {
             selfHealingFiredHaftaIdRef.current = null;
@@ -81,24 +83,30 @@ export function useBugunPlanDurumu(planDateStr: string, vakitKeyForPlan: Vakit) 
     }
   }, [plan, planLoading, sunucudanDogrulandi, isAdmin, haftaId]);
 
-  const muezzinMap = useMuezzinStore(state => state.muezzinMap);
-  const usersLoading = useMuezzinStore(state => state.loading);
-  const aktifIzinler = useAktifIzinlerStore(state => state.aktifIzinler);
+  const muezzinMap = useMuezzinStore((state) => state.muezzinMap);
+  const usersLoading = useMuezzinStore((state) => state.loading);
+  const aktifIzinler = useAktifIzinlerStore((state) => state.aktifIzinler);
 
   const { bildirimler: vakitBildirimleri, loading: vakitBildirimleriLoading } = useVakitBildirimleri(planDateStr, vakitKeyForPlan);
 
-  const isAssignableUid = useMemo(() => (uid: string | undefined) => {
-    if (!uid || uid === 'SISTEM' || uid === 'Sistem') return true;
-    const person = muezzinMap[uid];
-    return !!person && person.aktif === true && person.role === 'muezzin';
-  }, [muezzinMap]);
+  const isAssignableUid = useMemo(
+    () => (uid: string | undefined) => {
+      if (!uid || uid === 'SISTEM' || uid === 'Sistem') return true;
+      const person = muezzinMap[uid];
+      return !!person && person.aktif === true && person.role === 'muezzin';
+    },
+    [muezzinMap]
+  );
 
-  const getMuezzinName = useMemo(() => (uid: string | undefined) => {
-    if (!uid) return '';
-    if (uid === 'SISTEM' || uid === 'Sistem') return 'Sistem';
-    if (!isAssignableUid(uid)) return 'Geçersiz Atama';
-    return muezzinMap[uid]?.displayName || 'Bilinmiyor';
-  }, [muezzinMap, isAssignableUid]);
+  const getMuezzinName = useMemo(
+    () => (uid: string | undefined) => {
+      if (!uid) return '';
+      if (uid === 'SISTEM' || uid === 'Sistem') return 'Sistem';
+      if (!isAssignableUid(uid)) return 'Geçersiz Atama';
+      return muezzinMap[uid]?.displayName || 'Bilinmiyor';
+    },
+    [muezzinMap, isAssignableUid]
+  );
 
   const rawBugunPlan = plan?.gunler?.[planDateStr]?.[vakitKeyForPlan];
   const liveAsilBildirim = useMemo(() => aktifBildirimSec(vakitBildirimleri, 'asil'), [vakitBildirimleri]);
@@ -113,16 +121,18 @@ export function useBugunPlanDurumu(planDateStr: string, vakitKeyForPlan: Vakit) 
     };
   }, [rawBugunPlan, liveAsilBildirim?.uid, liveYedekBildirim?.uid, isAssignableUid]);
 
-  const asilIzinde = bugunPlan?.asil ? aktifIzinler.some(izin => izin.uid === bugunPlan.asil) : false;
-  const yedekIzinde = bugunPlan?.yedek ? aktifIzinler.some(izin => izin.uid === bugunPlan.yedek) : false;
+  const asilIzinde = bugunPlan?.asil ? aktifIzinler.some((izin) => izin.uid === bugunPlan.asil) : false;
+  const yedekIzinde = bugunPlan?.yedek ? aktifIzinler.some((izin) => izin.uid === bugunPlan.yedek) : false;
 
-  const asilDurum = useMemo(() => normalizeDurum(
-    vakitBildirimleri.find(b => b.uid === bugunPlan?.asil && b.tip === 'asil')?.durum
-  ), [vakitBildirimleri, bugunPlan?.asil]);
+  const asilDurum = useMemo(
+    () => normalizeDurum(vakitBildirimleri.find((b) => b.uid === bugunPlan?.asil && b.tip === 'asil')?.durum),
+    [vakitBildirimleri, bugunPlan?.asil]
+  );
 
-  const yedekDurum = useMemo(() => normalizeDurum(
-    vakitBildirimleri.find(b => b.uid === bugunPlan?.yedek && b.tip === 'yedek')?.durum
-  ), [vakitBildirimleri, bugunPlan?.yedek]);
+  const yedekDurum = useMemo(
+    () => normalizeDurum(vakitBildirimleri.find((b) => b.uid === bugunPlan?.yedek && b.tip === 'yedek')?.durum),
+    [vakitBildirimleri, bugunPlan?.yedek]
+  );
 
   const isHademelerLoading = (planLoading && !plan) || vakitBildirimleriLoading || (usersLoading && Object.keys(muezzinMap).length === 0);
 

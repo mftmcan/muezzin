@@ -1,30 +1,13 @@
-import {
-  addDoc,
-  collection,
-  deleteDoc,
-  doc,
-  FirestoreError,
-  onSnapshot,
-  orderBy,
-  query,
-  Timestamp,
-} from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, FirestoreError, onSnapshot, orderBy, query, Timestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { Duyuru } from '../hooks/useDuyurular';
 import { handleFirestoreError, OperationType } from '../lib/firestore-errors';
 import { telemetryService } from './telemetryService';
 import { toTurkishUpperCase } from '../lib/dateUtils';
 
-export function duyurularAbone(
-  onData: (duyurular: Duyuru[]) => void,
-  onError: (error: FirestoreError) => void
-): () => void {
+export function duyurularAbone(onData: (duyurular: Duyuru[]) => void, onError: (error: FirestoreError) => void): () => void {
   const q = query(collection(db, 'duyurular'), orderBy('tarih', 'desc'));
-  return onSnapshot(
-    q,
-    (snapshot) => onData(snapshot.docs.map(d => ({ id: d.id, ...d.data() }) as Duyuru)),
-    onError
-  );
+  return onSnapshot(q, (snapshot) => onData(snapshot.docs.map((d) => ({ id: d.id, ...d.data() }) as Duyuru)), onError);
 }
 
 export async function duyuruYayinla(data: { baslik: string; icerik: string; tip: Duyuru['tip'] }): Promise<void> {
@@ -39,7 +22,11 @@ export async function duyuruYayinla(data: { baslik: string; icerik: string; tip:
     // AYNI sınıf sorun, farklı çözüm: zaman penceresi yerine kaynağında
     // baştan sınırlı bir bayrak).
     await addDoc(collection(db, path), { ...data, tarih: Timestamp.now(), bildirimGonderildi: false });
-    await telemetryService.logAudit('Duyuru Yayınlama', data.baslik, `Yeni duyuru panoda paylaşıldı. Kategori: ${toTurkishUpperCase(data.tip)}`);
+    await telemetryService.logAudit(
+      'Duyuru Yayınlama',
+      data.baslik,
+      `Yeni duyuru panoda paylaşıldı. Kategori: ${toTurkishUpperCase(data.tip)}`
+    );
   } catch (err) {
     throw handleFirestoreError(err, OperationType.CREATE, path);
   }

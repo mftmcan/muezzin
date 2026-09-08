@@ -44,22 +44,25 @@ const tests: TestCase[] = [
       await db.collection('muezzins').doc('muezzin_asil').set({
         displayName: 'Asil',
         role: 'muezzin',
-        aktif: true
+        aktif: true,
       });
       await db.collection('muezzins').doc('muezzin_yedek').set({
         displayName: 'Yedek',
         role: 'muezzin',
-        aktif: true
+        aktif: true,
       });
 
       // Seed Hafta Plani
-      await db.collection('haftaPlanlari').doc('W2026-05-18').set({
-        gunler: {
-          [TARIH_1]: {
-            sabah: { asil: 'muezzin_asil', yedek: 'muezzin_yedek' }
-          }
-        }
-      });
+      await db
+        .collection('haftaPlanlari')
+        .doc('W2026-05-18')
+        .set({
+          gunler: {
+            [TARIH_1]: {
+              sabah: { asil: 'muezzin_asil', yedek: 'muezzin_yedek' },
+            },
+          },
+        });
 
       // Seed Notifications — "1000 ifade tavanı" kök neden çözümü sonrası
       // istemci (mazeretServisi.ts'deki transaction) yedek belgeye HİÇ
@@ -79,7 +82,7 @@ const tests: TestCase[] = [
         tip: 'asil',
         durum: 'reddedildi', // Mazeret bildirilmis
         devirSonucu: 'yedek_atandi',
-        mazeretPlanSenkronEdildi: false
+        mazeretPlanSenkronEdildi: false,
       });
 
       const yedekRef = db.collection('bildirimler').doc(`W2026-05-18_${TARIH_1}_sabah_yedek`);
@@ -89,7 +92,7 @@ const tests: TestCase[] = [
         vakit: 'sabah',
         uid: 'muezzin_yedek',
         tip: 'yedek', // istemci HENUZ terfi ettirmedi — script'in kendisi terfi ettirecek
-        durum: 'bekliyor'
+        durum: 'bekliyor',
       });
 
       // Act
@@ -121,7 +124,7 @@ const tests: TestCase[] = [
       const haftaDoc = await db.collection('haftaPlanlari').doc('W2026-05-18').get();
       assert.equal(haftaDoc.data()?.gunler[TARIH_1].sabah.asil, 'muezzin_yedek');
       assert.equal(haftaDoc.data()?.gunler[TARIH_1].sabah.yedek, 'Sistem');
-    }
+    },
   },
   {
     // Yedek, istemcinin karar anından bu yana (script'in ~10-15 dk'lık
@@ -134,10 +137,14 @@ const tests: TestCase[] = [
       await clearCollections();
 
       await db.collection('muezzins').doc('muezzin_asil').set({
-        displayName: 'Asil', role: 'muezzin', aktif: true
+        displayName: 'Asil',
+        role: 'muezzin',
+        aktif: true,
       });
       await db.collection('muezzins').doc('muezzin_yedek').set({
-        displayName: 'Yedek', role: 'muezzin', aktif: false // karar sonrasi pasiflesti
+        displayName: 'Yedek',
+        role: 'muezzin',
+        aktif: false, // karar sonrasi pasiflesti
       });
 
       const mazeretRef = db.collection('bildirimler').doc(`W2026-05-18_${TARIH_1}_sabah_asil`);
@@ -149,7 +156,7 @@ const tests: TestCase[] = [
         tip: 'asil',
         durum: 'reddedildi',
         devirSonucu: 'yedek_atandi',
-        mazeretPlanSenkronEdildi: false
+        mazeretPlanSenkronEdildi: false,
       });
       const yedekRef = db.collection('bildirimler').doc(`W2026-05-18_${TARIH_1}_sabah_yedek`);
       await yedekRef.set({
@@ -158,7 +165,7 @@ const tests: TestCase[] = [
         vakit: 'sabah',
         uid: 'muezzin_yedek',
         tip: 'yedek',
-        durum: 'bekliyor'
+        durum: 'bekliyor',
       });
 
       await processMazeretDevirleri(false);
@@ -173,7 +180,7 @@ const tests: TestCase[] = [
       const alarmSnap = await db.collection('adminUyarilari').where('cozuldu', '==', false).get();
       assert.equal(alarmSnap.size, 1);
       assert.equal(alarmSnap.docs[0]!.data().tarih, TARIH_1);
-    }
+    },
   },
   {
     name: 'Yedek yoksa admin uyarisi uretilir',
@@ -184,7 +191,7 @@ const tests: TestCase[] = [
       await db.collection('muezzins').doc('muezzin_asil').set({
         displayName: 'Asil',
         role: 'muezzin',
-        aktif: true
+        aktif: true,
       });
       // No active yedek
 
@@ -199,7 +206,7 @@ const tests: TestCase[] = [
         tip: 'asil',
         durum: 'reddedildi', // Mazeret
         devirSonucu: 'alarm_bekliyor',
-        mazeretPlanSenkronEdildi: false
+        mazeretPlanSenkronEdildi: false,
       });
 
       // Act
@@ -217,7 +224,7 @@ const tests: TestCase[] = [
       assert.equal(alarm.cozuldu, false);
       assert.equal(alarm.tarih, TARIH_2);
       assert.equal(alarm.vakit, 'ogle');
-    }
+    },
   },
   {
     // Y2 regresyonu: iki bağımsız uzlaştırma cron'u (mazeret + vekalet) eskiden
@@ -234,7 +241,7 @@ const tests: TestCase[] = [
       await db.collection('muezzins').doc('muezzin_asil').set({
         displayName: 'Asil',
         role: 'muezzin',
-        aktif: true
+        aktif: true,
       });
       // No active yedek — devirSonucu alarm_bekliyor olacak.
 
@@ -249,7 +256,7 @@ const tests: TestCase[] = [
         devirSonucu: 'alarm_bekliyor',
         // Bu belge DAHA ÖNCE bir vekalet devriyle senkronlanmış — paylaşılan
         // bayrak kullanılsaydı mazeret cron'u bunu "zaten işlenmiş" sanırdı.
-        vekaletPlanSenkronEdildi: true
+        vekaletPlanSenkronEdildi: true,
       });
 
       await processMazeretDevirleri(false);
@@ -261,12 +268,11 @@ const tests: TestCase[] = [
       const alarmSnap = await db.collection('adminUyarilari').get();
       assert.equal(alarmSnap.size, 1);
       assert.equal(alarmSnap.docs[0].data().tarih, TARIH_3);
-    }
-  }
+    },
+  },
 ];
 
 async function main() {
-
   try {
     for (const test of tests) {
       await test.run();

@@ -1,5 +1,15 @@
 import { useState, useEffect } from 'react';
-import { clearIndexedDbPersistence, doc, serverTimestamp, setDoc, terminate, updateDoc, deleteField, type DocumentData, type UpdateData } from 'firebase/firestore';
+import {
+  clearIndexedDbPersistence,
+  doc,
+  serverTimestamp,
+  setDoc,
+  terminate,
+  updateDoc,
+  deleteField,
+  type DocumentData,
+  type UpdateData,
+} from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import { app, db, auth } from '../lib/firebase';
 import { handleFirestoreError, OperationType } from '../lib/firestore-errors';
@@ -25,7 +35,11 @@ async function saveTokenToFirestore(uid: string, token: string) {
   const path = `muezzins/${uid}`;
   try {
     let oncekiToken: string | null = null;
-    try { oncekiToken = localStorage.getItem(LAST_TOKEN_KEY); } catch { /* gizli/erisimsiz depolama — yoksay */ }
+    try {
+      oncekiToken = localStorage.getItem(LAST_TOKEN_KEY);
+    } catch {
+      /* gizli/erisimsiz depolama — yoksay */
+    }
 
     const guncellemeler: Record<string, unknown> = {
       fcmToken: token,
@@ -43,7 +57,11 @@ async function saveTokenToFirestore(uid: string, token: string) {
     }
 
     await setDoc(doc(db, 'muezzins', uid), guncellemeler, { merge: true });
-    try { localStorage.setItem(LAST_TOKEN_KEY, token); } catch { /* gizli/erisimsiz depolama — yoksay */ }
+    try {
+      localStorage.setItem(LAST_TOKEN_KEY, token);
+    } catch {
+      /* gizli/erisimsiz depolama — yoksay */
+    }
   } catch (err) {
     // Push token kaydı arka planda, kullanıcıya görünmeden çalışır — ama
     // sessizce başarısız olursa kişi nöbet hatırlatıcısı almadığını hiç
@@ -55,46 +73,41 @@ async function saveTokenToFirestore(uid: string, token: string) {
 }
 
 export async function registerFcmToken(requestPermission = false): Promise<{
- token: string | null;
- permission: NotificationPermission | null;
+  token: string | null;
+  permission: NotificationPermission | null;
 }> {
- if (typeof window === 'undefined' || !('Notification' in window) || !('serviceWorker' in navigator)) {
- return { token: null, permission: null };
- }
+  if (typeof window === 'undefined' || !('Notification' in window) || !('serviceWorker' in navigator)) {
+    return { token: null, permission: null };
+  }
 
- const permission = requestPermission
- ? await Notification.requestPermission()
- : Notification.permission;
+  const permission = requestPermission ? await Notification.requestPermission() : Notification.permission;
 
- if (permission !== 'granted') {
- return { token: null, permission };
- }
+  if (permission !== 'granted') {
+    return { token: null, permission };
+  }
 
- if (!VAPID_KEY) {
- console.warn('VITE_FCM_VAPID_KEY tanımlı değil; push bildirimleri devre dışı.');
- return { token: null, permission };
- }
+  if (!VAPID_KEY) {
+    console.warn('VITE_FCM_VAPID_KEY tanımlı değil; push bildirimleri devre dışı.');
+    return { token: null, permission };
+  }
 
- const [{ getMessaging, getToken }, registration] = await Promise.all([
- import('firebase/messaging'),
- navigator.serviceWorker.ready
- ]);
- const messaging = getMessaging(app);
- const currentToken = await getToken(messaging, {
- vapidKey: VAPID_KEY,
- serviceWorkerRegistration: registration,
- });
+  const [{ getMessaging, getToken }, registration] = await Promise.all([import('firebase/messaging'), navigator.serviceWorker.ready]);
+  const messaging = getMessaging(app);
+  const currentToken = await getToken(messaging, {
+    vapidKey: VAPID_KEY,
+    serviceWorkerRegistration: registration,
+  });
 
- if (!currentToken) {
- return { token: null, permission };
- }
+  if (!currentToken) {
+    return { token: null, permission };
+  }
 
- const user = auth.currentUser;
- if (user) {
- await saveTokenToFirestore(user.uid, currentToken);
- }
+  const user = auth.currentUser;
+  if (user) {
+    await saveTokenToFirestore(user.uid, currentToken);
+  }
 
- return { token: currentToken, permission };
+  return { token: currentToken, permission };
 }
 
 /**
@@ -148,7 +161,11 @@ export async function unregisterFcmToken(uid: string | undefined): Promise<void>
       guncellemeler[`fcmTokens.${currentToken}`] = deleteField();
     }
     await updateDoc(doc(db, 'muezzins', uid), guncellemeler).catch(() => {});
-    try { localStorage.removeItem(LAST_TOKEN_KEY); } catch { /* gizli/erisimsiz depolama — yoksay */ }
+    try {
+      localStorage.removeItem(LAST_TOKEN_KEY);
+    } catch {
+      /* gizli/erisimsiz depolama — yoksay */
+    }
   } catch {
     // Çıkış akışını asla engellemesin — en iyi çaba (best-effort) temizlik.
   }
@@ -221,56 +238,58 @@ export async function performLogout(): Promise<void> {
 }
 
 export function useFcmToken() {
- const [token, setToken] = useState<string | null>(null);
- const [notificationPermissionStatus, setNotificationPermissionStatus] =
- useState<NotificationPermission | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+  const [notificationPermissionStatus, setNotificationPermissionStatus] = useState<NotificationPermission | null>(null);
 
- useEffect(() => {
- let unsubAuth: (() => void) | null = null;
- // `retrieveToken` asenkron; bileşen bu tamamlanmadan unmount olursa
- // (StrictMode çift-mount'ta ya da hızlı ekran geçişinde) `unsubAuth`
- // aşağıdaki cleanup çalıştığı anda hâlâ null olabiliyordu — sonradan
- // (cleanup'tan SONRA) kurulan dinleyici bir daha asla kaldırılmıyordu
- // (düşük öncelikli bulgu). Bu bayrak, cleanup'tan sonra gelen geç
- // kurulumu engeller.
- let iptalEdildi = false;
+  useEffect(() => {
+    let unsubAuth: (() => void) | null = null;
+    // `retrieveToken` asenkron; bileşen bu tamamlanmadan unmount olursa
+    // (StrictMode çift-mount'ta ya da hızlı ekran geçişinde) `unsubAuth`
+    // aşağıdaki cleanup çalıştığı anda hâlâ null olabiliyordu — sonradan
+    // (cleanup'tan SONRA) kurulan dinleyici bir daha asla kaldırılmıyordu
+    // (düşük öncelikli bulgu). Bu bayrak, cleanup'tan sonra gelen geç
+    // kurulumu engeller.
+    let iptalEdildi = false;
 
- const retrieveToken = async () => {
- try {
- if (typeof window === 'undefined' || !('Notification' in window)) return;
- const { token: currentToken, permission } = await registerFcmToken(false);
- if (iptalEdildi) return;
- setNotificationPermissionStatus(permission);
+    const retrieveToken = async () => {
+      try {
+        if (typeof window === 'undefined' || !('Notification' in window)) return;
+        const { token: currentToken, permission } = await registerFcmToken(false);
+        if (iptalEdildi) return;
+        setNotificationPermissionStatus(permission);
 
- if (!currentToken) return;
- setToken(currentToken);
+        if (!currentToken) return;
+        setToken(currentToken);
 
- if (!auth.currentUser) {
- unsubAuth = onAuthStateChanged(auth, async (freshUser) => {
- if (freshUser) {
- await saveTokenToFirestore(freshUser.uid, currentToken);
- unsubAuth?.();
- unsubAuth = null;
- }
- });
- // Cleanup, `unsubAuth`'ı henüz null iken (yukarıdaki await sırasında)
- // çalışmış olabilir — burada tekrar kontrol edilip geç kaydedilen
- // dinleyici hemen kaldırılır.
- if (iptalEdildi) { unsubAuth?.(); unsubAuth = null; }
- }
- } catch (error) {
- console.warn('FCM token alinamadi:', error);
- }
- };
+        if (!auth.currentUser) {
+          unsubAuth = onAuthStateChanged(auth, async (freshUser) => {
+            if (freshUser) {
+              await saveTokenToFirestore(freshUser.uid, currentToken);
+              unsubAuth?.();
+              unsubAuth = null;
+            }
+          });
+          // Cleanup, `unsubAuth`'ı henüz null iken (yukarıdaki await sırasında)
+          // çalışmış olabilir — burada tekrar kontrol edilip geç kaydedilen
+          // dinleyici hemen kaldırılır.
+          if (iptalEdildi) {
+            unsubAuth?.();
+            unsubAuth = null;
+          }
+        }
+      } catch (error) {
+        console.warn('FCM token alinamadi:', error);
+      }
+    };
 
- const timeoutId = setTimeout(retrieveToken, 300);
+    const timeoutId = setTimeout(retrieveToken, 300);
 
- return () => {
- iptalEdildi = true;
- clearTimeout(timeoutId);
- if (unsubAuth) unsubAuth();
- };
- }, []);
+    return () => {
+      iptalEdildi = true;
+      clearTimeout(timeoutId);
+      if (unsubAuth) unsubAuth();
+    };
+  }, []);
 
- return { token, notificationPermissionStatus };
+  return { token, notificationPermissionStatus };
 }

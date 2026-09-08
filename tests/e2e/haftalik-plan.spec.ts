@@ -15,20 +15,24 @@ const adminDb = getFirestore(adminApp);
 
 type SeedResult = {
   tokenAdmin: string;
-  haftaIdA: string; pazartesiA: string;
-  haftaIdB: string; pazartesiB: string;
-  uid1: string; uid2: string; uid3: string; uid4: string;
+  haftaIdA: string;
+  pazartesiA: string;
+  haftaIdB: string;
+  pazartesiB: string;
+  uid1: string;
+  uid2: string;
+  uid3: string;
+  uid4: string;
 };
 
 let seed: SeedResult;
 
 test.describe('Haftalık Plan (planServisi.ts) Admin Akışı E2E', () => {
   test.beforeAll(() => {
-    const raw = execFileSync(
-      'npx',
-      ['tsx', path.join(__dirname, 'seed-haftalik-plan.ts')],
-      { encoding: 'utf8', shell: process.platform === 'win32' }
-    ).trim();
+    const raw = execFileSync('npx', ['tsx', path.join(__dirname, 'seed-haftalik-plan.ts')], {
+      encoding: 'utf8',
+      shell: process.platform === 'win32',
+    }).trim();
     seed = JSON.parse(raw);
   });
 
@@ -58,8 +62,14 @@ test.describe('Haftalık Plan (planServisi.ts) Admin Akışı E2E', () => {
     // avatar harfi + isim + "Görevli Kadro"/"Yedek Görevli" rol etiketini de
     // icerir (ör. "P PlanUc Görevli Kadro") — bu yuzden exact:true yerine
     // regex ile kismi eslesme kullanilir (bkz. GorevKarti/PersonelSecici UI).
-    await page.locator('label:text("ASİL GÖREVLİ ATAMASI") + div').getByRole('button', { name: /PlanUc/ }).click();
-    await page.locator('label:text("YEDEK PERSONEL ATAMASI") + div').getByRole('button', { name: /PlanDort/ }).click();
+    await page
+      .locator('label:text("ASİL GÖREVLİ ATAMASI") + div')
+      .getByRole('button', { name: /PlanUc/ })
+      .click();
+    await page
+      .locator('label:text("YEDEK PERSONEL ATAMASI") + div')
+      .getByRole('button', { name: /PlanDort/ })
+      .click();
     await page.getByRole('button', { name: 'ATAMAYI GÜNCELLE' }).click();
 
     await expect(page.locator('text=Güncelleme Başarılı').first()).toBeVisible({ timeout: 10000 });
@@ -81,8 +91,14 @@ test.describe('Haftalık Plan (planServisi.ts) Admin Akışı E2E', () => {
     await gunKarti.getByRole('button', { name: /ikindi/i }).click();
 
     await expect(page.getByText('Hizmet Operasyonu')).toBeVisible();
-    await page.locator('label:text("ASİL GÖREVLİ ATAMASI") + div').getByRole('button', { name: /PlanBir/ }).click();
-    await page.locator('label:text("YEDEK PERSONEL ATAMASI") + div').getByRole('button', { name: /PlanIki/ }).click();
+    await page
+      .locator('label:text("ASİL GÖREVLİ ATAMASI") + div')
+      .getByRole('button', { name: /PlanBir/ })
+      .click();
+    await page
+      .locator('label:text("YEDEK PERSONEL ATAMASI") + div')
+      .getByRole('button', { name: /PlanIki/ })
+      .click();
     await page.getByRole('button', { name: 'ATAMAYI GÜNCELLE' }).click();
 
     await expect(page.locator('text=Güncelleme Engellendi').first()).toBeVisible({ timeout: 10000 });
@@ -112,10 +128,9 @@ test.describe('Haftalık Plan (planServisi.ts) Admin Akışı E2E', () => {
     // ile kısa bir süre yeniden denenir (bkz. vekalet-flow.spec.ts'teki
     // benzer sunucu-taahhüdü doğrulamaları — orada tek seferlik okuma UI
     // eyleminden SONRAKİ bir toast'a bağlı olduğundan bu yarış yoktu).
-    await expect.poll(
-      async () => (await adminDb.collection('haftaPlanlari').doc(seed.haftaIdB).get()).exists,
-      { timeout: 15000 }
-    ).toBe(true);
+    await expect
+      .poll(async () => (await adminDb.collection('haftaPlanlari').doc(seed.haftaIdB).get()).exists, { timeout: 15000 })
+      .toBe(true);
 
     const plan = await adminDb.collection('haftaPlanlari').doc(seed.haftaIdB).get();
     expect(plan.data()?.durum).toBe('yayinda');

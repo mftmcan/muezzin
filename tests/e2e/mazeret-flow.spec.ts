@@ -65,7 +65,10 @@ function turkeyFixedMorning(): Date {
 const RTDB_HOST_PATTERN = /firebasedatabase\.app|firebaseio\.com/;
 
 test.describe('Mazeret Akışı E2E', () => {
-  test.skip(turkeyIsFridayNow(), 'Mazeret bildirimi Cuma günleri kural gereği her zaman kapalı — seed bugün için görev oluşturduğundan bu akış Cuma günü test edilemez.');
+  test.skip(
+    turkeyIsFridayNow(),
+    'Mazeret bildirimi Cuma günleri kural gereği her zaman kapalı — seed bugün için görev oluşturduğundan bu akış Cuma günü test edilemez.'
+  );
 
   let customToken: string;
 
@@ -74,11 +77,10 @@ test.describe('Mazeret Akışı E2E', () => {
     // (Bu test yalnızca VITE_USE_EMULATOR=1 ile başlatılan bir dev server'a
     // ve çalışan firestore+auth emülatörlerine karşı anlamlıdır — bkz.
     // playwright.config.ts ve .github/workflows/test.yml.)
-    customToken = execFileSync(
-      'npx',
-      ['tsx', path.join(__dirname, 'seed-mazeret.ts')],
-      { encoding: 'utf8', shell: process.platform === 'win32' }
-    ).trim();
+    customToken = execFileSync('npx', ['tsx', path.join(__dirname, 'seed-mazeret.ts')], {
+      encoding: 'utf8',
+      shell: process.platform === 'win32',
+    }).trim();
   });
 
   test('Muezzin Asil can reject (mazeret) a pending assignment', async ({ page }) => {
@@ -87,8 +89,14 @@ test.describe('Mazeret Akışı E2E', () => {
     await page.clock.setFixedTime(turkeyFixedMorning());
     // initTimeSync()'in gerçek RTDB sunucu saatiyle bu dondurmayı geri
     // düzeltmesini engelle (bkz. yukarıdaki yorum).
-    await page.route((url) => RTDB_HOST_PATTERN.test(url.hostname), (route) => route.abort());
-    await page.routeWebSocket((url) => RTDB_HOST_PATTERN.test(url.hostname), () => {});
+    await page.route(
+      (url) => RTDB_HOST_PATTERN.test(url.hostname),
+      (route) => route.abort()
+    );
+    await page.routeWebSocket(
+      (url) => RTDB_HOST_PATTERN.test(url.hostname),
+      () => {}
+    );
 
     await page.goto('/');
 

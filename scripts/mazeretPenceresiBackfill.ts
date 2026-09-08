@@ -44,9 +44,7 @@ export async function backfillMazeretPenceresi(dryRun = false) {
   // damgayı geriye dönük yazmanın hiçbir etkisi olmaz (ve gereksiz okuma/yazma
   // kotası harcar — bkz. scripts/vekaletDevirleriniIsle.ts'teki aynı gerekçeli
   // 30 günlük pencere).
-  const snapshot = await db.collection('bildirimler')
-    .where('tarih', '>=', bugun)
-    .get();
+  const snapshot = await db.collection('bildirimler').where('tarih', '>=', bugun).get();
 
   let yazilan = 0;
   let atlanan = 0;
@@ -93,7 +91,9 @@ export async function backfillMazeretPenceresi(dryRun = false) {
   if (veriYok > 0) {
     console.warn(`${veriYok} bildirim için ezan verisi okunamadı/bozuk — mazeret penceresi o slotlarda KAPALI kalıyor (fail-closed).`);
   }
-  console.log(`mazeretSonBasvuru uzlaştırması tamamlandı${dryRun ? ' (dry-run)' : ''}. yazilan=${yazilan}, atlanan=${atlanan}, veriYok=${veriYok}`);
+  console.log(
+    `mazeretSonBasvuru uzlaştırması tamamlandı${dryRun ? ' (dry-run)' : ''}. yazilan=${yazilan}, atlanan=${atlanan}, veriYok=${veriYok}`
+  );
 }
 
 import { fileURLToPath } from 'url';

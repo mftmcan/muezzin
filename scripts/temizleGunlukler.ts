@@ -17,10 +17,7 @@ async function deleteOldDocs(collectionName: string): Promise<number> {
   // Sınırsız büyük koleksiyonlarda tek seferde tüm eski kayıtları çekmemek
   // için sayfalama (limit + tekrar sorgu) kullanılır.
   while (true) {
-    const snap = await db.collection(collectionName)
-      .where('timestamp', '<', cutoff)
-      .limit(CHUNK_SIZE)
-      .get();
+    const snap = await db.collection(collectionName).where('timestamp', '<', cutoff).limit(CHUNK_SIZE).get();
 
     if (snap.empty) break;
 

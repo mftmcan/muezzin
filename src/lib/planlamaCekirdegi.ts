@@ -40,9 +40,7 @@ export type MuezzinAday = Muezzin & { id: string };
  * (bkz. src/lib/slotKorumasi.ts `korumaliSlotMu`).
  */
 export function gunIzinliUidler(onayliIzinler: OnayliIzin[], gun: string): string[] {
-  return onayliIzinler
-    .filter((izin) => gun >= izin.baslangic && gun <= izin.bitis)
-    .map((izin) => izin.uid);
+  return onayliIzinler.filter((izin) => gun >= izin.baslangic && gun <= izin.bitis).map((izin) => izin.uid);
 }
 
 /**
@@ -174,7 +172,14 @@ export function haftalikPlanUret(
 
     let gunlukTazeAtama: VakitAtama = SISTEM_ATAMA;
     if (musaitMuezzinler.length >= 2) {
-      const sirali = tieBreakerSirala(musaitMuezzinler, buHaftakiYukler, oncekiVakitUidler, isFriday, aylikCumaSayilari, ardArdaYedekSayilari);
+      const sirali = tieBreakerSirala(
+        musaitMuezzinler,
+        buHaftakiYukler,
+        oncekiVakitUidler,
+        isFriday,
+        aylikCumaSayilari,
+        ardArdaYedekSayilari
+      );
       gunlukTazeAtama = { asil: sirali[0].id, yedek: sirali[1].id };
     } else if (musaitMuezzinler.length === 1) {
       gunlukTazeAtama = { asil: musaitMuezzinler[0].id, yedek: 'Sistem' };
@@ -209,9 +214,7 @@ export function haftalikPlanUret(
       // asilYukSayilmasin/yedekYukSayilmasin gibi ek alanlar yalnızca BU
       // döngü içinde kullanılan bir sinyaldir, gunPlan'a (dolayısıyla
       // Firestore'a) asla sızmamalı.
-      const atama: VakitAtama = korunmus
-        ? { asil: korunmus.asil, yedek: korunmus.yedek }
-        : gunlukTazeAtama;
+      const atama: VakitAtama = korunmus ? { asil: korunmus.asil, yedek: korunmus.yedek } : gunlukTazeAtama;
       gunPlan[gun][vakit] = atama;
 
       // Mazeret bildirilmiş (reddedildi) bir slot — bu kişi bu görevi
@@ -219,11 +222,11 @@ export function haftalikPlanUret(
       // defterine dahil edilir (bkz. yukarıdaki KorunmusAtamaResolver
       // yorumu, PL-O5).
       if (atama.asil && atama.asil !== 'Sistem' && atama.asil !== 'SISTEM' && !korunmus?.asilYukSayilmasin) {
-        buHaftakiYukler[atama.asil] = (buHaftakiYukler[atama.asil] || 0) + (1 * cumaCarpani);
+        buHaftakiYukler[atama.asil] = (buHaftakiYukler[atama.asil] || 0) + 1 * cumaCarpani;
         gunAsilUidleri.add(atama.asil);
       }
       if (atama.yedek && atama.yedek !== 'Sistem' && atama.yedek !== 'SISTEM' && !korunmus?.yedekYukSayilmasin) {
-        buHaftakiYukler[atama.yedek] = (buHaftakiYukler[atama.yedek] || 0) + (YEDEK_YUK_CARPANI * cumaCarpani);
+        buHaftakiYukler[atama.yedek] = (buHaftakiYukler[atama.yedek] || 0) + YEDEK_YUK_CARPANI * cumaCarpani;
         gunYedekUidleri.add(atama.yedek);
       }
     }
@@ -247,9 +250,7 @@ export function haftalikPlanUret(
     // (bkz. görsel/mantık denetimi).
     muezzinler.forEach((m) => {
       const sadeceYedekKaldi = gunYedekUidleri.has(m.id) && !gunAsilUidleri.has(m.id);
-      ardArdaYedekSayilari[m.id] = sadeceYedekKaldi
-        ? (ardArdaYedekSayilari[m.id] || 0) + 1
-        : 0;
+      ardArdaYedekSayilari[m.id] = sadeceYedekKaldi ? (ardArdaYedekSayilari[m.id] || 0) + 1 : 0;
     });
   }
 

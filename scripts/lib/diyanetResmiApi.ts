@@ -69,7 +69,7 @@ async function kotaRezerveEt(): Promise<boolean> {
   return db.runTransaction(async (tx) => {
     const snap = await tx.get(ref);
     const veri = snap.exists ? (snap.data() as { ay?: string; istekSayisi?: number }) : {};
-    const guncelSayisi = veri.ay === ay ? (veri.istekSayisi || 0) : 0;
+    const guncelSayisi = veri.ay === ay ? veri.istekSayisi || 0 : 0;
 
     if (guncelSayisi >= AYLIK_ISTEK_LIMITI) return false;
 
@@ -121,14 +121,12 @@ async function login(email: string, password: string): Promise<string> {
   const response = await fetch(`${BASE_URL}/api/Auth/Login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password })
+    body: JSON.stringify({ email, password }),
   });
 
   const result = (await response.json().catch(() => null)) as LoginResponse | null;
   if (!response.ok || !result?.success || !result.data?.accessToken) {
-    throw new Error(
-      `Diyanet resmi API girişi başarısız (HTTP ${response.status}): ${result?.message || 'bilinmeyen hata'}`
-    );
+    throw new Error(`Diyanet resmi API girişi başarısız (HTTP ${response.status}): ${result?.message || 'bilinmeyen hata'}`);
   }
   return result.data.accessToken;
 }
@@ -152,7 +150,7 @@ function turkceNormalize(s: string): string {
 
 async function cityIdDogrula(accessToken: string, ilceId: string, ilceAdi: string): Promise<boolean> {
   const response = await fetch(`${BASE_URL}/api/Place/CityDetail/${ilceId}`, {
-    headers: { Authorization: `Bearer ${accessToken}` }
+    headers: { Authorization: `Bearer ${accessToken}` },
   });
   const result = (await response.json().catch(() => null)) as CityDetailResponse | null;
   if (!response.ok || !result?.success || !result.data?.name) return false;
@@ -182,7 +180,7 @@ function parseResmiResponse(data: MonthlyGunRaw[], ilceId: string): Vakitler {
       ogle: gun.dhuhr,
       ikindi: gun.asr,
       aksam: gun.maghrib,
-      yatsi: gun.isha
+      yatsi: gun.isha,
     });
     if (!kayit) {
       console.warn('Diyanet resmi API: vakit alanı eksik/biçimi bozuk, atlandı:', dateKey);
@@ -204,7 +202,7 @@ function parseResmiResponse(data: MonthlyGunRaw[], ilceId: string): Vakitler {
     // kullanıldığını admin panelinde (EzanOnbellegi.tsx) görebilmek
     // için).
     kaynakApi: 'diyanet-resmi',
-    guncellenmeTarihi: Timestamp.now()
+    guncellenmeTarihi: Timestamp.now(),
   };
 }
 
@@ -231,13 +229,11 @@ export async function resmiDiyanetVakitleriCek(ilceId: string, ilceAdi: string):
   }
 
   const response = await fetch(`${BASE_URL}/api/PrayerTime/Monthly/${ilceId}`, {
-    headers: { Authorization: `Bearer ${accessToken}` }
+    headers: { Authorization: `Bearer ${accessToken}` },
   });
   const result = (await response.json().catch(() => null)) as MonthlyResponse | null;
   if (!response.ok || !result?.success || !Array.isArray(result.data)) {
-    throw new Error(
-      `Diyanet resmi API: aylık vakit isteği başarısız (HTTP ${response.status}): ${result?.message || 'bilinmeyen hata'}`
-    );
+    throw new Error(`Diyanet resmi API: aylık vakit isteği başarısız (HTTP ${response.status}): ${result?.message || 'bilinmeyen hata'}`);
   }
 
   return parseResmiResponse(result.data, ilceId);
@@ -254,11 +250,14 @@ export async function resmiDiyanetVakitleriCek(ilceId: string, ilceAdi: string):
  */
 async function dususNedeniniKaydet(neden: 'kota' | 'hata', mesaj: string): Promise<void> {
   try {
-    await db.collection('config').doc(KOTA_DOC).set({
-      sonDususNedeni: neden,
-      sonDususMesaji: mesaj,
-      sonDususTarihi: AdminTimestamp.now()
-    }, { merge: true });
+    await db.collection('config').doc(KOTA_DOC).set(
+      {
+        sonDususNedeni: neden,
+        sonDususMesaji: mesaj,
+        sonDususTarihi: AdminTimestamp.now(),
+      },
+      { merge: true }
+    );
   } catch (err) {
     console.warn('Düşüş nedeni kota belgesine yazılamadı (yalnızca gözlemlenebilirlik, cron devam ediyor):', err);
   }
@@ -272,12 +271,7 @@ async function dususNedeniniKaydet(neden: 'kota' | 'hata', mesaj: string): Promi
  * script'lerin daha önce sahip olduğu dayanıklılığı KORUR, yalnızca yeni bir
  * tercih edilen birincil kaynak ekler.
  */
-export async function vakitleriCekOncelikli(
-  yil: number,
-  ay: number,
-  ilceId: string,
-  ilceAdi: string
-): Promise<Vakitler> {
+export async function vakitleriCekOncelikli(yil: number, ay: number, ilceId: string, ilceAdi: string): Promise<Vakitler> {
   const kotaMusait = await kotaRezerveEt();
   if (!kotaMusait) {
     const mesaj = `Diyanet resmi API: aylık deneme kotası (${AYLIK_ISTEK_LIMITI}) dolu, mevcut zincire (emushaf/Aladhan) düşülüyor — hiçbir istek yapılmadı.`;

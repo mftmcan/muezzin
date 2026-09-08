@@ -29,11 +29,10 @@ let seed: SeedResult;
 
 test.describe('Operasyonel Veri Sıfırlama E2E (Tehlikeli Bölge)', () => {
   test.beforeAll(() => {
-    const raw = execFileSync(
-      'npx',
-      ['tsx', path.join(__dirname, 'seed-veri-sifirlama.ts')],
-      { encoding: 'utf8', shell: process.platform === 'win32' }
-    ).trim();
+    const raw = execFileSync('npx', ['tsx', path.join(__dirname, 'seed-veri-sifirlama.ts')], {
+      encoding: 'utf8',
+      shell: process.platform === 'win32',
+    }).trim();
     seed = JSON.parse(raw);
   });
 
@@ -74,10 +73,7 @@ test.describe('Operasyonel Veri Sıfırlama E2E (Tehlikeli Bölge)', () => {
     await expect(page.locator('text=Sıfırlama Tamamlandı').first()).toBeVisible({ timeout: 20000 });
 
     // Seçili (varsayılan) operasyonel koleksiyonlar tamamen boşalmış olmalı.
-    await expect.poll(
-      async () => (await adminDb.collection('bildirimler').get()).size,
-      { timeout: 15000 }
-    ).toBe(0);
+    await expect.poll(async () => (await adminDb.collection('bildirimler').get()).size, { timeout: 15000 }).toBe(0);
     expect((await adminDb.collection('haftaPlanlari').get()).size).toBe(0);
     expect((await adminDb.collection('izinler').get()).size).toBe(0);
     expect((await adminDb.collection('vekalet_talepleri').get()).size).toBe(0);
@@ -96,9 +92,7 @@ test.describe('Operasyonel Veri Sıfırlama E2E (Tehlikeli Bölge)', () => {
 
     // İşlemin kendisi bir denetim kaydı bırakmış olmalı (audit_logs kapsam
     // dışı olduğundan bu kayıt da sağ salim durmalı).
-    const yeniLoglar = await adminDb.collection('audit_logs')
-      .where('actionType', '==', 'Operasyonel Veri Sıfırlama')
-      .get();
+    const yeniLoglar = await adminDb.collection('audit_logs').where('actionType', '==', 'Operasyonel Veri Sıfırlama').get();
     expect(yeniLoglar.size).toBeGreaterThanOrEqual(1);
   });
 });

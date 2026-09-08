@@ -60,10 +60,18 @@ async function temizlePrefix(koleksiyon: string, prefix: string) {
 
 async function seed() {
   await ensureUser(ADMIN_UID, 'E2E Sifirlama Admin');
-  await db.collection('muezzins').doc(ADMIN_UID).set({
-    displayName: 'E2E Sifirlama Admin', email: `${ADMIN_UID}@example.test`, role: 'admin',
-    aktif: true, photoURL: '', fcmToken: null, aylikVakitSayisi: 0
-  });
+  await db
+    .collection('muezzins')
+    .doc(ADMIN_UID)
+    .set({
+      displayName: 'E2E Sifirlama Admin',
+      email: `${ADMIN_UID}@example.test`,
+      role: 'admin',
+      aktif: true,
+      photoURL: '',
+      fcmToken: null,
+      aylikVakitSayisi: 0,
+    });
   // Operasyonel veri sıfırlama artık sıradan admin'e değil yalnızca
   // config/bootstrap.superAdminEmails listesindeki süper-admin'e açık (bkz.
   // premium denetim P1.6, VeriSifirlamaModal.tsx). Bu e2e akış "TEHLİKELİ
@@ -72,18 +80,34 @@ async function seed() {
   // aynı koşuda önce çalışan başka bir seed'in (bkz. scripts/
   // firestore-rules-tests.ts'teki 'superadmin@example.test' gibi) bootstrap
   // dokümanındaki diğer alanlarını/e-postalarını SİLMESİN.
-  await db.collection('config').doc('bootstrap').set({
-    superAdminEmails: FieldValue.arrayUnion(`${ADMIN_UID}@example.test`)
-  }, { merge: true });
+  await db
+    .collection('config')
+    .doc('bootstrap')
+    .set(
+      {
+        superAdminEmails: FieldValue.arrayUnion(`${ADMIN_UID}@example.test`),
+      },
+      { merge: true }
+    );
 
   await ensureUser(MUEZZIN_UID, 'E2E Sifirlama Kisi');
-  await db.collection('muezzins').doc(MUEZZIN_UID).set({
-    displayName: 'E2E Sifirlama Kisi', email: `${MUEZZIN_UID}@example.test`, role: 'muezzin',
-    aktif: true, photoURL: '', fcmToken: null,
-    // Sıfırdan farklı — "kadro sayaçlarını da sıfırla" seçeneğinin
-    // gerçekten 0'a çektiğini doğrulamak için.
-    aylikVakitSayisi: 5, aylikCumaSayisi: 2, aylikYedekSayisi: 1, yillikIzinKullanilanGun: 3
-  });
+  await db
+    .collection('muezzins')
+    .doc(MUEZZIN_UID)
+    .set({
+      displayName: 'E2E Sifirlama Kisi',
+      email: `${MUEZZIN_UID}@example.test`,
+      role: 'muezzin',
+      aktif: true,
+      photoURL: '',
+      fcmToken: null,
+      // Sıfırdan farklı — "kadro sayaçlarını da sıfırla" seçeneğinin
+      // gerçekten 0'a çektiğini doğrulamak için.
+      aylikVakitSayisi: 5,
+      aylikCumaSayisi: 2,
+      aylikYedekSayisi: 1,
+      yillikIzinKullanilanGun: 3,
+    });
 
   const prefix = 'e2eSifirlamaTest_';
 
@@ -111,54 +135,86 @@ async function seed() {
   const [bildirimBaseline, izinBaseline, uyariBaseline] = await Promise.all([
     baseline('bildirimler'),
     baseline('izinler'),
-    baseline('adminUyarilari')
+    baseline('adminUyarilari'),
   ]);
 
   const batch = db.batch();
 
   for (let i = 0; i < BILDIRIM_SAYISI; i++) {
     batch.set(db.collection('bildirimler').doc(`${prefix}bildirim_${i}`), {
-      haftaId: 'W2026-09-07', tarih: '2026-09-07', vakit: 'ogle', uid: MUEZZIN_UID, tip: 'asil',
-      durum: 'bekliyor', pendingAck: true, retSebebi: null,
-      olusturmaTarihi: Timestamp.now(), sonGuncelleme: Timestamp.now()
+      haftaId: 'W2026-09-07',
+      tarih: '2026-09-07',
+      vakit: 'ogle',
+      uid: MUEZZIN_UID,
+      tip: 'asil',
+      durum: 'bekliyor',
+      pendingAck: true,
+      retSebebi: null,
+      olusturmaTarihi: Timestamp.now(),
+      sonGuncelleme: Timestamp.now(),
     });
   }
 
   batch.set(db.collection('haftaPlanlari').doc(`${prefix}hafta`), {
-    haftaBaslangic: '2026-09-07', haftaBitis: '2026-09-13', durum: 'yayinda',
-    olusturmaTarihi: Timestamp.now(), sonGuncelleme: Timestamp.now(), gunler: {}
+    haftaBaslangic: '2026-09-07',
+    haftaBitis: '2026-09-13',
+    durum: 'yayinda',
+    olusturmaTarihi: Timestamp.now(),
+    sonGuncelleme: Timestamp.now(),
+    gunler: {},
   });
 
   for (let i = 0; i < IZIN_SAYISI; i++) {
     batch.set(db.collection('izinler').doc(`${prefix}izin_${i}`), {
-      uid: MUEZZIN_UID, baslangic: '2026-09-10', bitis: '2026-09-10', tip: 'yillik',
-      durum: 'onay_bekliyor', olusturmaTarihi: Timestamp.now()
+      uid: MUEZZIN_UID,
+      baslangic: '2026-09-10',
+      bitis: '2026-09-10',
+      tip: 'yillik',
+      durum: 'onay_bekliyor',
+      olusturmaTarihi: Timestamp.now(),
     });
   }
 
   for (let i = 0; i < VEKALET_SAYISI; i++) {
     batch.set(db.collection('vekalet_talepleri').doc(`${prefix}vekalet_${i}`), {
-      bildirimId: `${prefix}bildirim_0`, haftaId: 'W2026-09-07', gonderenUid: MUEZZIN_UID,
-      gonderenIsim: 'E2E Sifirlama Kisi', aliciUid: ADMIN_UID, aliciIsim: 'E2E Sifirlama Admin',
-      tarih: '2026-09-07', vakit: 'ogle', saat: '12:45', tip: 'asil', durum: 'beklemede',
-      olusturmaTarihi: Timestamp.now()
+      bildirimId: `${prefix}bildirim_0`,
+      haftaId: 'W2026-09-07',
+      gonderenUid: MUEZZIN_UID,
+      gonderenIsim: 'E2E Sifirlama Kisi',
+      aliciUid: ADMIN_UID,
+      aliciIsim: 'E2E Sifirlama Admin',
+      tarih: '2026-09-07',
+      vakit: 'ogle',
+      saat: '12:45',
+      tip: 'asil',
+      durum: 'beklemede',
+      olusturmaTarihi: Timestamp.now(),
     });
   }
 
   for (let i = 0; i < UYARI_SAYISI; i++) {
     batch.set(db.collection('adminUyarilari').doc(`${prefix}uyari_${i}`), {
-      tip: 'zincirTukendi', mesaj: 'E2E test uyarisi', tarih: '2026-09-07',
-      cozuldu: false, olusturmaTarihi: Timestamp.now()
+      tip: 'zincirTukendi',
+      mesaj: 'E2E test uyarisi',
+      tarih: '2026-09-07',
+      cozuldu: false,
+      olusturmaTarihi: Timestamp.now(),
     });
   }
 
   // Kapsam DIŞI, silinmemesi gereken belgeler (bkz. dosya başı yorumu).
   batch.set(db.collection('mazeret_detaylari').doc(`${prefix}mazeret`), {
-    uid: MUEZZIN_UID, retSebebi: 'E2E test - silinmemeli', olusturmaTarihi: Timestamp.now()
+    uid: MUEZZIN_UID,
+    retSebebi: 'E2E test - silinmemeli',
+    olusturmaTarihi: Timestamp.now(),
   });
   batch.set(db.collection('audit_logs').doc(`${prefix}log`), {
-    actionType: 'E2E Test Kaydi', targetName: 'Silinmemeli', details: 'Bu kayit sifirlama sonrasi da var olmali.',
-    userId: ADMIN_UID, userDisplayName: 'E2E Sifirlama Admin', timestamp: Timestamp.now()
+    actionType: 'E2E Test Kaydi',
+    targetName: 'Silinmemeli',
+    details: 'Bu kayit sifirlama sonrasi da var olmali.',
+    userId: ADMIN_UID,
+    userDisplayName: 'E2E Sifirlama Admin',
+    timestamp: Timestamp.now(),
   });
 
   await batch.commit();
@@ -173,8 +229,8 @@ async function seed() {
       haftaPlanlari: 1,
       izinler: izinBaseline + IZIN_SAYISI,
       vekalet_talepleri: VEKALET_SAYISI,
-      adminUyarilari: uyariBaseline + UYARI_SAYISI
-    }
+      adminUyarilari: uyariBaseline + UYARI_SAYISI,
+    },
   };
 }
 

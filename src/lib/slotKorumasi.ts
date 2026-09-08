@@ -115,14 +115,14 @@ export function korumaSaglayanBildirimler(
   slotBildirimleri: (SlotBildirimVerisi | undefined)[],
   simdiMs: number = Date.now()
 ): SlotBildirimVerisi[] {
-  return slotBildirimleri.filter((data): data is SlotBildirimVerisi =>
-    !!data && (
-      KORUNAN_DURUMLAR.includes(data.durum as string) ||
-      data.tip === 'gorev_cagrisi' ||
-      data.vekaletDevredildi === true ||
-      vekaletDevriBekliyorGecerliMi(data, simdiMs) ||
-      data.manuelAtama === true
-    )
+  return slotBildirimleri.filter(
+    (data): data is SlotBildirimVerisi =>
+      !!data &&
+      (KORUNAN_DURUMLAR.includes(data.durum as string) ||
+        data.tip === 'gorev_cagrisi' ||
+        data.vekaletDevredildi === true ||
+        vekaletDevriBekliyorGecerliMi(data, simdiMs) ||
+        data.manuelAtama === true)
   );
 }
 
@@ -211,9 +211,10 @@ export function korumaliSlotMu(
  *     belge her zaman taze bir `sonGuncelleme` ile yazılır,
  *  3. o da eşitse girdi sırası korunur (eski davranış).
  */
-export function guncelSlotBildirimleriniSec(
-  slotBildirimleri: (SlotBildirimVerisi | undefined)[]
-): { asil?: SlotBildirimVerisi; yedek?: SlotBildirimVerisi } {
+export function guncelSlotBildirimleriniSec(slotBildirimleri: (SlotBildirimVerisi | undefined)[]): {
+  asil?: SlotBildirimVerisi;
+  yedek?: SlotBildirimVerisi;
+} {
   const mevcutlar = slotBildirimleri.filter((d): d is SlotBildirimVerisi => !!d);
   return {
     asil: enGuncelBildirim(mevcutlar.filter((d) => d.tip === 'asil')),

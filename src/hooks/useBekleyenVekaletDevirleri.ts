@@ -19,7 +19,7 @@ import { toTurkishUpperCase } from '../lib/dateUtils';
  */
 export function useBekleyenVekaletDevirleri(uid: string | undefined) {
   const [bekleyenDevirler, setBekleyenDevirler] = useState<(VekaletTalebi & { id: string })[]>([]);
-  const showNotification = useNotificationStore(s => s.showNotification);
+  const showNotification = useNotificationStore((s) => s.showNotification);
 
   if (useChangeKey(uid)) {
     setBekleyenDevirler([]);
@@ -43,32 +43,36 @@ export function useBekleyenVekaletDevirleri(uid: string | undefined) {
       where('durum', 'in', ['kabul_edildi', 'reddedildi'])
     );
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      // `bildirimUygulandi`, script'in talebi İŞLEDİĞİNİ gösterir, SONUCUNU
-      // değil — hem başarı hem red aynı bayrağı true yapar. Script gerçekten
-      // reddettiğinde ('modified' tipi — ilk yüklemede eski/zaten-reddedilmiş
-      // taleplerin 'added' olarak gelip yeniden bildirim üretmemesi için
-      // kasıtlı olarak yalnızca 'modified' kontrol edilir) kullanıcıya TEK
-      // seferlik bir toast gösterilir; aksi halde banner sessizce kaybolup
-      // kullanıcı devri gerçekten alıp almadığını hiç öğrenemiyordu (bkz.
-      // mimari denetim).
-      snapshot.docChanges().forEach((change) => {
-        if (change.type !== 'modified') return;
-        const data = change.doc.data() as VekaletTalebi;
-        if (data.bildirimUygulandi === true && data.talepSonuc === 'reddedildi') {
-          showNotification(
-            'Devir Uygulanamadı',
-            `${data.tarih} ${toTurkishUpperCase(String(data.vakit))} vakti için kabul ettiğiniz devir işlenirken artık uygun bulunmadınız. Admin bilgilendirildi.`,
-            'error'
-          );
-        }
-      });
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        // `bildirimUygulandi`, script'in talebi İŞLEDİĞİNİ gösterir, SONUCUNU
+        // değil — hem başarı hem red aynı bayrağı true yapar. Script gerçekten
+        // reddettiğinde ('modified' tipi — ilk yüklemede eski/zaten-reddedilmiş
+        // taleplerin 'added' olarak gelip yeniden bildirim üretmemesi için
+        // kasıtlı olarak yalnızca 'modified' kontrol edilir) kullanıcıya TEK
+        // seferlik bir toast gösterilir; aksi halde banner sessizce kaybolup
+        // kullanıcı devri gerçekten alıp almadığını hiç öğrenemiyordu (bkz.
+        // mimari denetim).
+        snapshot.docChanges().forEach((change) => {
+          if (change.type !== 'modified') return;
+          const data = change.doc.data() as VekaletTalebi;
+          if (data.bildirimUygulandi === true && data.talepSonuc === 'reddedildi') {
+            showNotification(
+              'Devir Uygulanamadı',
+              `${data.tarih} ${toTurkishUpperCase(String(data.vakit))} vakti için kabul ettiğiniz devir işlenirken artık uygun bulunmadınız. Admin bilgilendirildi.`,
+              'error'
+            );
+          }
+        });
 
-      const tumu = snapshot.docs.map(doc => ({ id: doc.id, ...(doc.data() as VekaletTalebi) }));
-      setBekleyenDevirler(tumu.filter(talep => talep.durum === 'kabul_edildi' && talep.bildirimUygulandi !== true));
-    }, (err) => {
-      handleFirestoreError(err, OperationType.LIST, 'vekalet_talepleri');
-    });
+        const tumu = snapshot.docs.map((doc) => ({ id: doc.id, ...(doc.data() as VekaletTalebi) }));
+        setBekleyenDevirler(tumu.filter((talep) => talep.durum === 'kabul_edildi' && talep.bildirimUygulandi !== true));
+      },
+      (err) => {
+        handleFirestoreError(err, OperationType.LIST, 'vekalet_talepleri');
+      }
+    );
 
     return () => unsubscribe();
   }, [uid, showNotification]);

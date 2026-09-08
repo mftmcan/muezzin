@@ -35,7 +35,7 @@ const tests: TestCase[] = [
         tip: 'mazeret',
         durum: 'onaylandi',
         sebep: 'Aile',
-        bildirimGonderildi: false
+        bildirimGonderildi: false,
       });
 
       const sonuc = await processIzinDurumBildirimleri(false);
@@ -44,7 +44,7 @@ const tests: TestCase[] = [
 
       const izinDoc = await izinRef.get();
       assert.equal(izinDoc.data()?.bildirimGonderildi, true);
-    }
+    },
   },
   {
     name: 'Henuz karara varilmamis (onay_bekliyor) bir kayit islenmez sayilir ama isaretlenir',
@@ -61,7 +61,7 @@ const tests: TestCase[] = [
         tip: 'mazeret',
         durum: 'onay_bekliyor',
         sebep: 'Aile',
-        bildirimGonderildi: false
+        bildirimGonderildi: false,
       });
 
       const sonuc = await processIzinDurumBildirimleri(false);
@@ -69,19 +69,22 @@ const tests: TestCase[] = [
 
       const izinDoc = await izinRef.get();
       assert.equal(izinDoc.data()?.bildirimGonderildi, true);
-    }
+    },
   },
   {
     name: 'mazeretDurumu tercihi kapali olan talep sahibi mesaj sayisina dahil edilmez (dry-run)',
     run: async () => {
       await clearCollections();
-      await db.collection('muezzins').doc('muezzin_optout').set({
-        displayName: 'Optout',
-        role: 'muezzin',
-        aktif: true,
-        notificationSettings: { mazeretDurumu: false },
-        fcmTokens: { fake_token_1: new Date() }
-      });
+      await db
+        .collection('muezzins')
+        .doc('muezzin_optout')
+        .set({
+          displayName: 'Optout',
+          role: 'muezzin',
+          aktif: true,
+          notificationSettings: { mazeretDurumu: false },
+          fcmTokens: { fake_token_1: new Date() },
+        });
       await db.collection('izinler').doc('izin3').set({
         uid: 'muezzin_optout',
         baslangic: '2026-05-18',
@@ -89,7 +92,7 @@ const tests: TestCase[] = [
         tip: 'yillik',
         durum: 'reddedildi',
         sebep: 'Aile',
-        bildirimGonderildi: false
+        bildirimGonderildi: false,
       });
 
       const sonuc = await processIzinDurumBildirimleri(true);
@@ -99,18 +102,21 @@ const tests: TestCase[] = [
       // dry-run oldugundan bayrak degismemis olmali.
       const izinDoc = await db.collection('izinler').doc('izin3').get();
       assert.equal(izinDoc.data()?.bildirimGonderildi, false);
-    }
+    },
   },
   {
     name: 'mazeretDurumu tercihi acik olan talep sahibinin tokeni mesaj sayisina dahil edilir (dry-run)',
     run: async () => {
       await clearCollections();
-      await db.collection('muezzins').doc('muezzin_optin').set({
-        displayName: 'Optin',
-        role: 'muezzin',
-        aktif: true,
-        fcmTokens: { fake_token_a: new Date() }
-      });
+      await db
+        .collection('muezzins')
+        .doc('muezzin_optin')
+        .set({
+          displayName: 'Optin',
+          role: 'muezzin',
+          aktif: true,
+          fcmTokens: { fake_token_a: new Date() },
+        });
       await db.collection('izinler').doc('izin4').set({
         uid: 'muezzin_optin',
         baslangic: '2026-05-18',
@@ -118,13 +124,13 @@ const tests: TestCase[] = [
         tip: 'haftalik',
         durum: 'onaylandi',
         sebep: 'Aile',
-        bildirimGonderildi: false
+        bildirimGonderildi: false,
       });
 
       const sonuc = await processIzinDurumBildirimleri(true);
       assert.equal(sonuc.kararSayisi, 1);
       assert.equal(sonuc.mesajSayisi, 1);
-    }
+    },
   },
   {
     name: 'Zaten bildirilmis bir karar tekrar islenmez',
@@ -137,12 +143,12 @@ const tests: TestCase[] = [
         tip: 'mazeret',
         durum: 'onaylandi',
         sebep: 'Aile',
-        bildirimGonderildi: true
+        bildirimGonderildi: true,
       });
 
       const sonuc = await processIzinDurumBildirimleri(false);
       assert.equal(sonuc.kararSayisi, 0);
-    }
+    },
   },
   {
     // CIFT PUSH KOK NEDENI: gonderim ile "gonderildi" commit'i arasinda
@@ -152,12 +158,15 @@ const tests: TestCase[] = [
     name: 'Taze "gonderiliyor" damgasi tasiyan izin karari bu turda yeniden gonderilmez',
     run: async () => {
       await clearCollections();
-      await db.collection('muezzins').doc('muezzin_claim').set({
-        displayName: 'Claim',
-        role: 'muezzin',
-        aktif: true,
-        fcmTokens: { fake_token_c: new Date() }
-      });
+      await db
+        .collection('muezzins')
+        .doc('muezzin_claim')
+        .set({
+          displayName: 'Claim',
+          role: 'muezzin',
+          aktif: true,
+          fcmTokens: { fake_token_c: new Date() },
+        });
       const izinRef = db.collection('izinler').doc('izinClaimTaze');
       await izinRef.set({
         uid: 'muezzin_claim',
@@ -166,7 +175,7 @@ const tests: TestCase[] = [
         tip: 'mazeret',
         durum: 'onaylandi',
         bildirimGonderildi: false,
-        [GONDERIM_CLAIM_ALANI]: Timestamp.now()
+        [GONDERIM_CLAIM_ALANI]: Timestamp.now(),
       });
 
       const sonuc = await processIzinDurumBildirimleri(false);
@@ -176,7 +185,7 @@ const tests: TestCase[] = [
       const izinDoc = await izinRef.get();
       assert.equal(izinDoc.data()?.bildirimGonderildi, false);
       assert.ok(izinDoc.data()?.[GONDERIM_CLAIM_ALANI]);
-    }
+    },
   },
   {
     // Damga bayatlayinca kayit yeniden denenmeli — aksi halde bu mekanizma
@@ -193,7 +202,7 @@ const tests: TestCase[] = [
         tip: 'mazeret',
         durum: 'onaylandi',
         bildirimGonderildi: false,
-        [GONDERIM_CLAIM_ALANI]: Timestamp.fromMillis(Date.now() - GONDERIM_CLAIM_BAYATLAMA_MS - 60_000)
+        [GONDERIM_CLAIM_ALANI]: Timestamp.fromMillis(Date.now() - GONDERIM_CLAIM_BAYATLAMA_MS - 60_000),
       });
 
       const sonuc = await processIzinDurumBildirimleri(false);
@@ -202,8 +211,8 @@ const tests: TestCase[] = [
       const izinDoc = await izinRef.get();
       assert.equal(izinDoc.data()?.bildirimGonderildi, true);
       assert.equal(izinDoc.data()?.[GONDERIM_CLAIM_ALANI], undefined);
-    }
-  }
+    },
+  },
 ];
 
 async function main() {

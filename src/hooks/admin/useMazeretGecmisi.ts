@@ -72,11 +72,7 @@ export function useMazeretGecmisi() {
       return degisti ? sonuc : satirlar;
     };
 
-    const q = query(
-      collection(db, 'bildirimler'),
-      where('durum', '==', 'reddedildi'),
-      where('tarih', '>=', baslangicTarihi)
-    );
+    const q = query(collection(db, 'bildirimler'), where('durum', '==', 'reddedildi'), where('tarih', '>=', baslangicTarihi));
 
     const unsubscribe = onSnapshot(
       q,
@@ -103,9 +99,7 @@ export function useMazeretGecmisi() {
           eksikler.map(async (b) => {
             try {
               const detaySnap = await getDoc(doc(db, 'mazeret_detaylari', b.id));
-              const retSebebi = detaySnap.exists()
-                ? ((detaySnap.data().retSebebi as string) ?? null)
-                : null;
+              const retSebebi = detaySnap.exists() ? ((detaySnap.data().retSebebi as string) ?? null) : null;
               // Önbellek, uçuş kaydı silinmeden ÖNCE yazılır — aksi halde
               // ikisi arasındaki mikro-görev penceresinde gelen bir snapshot
               // aynı satır için gereksiz bir okuma daha başlatabilirdi.

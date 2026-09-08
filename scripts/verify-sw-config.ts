@@ -19,7 +19,12 @@ function extract(key: string): string {
 }
 
 const fieldsToCheck: Array<keyof typeof firebaseConfig> = [
-  'apiKey', 'authDomain', 'projectId', 'storageBucket', 'messagingSenderId', 'appId'
+  'apiKey',
+  'authDomain',
+  'projectId',
+  'storageBucket',
+  'messagingSenderId',
+  'appId',
 ];
 
 for (const field of fieldsToCheck) {

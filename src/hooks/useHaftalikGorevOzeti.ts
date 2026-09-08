@@ -34,16 +34,20 @@ export function useHaftalikGorevOzeti(uid: string | undefined, bugunDate: Date):
       where('tarih', '<=', format(haftaBitis, 'yyyy-MM-dd'))
     );
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map(doc => doc.data() as Bildirim);
-      setHaftalikOzet({
-        toplam: data.length,
-        bekleyen: data.filter(g => g.durum === 'bekliyor').length,
-        tamamlanan: data.filter(g => g.durum === 'onaylandi' || g.durum === 'okundu_varsayilan' || g.durum === 'sistem_atadi').length,
-      });
-    }, (err) => {
-      handleFirestoreError(err, OperationType.LIST, 'bildirimler');
-    });
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const data = snapshot.docs.map((doc) => doc.data() as Bildirim);
+        setHaftalikOzet({
+          toplam: data.length,
+          bekleyen: data.filter((g) => g.durum === 'bekliyor').length,
+          tamamlanan: data.filter((g) => g.durum === 'onaylandi' || g.durum === 'okundu_varsayilan' || g.durum === 'sistem_atadi').length,
+        });
+      },
+      (err) => {
+        handleFirestoreError(err, OperationType.LIST, 'bildirimler');
+      }
+    );
 
     return () => unsubscribe();
   }, [uid, bugunDate]);

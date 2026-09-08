@@ -43,54 +43,70 @@ export function useDashboardLogic() {
   const planDateStr = sonraki?.ezanSaati ? getTurkeyDateString(sonraki.ezanSaati) : bugunStr;
   const vakitKeyForPlan = (sonraki?.vakit || mevcutVakit || 'sabah') as Vakit;
 
-  const {
-    bugunPlan,
-    asilDurum,
-    yedekDurum,
-    asilIzinde,
-    yedekIzinde,
-    isHademelerLoading,
-    getMuezzinName,
-  } = useBugunPlanDurumu(planDateStr, vakitKeyForPlan);
+  const { bugunPlan, asilDurum, yedekDurum, asilIzinde, yedekIzinde, isHademelerLoading, getMuezzinName } = useBugunPlanDurumu(
+    planDateStr,
+    vakitKeyForPlan
+  );
 
   const { duyurular } = useDuyurular(3);
-  const currentUser = useAuthStore(state => state.user);
+  const currentUser = useAuthStore((state) => state.user);
 
   const [viewingDuyuru, setViewingDuyuru] = useState<Duyuru | null>(null);
 
   const { auraColor, secondaryAuraColor } = useAuraColors(mevcutVakit);
 
-  const isHeroLoading = (vakitLoading && !bugunVakitler);
+  const isHeroLoading = vakitLoading && !bugunVakitler;
 
   // Return memoized state to prevent unnecessary downstream re-renders
-  return useMemo(() => ({
-    gorevler,
-    gorevLoading,
-    bugunVakitler,
-    sonraki,
-    mevcutVakit,
-    bugunDate,
-    planDateStr,
-    bugunPlan,
-    asilDurum,
-    yedekDurum,
-    asilIzinde,
-    yedekIzinde,
-    isHeroLoading,
-    isHademelerLoading,
-    auraColor,
-    duyurular,
-    viewingDuyuru,
-    setViewingDuyuru,
-    currentUser,
-    getMuezzinName,
-    theme,
-    toggleTheme,
-    secondaryAuraColor
-  }), [
-    gorevler, gorevLoading, bugunVakitler, sonraki, mevcutVakit,
-    bugunDate, planDateStr, bugunPlan, asilDurum, yedekDurum, asilIzinde, yedekIzinde,
-    isHeroLoading, isHademelerLoading, auraColor, duyurular,
-    viewingDuyuru, currentUser, getMuezzinName, theme, toggleTheme, secondaryAuraColor
-  ]);
+  return useMemo(
+    () => ({
+      gorevler,
+      gorevLoading,
+      bugunVakitler,
+      sonraki,
+      mevcutVakit,
+      bugunDate,
+      planDateStr,
+      bugunPlan,
+      asilDurum,
+      yedekDurum,
+      asilIzinde,
+      yedekIzinde,
+      isHeroLoading,
+      isHademelerLoading,
+      auraColor,
+      duyurular,
+      viewingDuyuru,
+      setViewingDuyuru,
+      currentUser,
+      getMuezzinName,
+      theme,
+      toggleTheme,
+      secondaryAuraColor,
+    }),
+    [
+      gorevler,
+      gorevLoading,
+      bugunVakitler,
+      sonraki,
+      mevcutVakit,
+      bugunDate,
+      planDateStr,
+      bugunPlan,
+      asilDurum,
+      yedekDurum,
+      asilIzinde,
+      yedekIzinde,
+      isHeroLoading,
+      isHademelerLoading,
+      auraColor,
+      duyurular,
+      viewingDuyuru,
+      currentUser,
+      getMuezzinName,
+      theme,
+      toggleTheme,
+      secondaryAuraColor,
+    ]
+  );
 }

@@ -3,7 +3,7 @@ import {
   mazeretKapaliMi,
   mazeretSonBasvuruAni,
   mazeretSonBasvuruHesapla,
-  MAZERET_SON_BASVURU_DAKIKA
+  MAZERET_SON_BASVURU_DAKIKA,
 } from '../../src/lib/mazeretKurallari';
 import { ezanAniUtc, normalizeVakitSaati, oncekiGunTarihi, parseVakitToDate } from '../../src/lib/dateUtils';
 
@@ -17,10 +17,7 @@ describe('mazeretKapaliMi', () => {
     const ogleVakti = new Date(2026, 7, 7, 13, 0);
     const cokErken = new Date(2026, 7, 7, 6, 0); // ogle'den çok saatler önce
 
-    const durum = mazeretKapaliMi(
-      { gunTarihi: CUMA, vakit: 'ogle', vakitSaati: ogleVakti, oncekiGunYatsiSaati: null },
-      cokErken
-    );
+    const durum = mazeretKapaliMi({ gunTarihi: CUMA, vakit: 'ogle', vakitSaati: ogleVakti, oncekiGunYatsiSaati: null }, cokErken);
 
     expect(durum.kapali).toBe(true);
     expect(durum.sebep).toMatch(/Cuma/);
@@ -30,10 +27,7 @@ describe('mazeretKapaliMi', () => {
     const ikindiVakti = new Date(2026, 7, 6, 16, 0);
     const suAn = new Date(2026, 7, 6, 14, 30); // 1.5 saat önce
 
-    const durum = mazeretKapaliMi(
-      { gunTarihi: PERSEMBE, vakit: 'ikindi', vakitSaati: ikindiVakti, oncekiGunYatsiSaati: null },
-      suAn
-    );
+    const durum = mazeretKapaliMi({ gunTarihi: PERSEMBE, vakit: 'ikindi', vakitSaati: ikindiVakti, oncekiGunYatsiSaati: null }, suAn);
 
     expect(durum.kapali).toBe(false);
   });

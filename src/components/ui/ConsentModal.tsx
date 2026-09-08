@@ -57,7 +57,9 @@ export function ConsentModal({
           <div className="w-20 h-20 rounded-icon bg-gradient-to-br from-[var(--dynamic-aura,var(--aura-indigo))]/20 to-transparent border border-[var(--dynamic-aura,var(--aura-indigo))]/30 flex items-center justify-center relative shadow-[0_8px_32px_rgba(0,0,0,0.05)]">
             <motion.div
               animate={isLoading ? iconLoadingAnimate : iconIdleAnimate}
-              transition={isLoading ? { repeat: Infinity, duration: 2, ease: 'linear' } : { repeat: Infinity, duration: 6, ease: 'easeInOut' }}
+              transition={
+                isLoading ? { repeat: Infinity, duration: 2, ease: 'linear' } : { repeat: Infinity, duration: 6, ease: 'easeInOut' }
+              }
               className="text-[var(--dynamic-aura,var(--aura-indigo))]"
             >
               {icon}
@@ -66,9 +68,7 @@ export function ConsentModal({
         </div>
 
         {/* Text */}
-        <p className="text-base sm:text-lg font-light text-[var(--text-secondary)] leading-relaxed max-w-md mb-8">
-          {description}
-        </p>
+        <p className="text-base sm:text-lg font-light text-[var(--text-secondary)] leading-relaxed max-w-md mb-8">{description}</p>
 
         {/* Privacy / Info Note */}
         <div className="w-full max-w-md p-4 rounded-2xl bg-[var(--text-primary)]/[0.02] border border-[var(--glass-border)] mb-8 flex items-center gap-3 text-left">
@@ -81,7 +81,10 @@ export function ConsentModal({
           <motion.button
             whileHover={{ scale: 1.02, y: -1 }}
             whileTap={{ scale: 0.98 }}
-            onClick={() => { hapticMedium(); onConfirm(); }}
+            onClick={() => {
+              hapticMedium();
+              onConfirm();
+            }}
             disabled={isLoading}
             className="w-full py-5 rounded-avatar border-none text-[var(--app-bg)] font-bold tracking-wider cursor-pointer shadow-lg shadow-[var(--dynamic-aura,var(--aura-indigo))]/20 flex items-center justify-center gap-2"
             style={{
@@ -90,7 +93,8 @@ export function ConsentModal({
               // butonun kendi içinde tutarsız iki renk karışıyordu (bkz.
               // Kıble Pusulası mimari denetimi). Bitiş tonu artık aynı
               // aura'dan koyulaştırılarak türetiliyor.
-              background: 'linear-gradient(to right, var(--dynamic-aura, var(--aura-indigo)), color-mix(in srgb, var(--dynamic-aura, var(--aura-indigo)) 70%, black))',
+              background:
+                'linear-gradient(to right, var(--dynamic-aura, var(--aura-indigo)), color-mix(in srgb, var(--dynamic-aura, var(--aura-indigo)) 70%, black))',
             }}
           >
             {isLoading ? (
@@ -106,7 +110,10 @@ export function ConsentModal({
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            onClick={() => { hapticLight(); onClose(); }}
+            onClick={() => {
+              hapticLight();
+              onClose();
+            }}
             disabled={isLoading}
             className="w-full py-4 rounded-avatar border border-[var(--glass-border)] bg-transparent hover:bg-[var(--text-primary)]/[0.02] text-[var(--text-secondary)] font-semibold cursor-pointer"
           >

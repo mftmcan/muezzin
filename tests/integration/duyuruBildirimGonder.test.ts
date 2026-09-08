@@ -36,7 +36,7 @@ const tests: TestCase[] = [
         baslik: 'Test Duyurusu',
         icerik: 'Icerik',
         tip: 'duyuru',
-        bildirimGonderildi: false
+        bildirimGonderildi: false,
       });
 
       const sonuc = await processDuyuruBildirimleri(false);
@@ -45,7 +45,7 @@ const tests: TestCase[] = [
 
       const duyuruDoc = await duyuruRef.get();
       assert.equal(duyuruDoc.data()?.bildirimGonderildi, true);
-    }
+    },
   },
   {
     name: 'Zaten bildirilmis bir duyuru tekrar islenmez',
@@ -56,12 +56,12 @@ const tests: TestCase[] = [
         baslik: 'Eski Duyuru',
         icerik: 'Icerik',
         tip: 'bilgi',
-        bildirimGonderildi: true
+        bildirimGonderildi: true,
       });
 
       const sonuc = await processDuyuruBildirimleri(false);
       assert.equal(sonuc.duyuruSayisi, 0);
-    }
+    },
   },
   {
     // duyurular:false tercihi olan aktif bir muezzin varsa bile (alici
@@ -71,18 +71,21 @@ const tests: TestCase[] = [
     name: 'duyurular tercihi kapali olan aktif muezzin mesaj sayisina dahil edilmez (dry-run)',
     run: async () => {
       await clearCollections();
-      await db.collection('muezzins').doc('muezzin_optout').set({
-        displayName: 'Optout',
-        role: 'muezzin',
-        aktif: true,
-        notificationSettings: { duyurular: false },
-        fcmTokens: { fake_token_1: new Date() }
-      });
+      await db
+        .collection('muezzins')
+        .doc('muezzin_optout')
+        .set({
+          displayName: 'Optout',
+          role: 'muezzin',
+          aktif: true,
+          notificationSettings: { duyurular: false },
+          fcmTokens: { fake_token_1: new Date() },
+        });
       await db.collection('duyurular').doc('duyuru3').set({
         baslik: 'Test',
         icerik: 'Icerik',
         tip: 'onemli',
-        bildirimGonderildi: false
+        bildirimGonderildi: false,
       });
 
       const sonuc = await processDuyuruBildirimleri(true);
@@ -92,29 +95,32 @@ const tests: TestCase[] = [
       // dry-run oldugundan bayrak degismemis olmali.
       const duyuruDoc = await db.collection('duyurular').doc('duyuru3').get();
       assert.equal(duyuruDoc.data()?.bildirimGonderildi, false);
-    }
+    },
   },
   {
     name: 'duyurular tercihi acik olan aktif muezzinin tokeni mesaj sayisina dahil edilir (dry-run)',
     run: async () => {
       await clearCollections();
-      await db.collection('muezzins').doc('muezzin_optin').set({
-        displayName: 'Optin',
-        role: 'muezzin',
-        aktif: true,
-        fcmTokens: { fake_token_a: new Date(), fake_token_b: new Date() }
-      });
+      await db
+        .collection('muezzins')
+        .doc('muezzin_optin')
+        .set({
+          displayName: 'Optin',
+          role: 'muezzin',
+          aktif: true,
+          fcmTokens: { fake_token_a: new Date(), fake_token_b: new Date() },
+        });
       await db.collection('duyurular').doc('duyuru4').set({
         baslik: 'Test',
         icerik: 'Icerik',
         tip: 'onemli',
-        bildirimGonderildi: false
+        bildirimGonderildi: false,
       });
 
       const sonuc = await processDuyuruBildirimleri(true);
       assert.equal(sonuc.duyuruSayisi, 1);
       assert.equal(sonuc.mesajSayisi, 2);
-    }
+    },
   },
   {
     // ÇİFT PUSH KÖK NEDENİ: gönderim ile "gönderildi" commit'i arasında
@@ -130,7 +136,7 @@ const tests: TestCase[] = [
         icerik: 'Icerik',
         tip: 'duyuru',
         bildirimGonderildi: false,
-        [GONDERIM_CLAIM_ALANI]: Timestamp.now()
+        [GONDERIM_CLAIM_ALANI]: Timestamp.now(),
       });
 
       const sonuc = await processDuyuruBildirimleri(false);
@@ -141,7 +147,7 @@ const tests: TestCase[] = [
       const duyuruDoc = await duyuruRef.get();
       assert.equal(duyuruDoc.data()?.bildirimGonderildi, false);
       assert.ok(duyuruDoc.data()?.[GONDERIM_CLAIM_ALANI]);
-    }
+    },
   },
   {
     // Damga bayatlayınca (ölü süreç kesinleşince) kayıt yeniden denenmeli —
@@ -155,7 +161,7 @@ const tests: TestCase[] = [
         icerik: 'Icerik',
         tip: 'duyuru',
         bildirimGonderildi: false,
-        [GONDERIM_CLAIM_ALANI]: Timestamp.fromMillis(Date.now() - GONDERIM_CLAIM_BAYATLAMA_MS - 60_000)
+        [GONDERIM_CLAIM_ALANI]: Timestamp.fromMillis(Date.now() - GONDERIM_CLAIM_BAYATLAMA_MS - 60_000),
       });
 
       const sonuc = await processDuyuruBildirimleri(false);
@@ -164,7 +170,7 @@ const tests: TestCase[] = [
       const duyuruDoc = await duyuruRef.get();
       assert.equal(duyuruDoc.data()?.bildirimGonderildi, true);
       assert.equal(duyuruDoc.data()?.[GONDERIM_CLAIM_ALANI], undefined);
-    }
+    },
   },
   {
     // İleri tarihli bir damga (bozuk veri / istemci müdahalesi) bir kaydı
@@ -178,7 +184,7 @@ const tests: TestCase[] = [
         icerik: 'Icerik',
         tip: 'duyuru',
         bildirimGonderildi: false,
-        [GONDERIM_CLAIM_ALANI]: Timestamp.fromMillis(Date.now() + 365 * 24 * 60 * 60 * 1000)
+        [GONDERIM_CLAIM_ALANI]: Timestamp.fromMillis(Date.now() + 365 * 24 * 60 * 60 * 1000),
       });
 
       const sonuc = await processDuyuruBildirimleri(false);
@@ -186,8 +192,8 @@ const tests: TestCase[] = [
 
       const duyuruDoc = await duyuruRef.get();
       assert.equal(duyuruDoc.data()?.bildirimGonderildi, true);
-    }
-  }
+    },
+  },
 ];
 
 async function main() {

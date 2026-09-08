@@ -11,24 +11,30 @@ const BADGES = [
     desc: '5 Vakit Hizmet',
     threshold: 5,
     icon: <User size={20} strokeWidth={1.5} />,
-    activeCard: 'spatial-glass-elevated border-[var(--status-success)]/20 bg-gradient-to-b from-[var(--status-success)]/8 to-[var(--status-success)]/3',
-    activeIcon: 'bg-[var(--status-success)]/15 text-[var(--status-success)] border-[var(--status-success)]/25 shadow-[0_0_12px_color-mix(in_srgb,var(--status-success)_30%,transparent)] animate-pulse',
+    activeCard:
+      'spatial-glass-elevated border-[var(--status-success)]/20 bg-gradient-to-b from-[var(--status-success)]/8 to-[var(--status-success)]/3',
+    activeIcon:
+      'bg-[var(--status-success)]/15 text-[var(--status-success)] border-[var(--status-success)]/25 shadow-[0_0_12px_color-mix(in_srgb,var(--status-success)_30%,transparent)] animate-pulse',
   },
   {
     label: 'Sadakat Hadimi',
     desc: '15 Vakit Hizmet',
     threshold: 15,
     icon: <Award size={20} strokeWidth={1.5} />,
-    activeCard: 'spatial-glass-elevated border-[var(--aura-indigo)]/20 bg-gradient-to-b from-[var(--aura-indigo)]/8 to-[var(--aura-indigo)]/3',
-    activeIcon: 'bg-[var(--aura-indigo)]/15 text-[var(--aura-indigo)] border-[var(--aura-indigo)]/25 shadow-[0_0_12px_color-mix(in_srgb,var(--aura-indigo)_30%,transparent)] animate-pulse',
+    activeCard:
+      'spatial-glass-elevated border-[var(--aura-indigo)]/20 bg-gradient-to-b from-[var(--aura-indigo)]/8 to-[var(--aura-indigo)]/3',
+    activeIcon:
+      'bg-[var(--aura-indigo)]/15 text-[var(--aura-indigo)] border-[var(--aura-indigo)]/25 shadow-[0_0_12px_color-mix(in_srgb,var(--aura-indigo)_30%,transparent)] animate-pulse',
   },
   {
     label: 'Vakit Emini',
     desc: '30 Vakit Hizmet',
     threshold: 30,
     icon: <Shield size={20} strokeWidth={1.5} />,
-    activeCard: 'spatial-glass-elevated border-[var(--status-warning)]/20 bg-gradient-to-b from-[var(--status-warning)]/8 to-[var(--status-warning)]/3',
-    activeIcon: 'bg-[var(--status-warning)]/15 text-[var(--status-warning)] border-[var(--status-warning)]/25 shadow-[0_0_12px_color-mix(in_srgb,var(--status-warning)_30%,transparent)] animate-pulse',
+    activeCard:
+      'spatial-glass-elevated border-[var(--status-warning)]/20 bg-gradient-to-b from-[var(--status-warning)]/8 to-[var(--status-warning)]/3',
+    activeIcon:
+      'bg-[var(--status-warning)]/15 text-[var(--status-warning)] border-[var(--status-warning)]/25 shadow-[0_0_12px_color-mix(in_srgb,var(--status-warning)_30%,transparent)] animate-pulse',
   },
 ] as const;
 
@@ -61,9 +67,11 @@ export default function ProfileBadges({ toplamVakitSayisi }: ProfileBadgesProps)
                 earned ? badge.activeCard : 'bg-[var(--text-primary)]/[0.008] border-[var(--text-primary)]/5 opacity-35'
               }`}
             >
-              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-md border ${
-                earned ? badge.activeIcon : 'bg-[var(--text-primary)]/5 text-subtle border-[var(--text-primary)]/5'
-              }`}>
+              <div
+                className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-md border ${
+                  earned ? badge.activeIcon : 'bg-[var(--text-primary)]/5 text-subtle border-[var(--text-primary)]/5'
+                }`}
+              >
                 {badge.icon}
               </div>
               <div className="space-y-0.5">

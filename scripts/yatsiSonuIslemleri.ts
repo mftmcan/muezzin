@@ -26,8 +26,8 @@ export function hedefGunuBelirle(calismaAni: Date): Date {
 
 /** @param gonderici Yalnızca testler için — bkz. `fcmGonderVeTemizle`. */
 export async function processYatsiSonuIslemleri(gonderici?: FcmGonderici) {
-  console.log("Günlük yatsı sonrası işlemleri başladı...");
-  
+  console.log('Günlük yatsı sonrası işlemleri başladı...');
+
   // Debug info — `_databaseId` Admin SDK'nın Firestore tipinde public olarak
   // açıklanmamış dahili bir alan (yalnızca hedef proje/veritabanını loglamak
   // için okunuyor); public bir getter olmadığından yapısal bir tip ile
@@ -38,7 +38,7 @@ export async function processYatsiSonuIslemleri(gonderici?: FcmGonderici) {
     const dbId = internalDb._databaseId?.databaseId || 'unknown';
     console.log(`Hedef Proje: ${projId}, Hedef Veritabanı: ${dbId}`);
   } catch {
-    console.log("Debug bilgisi alınamadı.");
+    console.log('Debug bilgisi alınamadı.');
   }
 
   // NOT: new Date() KULLANILMIYOR — bu script GitHub Actions üzerinde UTC
@@ -67,9 +67,7 @@ export async function processYatsiSonuIslemleri(gonderici?: FcmGonderici) {
   // hiç dokunulmamış (varsayılan tamamlanmış sayılan) görevlere veriliyor.
   let bildirimler;
   try {
-    bildirimler = await db.collection('bildirimler')
-      .where('tarih', '==', bugün)
-      .get();
+    bildirimler = await db.collection('bildirimler').where('tarih', '==', bugün).get();
   } catch (error) {
     handleFirestoreError(error, OperationType.GET, 'bildirimler');
     return; // handleFirestoreError throws, but for TS completeness
@@ -80,9 +78,10 @@ export async function processYatsiSonuIslemleri(gonderici?: FcmGonderici) {
   // Kredi hesaplaması saf bir çekirdekte yapılır (bkz. src/lib/gunlukKrediHesaplama.ts)
   // — planlamaCekirdegi.ts'teki "saf çekirdek, ince I/O sarmalayıcı" deseniyle
   // aynı, mantık burada birim testle doğrulanabilir.
-  const bildirimVerileri = bildirimler.docs.map(doc => doc.data());
-  const { asilKredi, cumaKredi, yedekKredi, uyariUids, okunduVarsayilanIndeksleri, puanIslenenIndeksleri } =
-    gunlukKredileriHesapla(bildirimVerileri as { tip: string; durum: string; uid: string; tarih: string; cumaMi?: boolean; puanIslendi?: boolean }[]);
+  const bildirimVerileri = bildirimler.docs.map((doc) => doc.data());
+  const { asilKredi, cumaKredi, yedekKredi, uyariUids, okunduVarsayilanIndeksleri, puanIslenenIndeksleri } = gunlukKredileriHesapla(
+    bildirimVerileri as { tip: string; durum: string; uid: string; tarih: string; cumaMi?: boolean; puanIslendi?: boolean }[]
+  );
 
   // Tekrar-çalıştırma güvenliği (bkz. gunlukKrediHesaplama.ts `puanIslendi`
   // yorumu): kredi verilen HER kayıt `puanIslendi:true` ile işaretlenir —
@@ -107,7 +106,7 @@ export async function processYatsiSonuIslemleri(gonderici?: FcmGonderici) {
   // Asil ve yedek kişilere puanlarını ver
   if (Object.keys(asilKredi).length > 0 || Object.keys(yedekKredi).length > 0) {
     const muezzinlerDocs = await db.collection('muezzins').get();
-    muezzinlerDocs.docs.forEach(mDoc => {
+    muezzinlerDocs.docs.forEach((mDoc) => {
       if (!asilKredi[mDoc.id] && !yedekKredi[mDoc.id]) return;
       // FieldValue.increment() — düz okuma+toplama (mDoc.data().x + delta)
       // eşzamanlı bir koşuyla (zamanlanmış tetikleme + manuel workflow_dispatch
@@ -145,12 +144,12 @@ export async function processYatsiSonuIslemleri(gonderici?: FcmGonderici) {
       // (planServisi.ts, haftalikPlanOlustur.ts) tutarlı olarak null yazılır.
       vakit: null,
       cozuldu: false,
-      olusturmaTarihi: Timestamp.now()
+      olusturmaTarihi: Timestamp.now(),
     });
   }
 
   // ADIM 2 & 3: Arşivle ve yarını hazırla (Özet mantık)
-  console.log("Bugün arşivlendi, yarın için bildirimler tetiklendi.");
+  console.log('Bugün arşivlendi, yarın için bildirimler tetiklendi.');
   await batch.commit();
 
   // YENİ: Yarınki Görevliler İçin Kişiselleştirilmiş FCM Anlık Bildirimi Tetikle
@@ -184,12 +183,10 @@ export async function processYatsiSonuIslemleri(gonderici?: FcmGonderici) {
     console.log(`Yarınki (${yarınStr}) görevliler taranıyor...`);
 
     // Yarınki tüm bildirimleri çek
-    const yarınkiBildirimler = await db.collection('bildirimler')
-      .where('tarih', '==', yarınStr)
-      .get();
+    const yarınkiBildirimler = await db.collection('bildirimler').where('tarih', '==', yarınStr).get();
 
     const userDuties: Record<string, string[]> = {};
-    yarınkiBildirimler.docs.forEach(doc => {
+    yarınkiBildirimler.docs.forEach((doc) => {
       const data = doc.data();
       const uid = data.uid;
 
@@ -204,7 +201,7 @@ export async function processYatsiSonuIslemleri(gonderici?: FcmGonderici) {
         ogle: 'Öğle',
         ikindi: 'İkindi',
         aksam: 'Akşam',
-        yatsi: 'Yatsı'
+        yatsi: 'Yatsı',
       };
 
       const vakitName = vakitCeviri[data.vakit] || data.vakit;
@@ -222,7 +219,7 @@ export async function processYatsiSonuIslemleri(gonderici?: FcmGonderici) {
     if (uidList.length > 0) {
       const muezzinsSnap = await db.collection('muezzins').get();
       const muezzinMap: Record<string, DocumentData> = {};
-      muezzinsSnap.docs.forEach(d => {
+      muezzinsSnap.docs.forEach((d) => {
         muezzinMap[d.id] = d.data();
       });
 
@@ -242,12 +239,12 @@ export async function processYatsiSonuIslemleri(gonderici?: FcmGonderici) {
               token,
               notification: {
                 title: 'Yarınki Ezan Göreviniz var 🕌',
-                body: `Yarın ${dutyListStr} göreviniz bulunmaktadır. Detaylar ve teyit için uygulamayı açın.`
+                body: `Yarın ${dutyListStr} göreviniz bulunmaktadır. Detaylar ve teyit için uygulamayı açın.`,
               },
               data: {
                 type: 'daily_duty_reminder',
-                tarih: yarınStr
-              }
+                tarih: yarınStr,
+              },
             });
           }
         }
@@ -276,9 +273,9 @@ export async function processYatsiSonuIslemleri(gonderici?: FcmGonderici) {
     // ay değiştiğinde rozetin kaybolmaması için (bkz. types.ts yorumu).
     const muezzins = await db.collection('muezzins').get();
     const resetBatch = db.batch();
-    muezzins.docs.forEach(doc => resetBatch.update(doc.ref, { aylikVakitSayisi: 0, aylikCumaSayisi: 0, aylikYedekSayisi: 0 }));
+    muezzins.docs.forEach((doc) => resetBatch.update(doc.ref, { aylikVakitSayisi: 0, aylikCumaSayisi: 0, aylikYedekSayisi: 0 }));
     await resetBatch.commit();
-    console.log("Skorlar sıfırlandı.");
+    console.log('Skorlar sıfırlandı.');
   }
 
   // ADIM 5: Yıllık izin kotası sıfırlama — yalnızca 1 Ocak'ta (ayın 1'i
@@ -289,9 +286,9 @@ export async function processYatsiSonuIslemleri(gonderici?: FcmGonderici) {
   if (yarın.getDate() === 1 && yarın.getMonth() === 0) {
     const muezzins = await db.collection('muezzins').get();
     const yillikResetBatch = db.batch();
-    muezzins.docs.forEach(doc => yillikResetBatch.update(doc.ref, { yillikIzinKullanilanGun: 0 }));
+    muezzins.docs.forEach((doc) => yillikResetBatch.update(doc.ref, { yillikIzinKullanilanGun: 0 }));
     await yillikResetBatch.commit();
-    console.log("Yıllık izin kotaları sıfırlandı (yeni takvim yılı).");
+    console.log('Yıllık izin kotaları sıfırlandı (yeni takvim yılı).');
   }
 
   // Kredi/arşiv/sıfırlama adımları bitti; FCM arızası varsa artık
@@ -300,7 +297,7 @@ export async function processYatsiSonuIslemleri(gonderici?: FcmGonderici) {
     throw ertelenmisFcmHatasi;
   }
 
-  console.log("İşlemler tamam.");
+  console.log('İşlemler tamam.');
 }
 
 import { fileURLToPath } from 'url';
@@ -309,5 +306,8 @@ const __filename = fileURLToPath(import.meta.url);
 if (process.argv[1] === __filename) {
   processYatsiSonuIslemleri()
     .then(() => process.exit(0))
-    .catch((err) => { console.error(err); process.exit(1); });
+    .catch((err) => {
+      console.error(err);
+      process.exit(1);
+    });
 }

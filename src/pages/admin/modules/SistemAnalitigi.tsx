@@ -63,7 +63,7 @@ export default function SistemAnalitigi() {
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
   const [kota, setKota] = useState<{ hata: number; telemetri: number } | null>(null);
   const [kotaLoading, setKotaLoading] = useState(true);
-  const muezzinMap = useMuezzinStore(s => s.muezzinMap);
+  const muezzinMap = useMuezzinStore((s) => s.muezzinMap);
 
   // `displayName` çözümlemesi ana Firestore sorgusundan (aşağıdaki
   // useEffect) BİLEREK ayrıldı — useMuezzinStore'un `muezzinMap`'i HER
@@ -77,7 +77,7 @@ export default function SistemAnalitigi() {
   // bu ucuz istemci-tarafı eşleme adımı `muezzinMap` değişince yeniden
   // hesaplanıyor, Firestore sorgusu DOKUNULMADAN kalıyor.
   const personnelStats: PersonnelStat[] = useMemo(
-    () => personnelStatsRaw.map(p => ({ ...p, displayName: muezzinMap[p.uid]?.displayName || 'Bilinmiyor' })),
+    () => personnelStatsRaw.map((p) => ({ ...p, displayName: muezzinMap[p.uid]?.displayName || 'Bilinmiyor' })),
     [personnelStatsRaw, muezzinMap]
   );
 
@@ -109,79 +109,81 @@ export default function SistemAnalitigi() {
     const startDate = days[0].dateStr;
     const endDate = days[days.length - 1].dateStr;
 
-    const q = query(
-      collection(db, 'bildirimler'),
-      where('tarih', '>=', startDate),
-      where('tarih', '<=', endDate)
-    );
+    const q = query(collection(db, 'bildirimler'), where('tarih', '>=', startDate), where('tarih', '<=', endDate));
 
     // Gerçek zamanlı dinleyici: getDocs yerine onSnapshot kullanılıyor
-    const unsubscribe = onSnapshot(q, (snap) => {
-      const allBildirimler = snap.docs.map(doc => doc.data());
-      const stats: { day: string; value: number; completed: number; total: number }[] = [];
-      let totalScore = 0;
-      let validDays = 0;
+    const unsubscribe = onSnapshot(
+      q,
+      (snap) => {
+        const allBildirimler = snap.docs.map((doc) => doc.data());
+        const stats: { day: string; value: number; completed: number; total: number }[] = [];
+        let totalScore = 0;
+        let validDays = 0;
 
-      for (const { dateStr, dayName } of days) {
-        const dayBildirimler = allBildirimler.filter(b => b.tarih === dateStr);
+        for (const { dateStr, dayName } of days) {
+          const dayBildirimler = allBildirimler.filter((b) => b.tarih === dateStr);
 
-        // Yalnızca asil görevleri sayıyoruz; bunlar hizmet tamamlanma ölçütü.
-        const asilGorevler = dayBildirimler.filter(b => b.tip === 'asil');
-        const tamamlananlar = asilGorevler.filter(
-          b => b.durum === 'onaylandi' || b.durum === 'okundu_varsayilan' || b.durum === 'sistem_atadi'
-        );
-        const reddedilenler = asilGorevler.filter(b => b.durum === 'reddedildi');
+          // Yalnızca asil görevleri sayıyoruz; bunlar hizmet tamamlanma ölçütü.
+          const asilGorevler = dayBildirimler.filter((b) => b.tip === 'asil');
+          const tamamlananlar = asilGorevler.filter(
+            (b) => b.durum === 'onaylandi' || b.durum === 'okundu_varsayilan' || b.durum === 'sistem_atadi'
+          );
+          const reddedilenler = asilGorevler.filter((b) => b.durum === 'reddedildi');
 
-        let dayScore: number;
-        if (asilGorevler.length === 0) {
-          // O gün için plan yoksa —skoru geçersiz say, ortalamanın dışında tut
-          dayScore = -1;
-        } else {
-          const completionRate = (tamamlananlar.length / asilGorevler.length) * 100;
-          // Reddedilen her görev 3 puan düşürür, minimum 0
-          dayScore = Math.max(0, Math.round(completionRate - (reddedilenler.length * 3)));
+          let dayScore: number;
+          if (asilGorevler.length === 0) {
+            // O gün için plan yoksa —skoru geçersiz say, ortalamanın dışında tut
+            dayScore = -1;
+          } else {
+            const completionRate = (tamamlananlar.length / asilGorevler.length) * 100;
+            // Reddedilen her görev 3 puan düşürür, minimum 0
+            dayScore = Math.max(0, Math.round(completionRate - reddedilenler.length * 3));
+          }
+
+          stats.push({
+            day: dayName,
+            value: dayScore >= 0 ? dayScore : 0,
+            completed: tamamlananlar.length,
+            total: asilGorevler.length,
+          });
+
+          if (dayScore >= 0) {
+            totalScore += dayScore;
+            validDays++;
+          }
         }
 
-        stats.push({
-          day: dayName,
-          value: dayScore >= 0 ? dayScore : 0,
-          completed: tamamlananlar.length,
-          total: asilGorevler.length,
-        });
+        setWeeklyData(stats);
+        const finalScore = validDays > 0 ? Number((totalScore / validDays).toFixed(1)) : 0;
+        setTimeout(() => setHealthScore(finalScore), 400);
 
-        if (dayScore >= 0) {
-          totalScore += dayScore;
-          validDays++;
+        // Kişi bazlı performans özeti (dönem genelinde, uid'e göre gruplu)
+        const asilGorevlerTumDonem = allBildirimler.filter((b) => b.tip === 'asil' && typeof b.uid === 'string');
+        const byUid = new Map<string, { completed: number; rejected: number; total: number }>();
+        for (const b of asilGorevlerTumDonem) {
+          const entry = byUid.get(b.uid) || { completed: 0, rejected: 0, total: 0 };
+          entry.total += 1;
+          if (b.durum === 'onaylandi' || b.durum === 'okundu_varsayilan' || b.durum === 'sistem_atadi') entry.completed += 1;
+          if (b.durum === 'reddedildi') entry.rejected += 1;
+          byUid.set(b.uid, entry);
         }
+        const personnelList: PersonnelStatRaw[] = Array.from(byUid.entries())
+          .map(([uid, s]) => ({
+            uid,
+            completed: s.completed,
+            rejected: s.rejected,
+            total: s.total,
+            rate: s.total > 0 ? Math.round((s.completed / s.total) * 100) : 0,
+          }))
+          .sort((a, b) => b.total - a.total);
+        setPersonnelStatsRaw(personnelList);
+
+        setLoading(false);
+      },
+      () => {
+        setLoading(false);
       }
-
-      setWeeklyData(stats);
-      const finalScore = validDays > 0 ? Number((totalScore / validDays).toFixed(1)) : 0;
-      setTimeout(() => setHealthScore(finalScore), 400);
-
-      // Kişi bazlı performans özeti (dönem genelinde, uid'e göre gruplu)
-      const asilGorevlerTumDonem = allBildirimler.filter(b => b.tip === 'asil' && typeof b.uid === 'string');
-      const byUid = new Map<string, { completed: number; rejected: number; total: number }>();
-      for (const b of asilGorevlerTumDonem) {
-        const entry = byUid.get(b.uid) || { completed: 0, rejected: 0, total: 0 };
-        entry.total += 1;
-        if (b.durum === 'onaylandi' || b.durum === 'okundu_varsayilan' || b.durum === 'sistem_atadi') entry.completed += 1;
-        if (b.durum === 'reddedildi') entry.rejected += 1;
-        byUid.set(b.uid, entry);
-      }
-      const personnelList: PersonnelStatRaw[] = Array.from(byUid.entries()).map(([uid, s]) => ({
-        uid,
-        completed: s.completed,
-        rejected: s.rejected,
-        total: s.total,
-        rate: s.total > 0 ? Math.round((s.completed / s.total) * 100) : 0,
-      })).sort((a, b) => b.total - a.total);
-      setPersonnelStatsRaw(personnelList);
-
-      setLoading(false);
-    }, () => {
-      setLoading(false);
-    });
+    );
 
     return () => unsubscribe();
   }, [periodDays]);
@@ -212,28 +214,34 @@ export default function SistemAnalitigi() {
         if (!iptal) setKotaLoading(false);
       });
 
-    return () => { iptal = true; };
+    return () => {
+      iptal = true;
+    };
   }, []);
 
   const kotaToplam = kota ? kota.hata + kota.telemetri : 0;
   const kotaYuzde = Math.round((kotaToplam / KOTA_GUNLUK_YAZMA) * 1000) / 10;
   const kotaAsildi = kotaToplam >= KOTA_ESIK_BELGE;
 
-  const periodLabel = useMemo(() => PERIOD_OPTIONS.find(p => p.days === periodDays)?.label || `${periodDays} Gün`, [periodDays]);
+  const periodLabel = useMemo(() => PERIOD_OPTIONS.find((p) => p.days === periodDays)?.label || `${periodDays} Gün`, [periodDays]);
 
   const handleExport = () => {
     const headers = ['Personel', 'Tamamlanan', 'Reddedilen', 'Toplam Görev', 'Tamamlanma Oranı (%)'];
-    const rows = personnelStats.map(p => [p.displayName, p.completed, p.rejected, p.total, p.rate]);
+    const rows = personnelStats.map((p) => [p.displayName, p.completed, p.rejected, p.total, p.rate]);
     exportCsv(headers, rows, `hizmet-verimliligi-son-${periodDays}-gun.csv`);
-    telemetryService.logAudit('Verimlilik Raporu Dışa Aktarma', periodLabel, `Son ${periodDays} günlük kişi bazlı verimlilik raporu CSV olarak dışa aktarıldı.`);
+    telemetryService.logAudit(
+      'Verimlilik Raporu Dışa Aktarma',
+      periodLabel,
+      `Son ${periodDays} günlük kişi bazlı verimlilik raporu CSV olarak dışa aktarıldı.`
+    );
   };
 
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      transition: { staggerChildren: 0.1, delayChildren: 0.1 }
-    }
+      transition: { staggerChildren: 0.1, delayChildren: 0.1 },
+    },
   };
 
   const itemVariants: Variants = {
@@ -242,8 +250,8 @@ export default function SistemAnalitigi() {
       opacity: 1,
       y: 0,
       scale: 1,
-      transition: { type: "spring", stiffness: 400, damping: 30 }
-    }
+      transition: { type: 'spring', stiffness: 400, damping: 30 },
+    },
   };
 
   // Önceden `loading` iken TÜM ekran (periyot seçici düğmeler dahil)
@@ -255,26 +263,26 @@ export default function SistemAnalitigi() {
   // dönüyor, sayfa iskeleti (başlık + periyot seçici) her zaman sabit kalıyor.
 
   return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      className="flex flex-col gap-12"
-    >
+    <motion.div variants={containerVariants} initial="hidden" animate="visible" className="flex flex-col gap-12">
       {/* HEADER: High Authority Context */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-10">
         <motion.div variants={itemVariants}>
           <div className="flex items-center gap-3 mb-5">
             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_15px_rgba(16,185,129,0.8)]" />
-            <span className="authority-title !text-2xs !text-emerald-400 font-bold tracking-wide uppercase">DİZGE SAĞLIK PARAMETRELERİ • CANLI</span>
+            <span className="authority-title !text-2xs !text-emerald-400 font-bold tracking-wide uppercase">
+              DİZGE SAĞLIK PARAMETRELERİ • CANLI
+            </span>
           </div>
           <h2 className="text-4xl md:text-6xl font-light text-[var(--text-primary)] tracking-tight leading-none">
             Hizmet <span className="text-[var(--dynamic-aura,var(--aura-indigo))] italic">Verimliliği</span>
           </h2>
         </motion.div>
 
-        <motion.div variants={itemVariants} className="flex items-center gap-1.5 bg-[var(--surface-low)] p-1 rounded-[18px] border border-[var(--glass-border)]">
-          {PERIOD_OPTIONS.map(opt => (
+        <motion.div
+          variants={itemVariants}
+          className="flex items-center gap-1.5 bg-[var(--surface-low)] p-1 rounded-[18px] border border-[var(--glass-border)]"
+        >
+          {PERIOD_OPTIONS.map((opt) => (
             <button
               key={opt.days}
               type="button"
@@ -319,12 +327,20 @@ export default function SistemAnalitigi() {
                     {healthScore}
                   </h3>
                   <div className="flex flex-col">
-                    <span className="text-xl sm:text-2xl lg:text-3xl text-[var(--dynamic-aura,var(--aura-indigo))]/40 font-light italic leading-none">%</span>
-                    <span className={`authority-title !text-2xs mt-2 font-bold tracking-wide uppercase ${
-                      healthScore >= 80 ? 'text-emerald-500' :
-                      healthScore >= 60 ? 'text-amber-500' :
-                      healthScore > 0 ? 'text-rose-500' : 'text-muted'
-                    }`}>
+                    <span className="text-xl sm:text-2xl lg:text-3xl text-[var(--dynamic-aura,var(--aura-indigo))]/40 font-light italic leading-none">
+                      %
+                    </span>
+                    <span
+                      className={`authority-title !text-2xs mt-2 font-bold tracking-wide uppercase ${
+                        healthScore >= 80
+                          ? 'text-emerald-500'
+                          : healthScore >= 60
+                            ? 'text-amber-500'
+                            : healthScore > 0
+                              ? 'text-rose-500'
+                              : 'text-muted'
+                      }`}
+                    >
                       {healthScore >= 80 ? 'STABİL' : healthScore >= 60 ? 'İZLEME' : healthScore > 0 ? 'KRİTİK' : 'VERİ YOK'}
                     </span>
                   </div>
@@ -366,9 +382,7 @@ export default function SistemAnalitigi() {
                           className="absolute -top-16 bg-[var(--surface-medium)] text-[var(--text-primary)] border border-[var(--glass-border)] text-2xs font-bold py-3 px-6 rounded-2xl tracking-wide shadow-[var(--spatial-shadow)] z-50 whitespace-nowrap"
                         >
                           {toTurkishUpperCase(data.day)} •{' '}
-                          {data.total > 0
-                            ? `${data.completed}/${data.total} görev — %${data.value}`
-                            : 'Plan yok'}
+                          {data.total > 0 ? `${data.completed}/${data.total} görev — %${data.value}` : 'Plan yok'}
                         </motion.div>
                       )}
                     </AnimatePresence>
@@ -383,25 +397,30 @@ export default function SistemAnalitigi() {
                         }`}
                       >
                         {/* Glass Pillar Core */}
-                        <div className={`absolute inset-0 transition-colors duration-1000 ${
-                          data.value >= 80 ? 'bg-gradient-to-t from-[var(--dynamic-aura,var(--aura-indigo))]/50 via-[var(--dynamic-aura,var(--aura-indigo))]/10 to-transparent' :
-                          data.value >= 60 ? 'bg-gradient-to-t from-amber-500/50 via-amber-500/10 to-transparent' :
-                          'bg-gradient-to-t from-rose-500/50 via-rose-500/10 to-transparent'
-                        }`} />
+                        <div
+                          className={`absolute inset-0 transition-colors duration-1000 ${
+                            data.value >= 80
+                              ? 'bg-gradient-to-t from-[var(--dynamic-aura,var(--aura-indigo))]/50 via-[var(--dynamic-aura,var(--aura-indigo))]/10 to-transparent'
+                              : data.value >= 60
+                                ? 'bg-gradient-to-t from-amber-500/50 via-amber-500/10 to-transparent'
+                                : 'bg-gradient-to-t from-rose-500/50 via-rose-500/10 to-transparent'
+                          }`}
+                        />
 
                         {/* Top Glow Indicator */}
-                        <div className={`absolute top-0 inset-x-0 h-[4px] shadow-[0_0_15px_currentColor] transition-all duration-700 ${
-                          data.value >= 80 ? 'bg-[var(--dynamic-aura,var(--aura-indigo))] text-[var(--dynamic-aura,var(--aura-indigo))]' :
-                          data.value >= 60 ? 'bg-amber-400 text-amber-400' :
-                          'bg-rose-400 text-rose-400'
-                        }`} />
+                        <div
+                          className={`absolute top-0 inset-x-0 h-[4px] shadow-[0_0_15px_currentColor] transition-all duration-700 ${
+                            data.value >= 80
+                              ? 'bg-[var(--dynamic-aura,var(--aura-indigo))] text-[var(--dynamic-aura,var(--aura-indigo))]'
+                              : data.value >= 60
+                                ? 'bg-amber-400 text-amber-400'
+                                : 'bg-rose-400 text-rose-400'
+                          }`}
+                        />
 
                         {/* Aura Animation (Hover) */}
                         {hoveredIdx === idx && (
-                          <motion.div
-                            layoutId="aura"
-                            className="absolute inset-0 bg-[var(--text-primary)]/5 pointer-events-none"
-                          />
+                          <motion.div layoutId="aura" className="absolute inset-0 bg-[var(--text-primary)]/5 pointer-events-none" />
                         )}
                       </motion.div>
                     ) : (
@@ -409,9 +428,11 @@ export default function SistemAnalitigi() {
                       <div className="w-full max-w-[56px] h-[4px] rounded-full bg-[var(--text-primary)]/5" />
                     )}
                   </div>
-                  <span className={`authority-title !text-2xs transition-all duration-700 font-bold tracking-wide ${
-                    hoveredIdx === idx ? 'text-[var(--dynamic-aura,var(--aura-indigo))] opacity-100' : 'opacity-60'
-                  }`}>
+                  <span
+                    className={`authority-title !text-2xs transition-all duration-700 font-bold tracking-wide ${
+                      hoveredIdx === idx ? 'text-[var(--dynamic-aura,var(--aura-indigo))] opacity-100' : 'opacity-60'
+                    }`}
+                  >
                     {GUN_KISALTMA[data.day] ?? toTurkishUpperCase(data.day.substring(0, 3))}
                   </span>
                 </div>
@@ -427,7 +448,8 @@ export default function SistemAnalitigi() {
                   aracıdır, gövde kopyasına uygulandığında okunabilirliği
                   düşürür (bkz. premium denetim B10, Y2). */}
               <p className="text-xs text-muted leading-relaxed max-w-xs">
-                Günlük kırılım yalnızca 7 günlük görünümde gösterilir — aşağıdaki tabloda {periodDays} günlük kişi bazlı özeti inceleyebilirsiniz.
+                Günlük kırılım yalnızca 7 günlük görünümde gösterilir — aşağıdaki tabloda {periodDays} günlük kişi bazlı özeti
+                inceleyebilirsiniz.
               </p>
             </div>
           )}
@@ -458,14 +480,14 @@ export default function SistemAnalitigi() {
           ) : (
             <div className="flex flex-col gap-6">
               <div className="flex items-baseline gap-4 flex-wrap">
-                <h3 className="text-5xl sm:text-6xl font-light tracking-tighter text-[var(--text-primary)] leading-none">
-                  {kotaToplam}
-                </h3>
+                <h3 className="text-5xl sm:text-6xl font-light tracking-tighter text-[var(--text-primary)] leading-none">{kotaToplam}</h3>
                 <div className="flex flex-col">
                   <span className="text-sm text-muted font-light italic leading-none">belge yazımı</span>
-                  <span className={`authority-title !text-2xs mt-2 font-bold tracking-wide uppercase ${
-                    kotaAsildi ? 'text-amber-500' : 'text-emerald-500'
-                  }`}>
+                  <span
+                    className={`authority-title !text-2xs mt-2 font-bold tracking-wide uppercase ${
+                      kotaAsildi ? 'text-amber-500' : 'text-emerald-500'
+                    }`}
+                  >
                     {kotaAsildi ? 'EŞİK AŞILDI' : 'NORMAL'} • GÜNLÜK KOTANIN ~%{kotaYuzde}'İ
                   </span>
                 </div>
@@ -495,10 +517,9 @@ export default function SistemAnalitigi() {
               {/* Çok satırlı bir açıklama metniydi ama authority-title/uppercase
                   taşıyordu (bkz. premium denetim B10, Y2 — aynı düzeltme). */}
               <p className="text-xs text-muted leading-relaxed max-w-3xl">
-                Tahmini değerdir — Firestore'un gerçek günlük kullanım sayacı Spark planında
-                programatik olarak okunamaz. Buradaki sayım yalnızca hata ve telemetri
-                günlüklerini kapsar; diğer koleksiyonlara yapılan yazımlar dahil değildir.
-                Gerçek kota için Firebase Console &gt; Kullanım ekranına bakın.
+                Tahmini değerdir — Firestore'un gerçek günlük kullanım sayacı Spark planında programatik olarak okunamaz. Buradaki sayım
+                yalnızca hata ve telemetri günlüklerini kapsar; diğer koleksiyonlara yapılan yazımlar dahil değildir. Gerçek kota için
+                Firebase Console &gt; Kullanım ekranına bakın.
               </p>
             </div>
           )}
@@ -510,7 +531,9 @@ export default function SistemAnalitigi() {
           className="lg:col-span-12 spatial-glass !rounded-card p-8 sm:p-10 relative overflow-hidden shadow-[var(--spatial-shadow)] border border-[var(--text-primary)]/5"
         >
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-            <p className="authority-title !text-2xs opacity-40 font-bold tracking-wide">KİŞİ BAZLI PERFORMANS ÖZETİ — SON {periodDays} GÜN</p>
+            <p className="authority-title !text-2xs opacity-40 font-bold tracking-wide">
+              KİŞİ BAZLI PERFORMANS ÖZETİ — SON {periodDays} GÜN
+            </p>
             <button
               type="button"
               onClick={handleExport}
@@ -545,7 +568,7 @@ export default function SistemAnalitigi() {
                   </tr>
                 </thead>
                 <tbody>
-                  {personnelStats.map(p => (
+                  {personnelStats.map((p) => (
                     <tr key={p.uid} className="border-b border-[var(--glass-border)] last:border-0">
                       <td className="py-3 text-xs text-[var(--text-primary)] font-medium">{p.displayName}</td>
                       <td className="py-3 text-xs text-[var(--text-secondary)] text-right">{p.completed}</td>
@@ -553,9 +576,11 @@ export default function SistemAnalitigi() {
                         <span className={p.rejected > 0 ? 'text-rose-500' : 'text-[var(--text-secondary)]'}>{p.rejected}</span>
                       </td>
                       <td className="py-3 text-xs text-[var(--text-secondary)] text-right">{p.total}</td>
-                      <td className={`py-3 text-xs font-bold text-right ${
-                        p.rate >= 80 ? 'text-emerald-500' : p.rate >= 60 ? 'text-amber-500' : 'text-rose-500'
-                      }`}>
+                      <td
+                        className={`py-3 text-xs font-bold text-right ${
+                          p.rate >= 80 ? 'text-emerald-500' : p.rate >= 60 ? 'text-amber-500' : 'text-rose-500'
+                        }`}
+                      >
                         %{p.rate}
                       </td>
                     </tr>

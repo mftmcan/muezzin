@@ -31,7 +31,7 @@ export class SizeLimitedCache<K, V> {
   }
 
   delete(key: K): boolean {
-    this.keyQueue = this.keyQueue.filter(k => k !== key);
+    this.keyQueue = this.keyQueue.filter((k) => k !== key);
     return this.map.delete(key);
   }
 

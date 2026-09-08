@@ -101,17 +101,21 @@ export function ChunkErrorFallback({ error, variant, onReset, autoReload = false
           animate={{ opacity: 1, scale: 1 }}
           className="spatial-glass-elevated p-12 max-w-lg w-full border-[var(--text-primary)]/10 shadow-[var(--spatial-shadow)]"
         >
-          <div className={`relative w-20 h-20 rounded-[30px] flex items-center justify-center mb-8 mx-auto border shadow-[var(--spatial-shadow)] ${
-            isOffline
-              ? 'bg-[var(--status-warning)]/10 border-[var(--status-warning)]/20'
-              : 'bg-[var(--dynamic-aura,var(--aura-indigo))]/10 border-[var(--dynamic-aura,var(--aura-indigo))]/20'
-          }`}>
+          <div
+            className={`relative w-20 h-20 rounded-[30px] flex items-center justify-center mb-8 mx-auto border shadow-[var(--spatial-shadow)] ${
+              isOffline
+                ? 'bg-[var(--status-warning)]/10 border-[var(--status-warning)]/20'
+                : 'bg-[var(--dynamic-aura,var(--aura-indigo))]/10 border-[var(--dynamic-aura,var(--aura-indigo))]/20'
+            }`}
+          >
             {isOffline ? (
               <WifiOff size={28} className="text-[var(--status-warning)]" />
             ) : (
               <RefreshCw size={28} className="text-[var(--dynamic-aura,var(--aura-indigo))] animate-spin" />
             )}
-            <div className={`absolute inset-0 blur-xl rounded-full opacity-30 ${isOffline ? 'bg-[var(--status-warning)]/20' : 'bg-[var(--dynamic-aura,var(--aura-indigo))]/20'}`} />
+            <div
+              className={`absolute inset-0 blur-xl rounded-full opacity-30 ${isOffline ? 'bg-[var(--status-warning)]/20' : 'bg-[var(--dynamic-aura,var(--aura-indigo))]/20'}`}
+            />
           </div>
           <h1 className="text-3xl font-light text-[var(--text-primary)] tracking-tight mb-4 apple-thin">
             {isOffline ? 'İnternet Bağlantınız Yok' : 'Yeni Güncelleme Uygulanıyor'}
@@ -122,7 +126,9 @@ export function ChunkErrorFallback({ error, variant, onReset, autoReload = false
               : "Müezzin Hizmet Dizgesi'nin en son sürümü yayınlandı. Arayüzünüz ve veri akışınızın kesintisiz çalışması için uygulama otomatik olarak yenileniyor..."}
           </p>
           <div className="flex flex-col gap-2">
-            <span className="premium-label !text-2xs !opacity-30">{isOffline ? 'BAĞLANTI BEKLENİYOR' : 'OTOMATİK YENİLEME BAŞLATILDI'}</span>
+            <span className="premium-label !text-2xs !opacity-30">
+              {isOffline ? 'BAĞLANTI BEKLENİYOR' : 'OTOMATİK YENİLEME BAŞLATILDI'}
+            </span>
             <span className="text-2xs text-muted font-mono">Bileşen: {error.message.split('assets/').pop()}</span>
           </div>
         </motion.div>

@@ -28,7 +28,7 @@ export function SegmentedTabs({ items, activeId, onChange, ariaLabel, idPrefix, 
   // klavye kullanıcısı Tab ile yalnızca aktif sekmeye ulaşıp diğerlerine hiç
   // geçemiyordu (bkz. premium denetim, bölüm 2c).
   const handleTabKeyDown = (event: React.KeyboardEvent, currentId: string) => {
-    const currentIndex = items.findIndex(item => item.id === currentId);
+    const currentIndex = items.findIndex((item) => item.id === currentId);
     if (currentIndex === -1) return;
     let nextIndex: number | null = null;
     switch (event.key) {
@@ -59,8 +59,12 @@ export function SegmentedTabs({ items, activeId, onChange, ariaLabel, idPrefix, 
 
   if (variant === 'segmented') {
     return (
-      <div role="tablist" aria-label={ariaLabel} className="flex items-center gap-1.5 bg-[var(--surface-low)] p-1 rounded-[20px] sm:rounded-3xl border border-[var(--glass-border)] shadow-[var(--spatial-shadow)] w-full sm:w-auto">
-        {items.map(item => {
+      <div
+        role="tablist"
+        aria-label={ariaLabel}
+        className="flex items-center gap-1.5 bg-[var(--surface-low)] p-1 rounded-[20px] sm:rounded-3xl border border-[var(--glass-border)] shadow-[var(--spatial-shadow)] w-full sm:w-auto"
+      >
+        {items.map((item) => {
           const Icon = item.icon;
           const isActive = activeId === item.id;
           return (
@@ -88,7 +92,11 @@ export function SegmentedTabs({ items, activeId, onChange, ariaLabel, idPrefix, 
               <div className="relative z-10 flex items-center gap-4">
                 {Icon && (
                   <div className={`relative transition-all duration-200 ${isActive ? 'scale-110' : ''}`}>
-                    <Icon size={18} strokeWidth={isActive ? 1.5 : 1} className={isActive ? 'text-[var(--dynamic-aura,var(--aura-indigo))]' : ''} />
+                    <Icon
+                      size={18}
+                      strokeWidth={isActive ? 1.5 : 1}
+                      className={isActive ? 'text-[var(--dynamic-aura,var(--aura-indigo))]' : ''}
+                    />
                     {isActive && (
                       <motion.div
                         layoutId={`${idPrefix}-icon-aura`}
@@ -97,7 +105,9 @@ export function SegmentedTabs({ items, activeId, onChange, ariaLabel, idPrefix, 
                     )}
                   </div>
                 )}
-                <span className={`authority-title !text-2xs font-bold tracking-wide uppercase transition-all duration-200 ${isActive ? 'opacity-100' : 'opacity-40'}`}>
+                <span
+                  className={`authority-title !text-2xs font-bold tracking-wide uppercase transition-all duration-200 ${isActive ? 'opacity-100' : 'opacity-40'}`}
+                >
                   {item.label}
                 </span>
               </div>
@@ -110,8 +120,12 @@ export function SegmentedTabs({ items, activeId, onChange, ariaLabel, idPrefix, 
 
   if (variant === 'underline') {
     return (
-      <div role="tablist" aria-label={ariaLabel} className="flex border-b border-[var(--glass-border)] pb-0 gap-4 sm:gap-8 overflow-x-auto no-scrollbar">
-        {items.map(item => {
+      <div
+        role="tablist"
+        aria-label={ariaLabel}
+        className="flex border-b border-[var(--glass-border)] pb-0 gap-4 sm:gap-8 overflow-x-auto no-scrollbar"
+      >
+        {items.map((item) => {
           const Icon = item.icon;
           const isActive = activeId === item.id;
           return (
@@ -131,7 +145,7 @@ export function SegmentedTabs({ items, activeId, onChange, ariaLabel, idPrefix, 
             >
               <span className="flex items-center gap-2">
                 {Icon && (
-                  <Icon size={14} className={isActive ? (item.activeIconClassName || 'text-[var(--dynamic-aura,var(--aura-indigo))]') : ''} />
+                  <Icon size={14} className={isActive ? item.activeIconClassName || 'text-[var(--dynamic-aura,var(--aura-indigo))]' : ''} />
                 )}
                 {item.label}
               </span>
@@ -151,7 +165,7 @@ export function SegmentedTabs({ items, activeId, onChange, ariaLabel, idPrefix, 
   // 'pill' variant (default) — sticky sub-page navigation style
   return (
     <div role="tablist" aria-label={ariaLabel} className="flex items-center gap-3 overflow-x-auto pb-4 no-scrollbar">
-      {items.map(item => {
+      {items.map((item) => {
         const isActive = activeId === item.id;
         return (
           <motion.button

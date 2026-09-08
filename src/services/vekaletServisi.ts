@@ -5,13 +5,7 @@ import { Bildirim, Vakit, VekaletTalebi } from '../types';
 import { vekaletDevriBekliyorGecerliMi } from '../lib/slotKorumasi';
 import { handleFirestoreError, OperationType } from '../lib/firestore-errors';
 
-function buildVekaletTalebiId(
-  haftaId: string,
-  tarih: string,
-  vakit: Vakit,
-  tip: 'asil' | 'yedek' | 'gorev_cagrisi',
-  aliciUid: string
-) {
+function buildVekaletTalebiId(haftaId: string, tarih: string, vakit: Vakit, tip: 'asil' | 'yedek' | 'gorev_cagrisi', aliciUid: string) {
   return `${haftaId}_${tarih}_${vakit}_${tip}_${aliciUid}`;
 }
 
@@ -76,7 +70,7 @@ export async function vekaletTeklifEt(
       saat,
       tip,
       durum: 'beklemede',
-      olusturmaTarihi: serverTimestamp()
+      olusturmaTarihi: serverTimestamp(),
     });
   } catch (err) {
     // Bu dosya önceden hiçbir Firestore yazımını handleFirestoreError ile

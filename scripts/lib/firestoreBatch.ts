@@ -33,10 +33,7 @@ export type BatchIslemi = (batch: WriteBatch) => void;
  *
  * @returns Yapılan commit sayısı.
  */
-export async function parcaliBatchUygula(
-  islemler: BatchIslemi[],
-  parcaBoyutu: number = BATCH_PARCA_BOYUTU
-): Promise<number> {
+export async function parcaliBatchUygula(islemler: BatchIslemi[], parcaBoyutu: number = BATCH_PARCA_BOYUTU): Promise<number> {
   if (islemler.length === 0) return 0;
 
   let commitSayisi = 0;

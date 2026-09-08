@@ -127,11 +127,7 @@ async function ezanVaktiGecmisMi(okuyucu: EzanVakitOkuyucu, tarih: string, vakit
  * gerektirirdi.
  */
 function cozulmemisAlarmSorgusu(tarih: string, vakit: string) {
-  return db.collection('adminUyarilari')
-    .where('tarih', '==', tarih)
-    .where('vakit', '==', vakit)
-    .where('cozuldu', '==', false)
-    .limit(1);
+  return db.collection('adminUyarilari').where('tarih', '==', tarih).where('vakit', '==', vakit).where('cozuldu', '==', false).limit(1);
 }
 
 // haftalikIzinGunu ile AYNI ölçekte (Pazartesi=1 ... Pazar=7) haftanın
@@ -162,10 +158,7 @@ export async function processVekaletDevirleri(dryRun = false) {
   // geçmişte kalmıştır, yeniden uzlaştırılacak bir şey kalmaz.
   const otuzGunOnce = getTurkeyDateString(new Date(getTurkeyNow().getTime() - 30 * 24 * 60 * 60 * 1000));
 
-  const talepSnap = await db.collection('vekalet_talepleri')
-    .where('durum', '==', 'kabul_edildi')
-    .where('tarih', '>=', otuzGunOnce)
-    .get();
+  const talepSnap = await db.collection('vekalet_talepleri').where('durum', '==', 'kabul_edildi').where('tarih', '>=', otuzGunOnce).get();
 
   const islenecekler = talepSnap.docs.filter((docSnap) => {
     const data = docSnap.data() as VekaletTalebiData;
@@ -244,12 +237,8 @@ export async function processVekaletDevirleri(dryRun = false) {
       // Kabul anında CEL'de doğrulanan TÜM iş kuralları — burada taze
       // veriyle yeniden doğrulanıyor (istemcinin/eski talebin verisine
       // GÜVENİLMİYOR):
-      const atanabilir = !!alici &&
-        alici.role === 'muezzin' &&
-        alici.aktif === true &&
-        alici.onayBekliyor !== true;
-      const izinGunuCakisiyor = ['asil', 'yedek'].includes(bildirim.tip) &&
-        alici?.haftalikIzinGunu === haftaGunuNumarasi(bildirim.tarih);
+      const atanabilir = !!alici && alici.role === 'muezzin' && alici.aktif === true && alici.onayBekliyor !== true;
+      const izinGunuCakisiyor = ['asil', 'yedek'].includes(bildirim.tip) && alici?.haftalikIzinGunu === haftaGunuNumarasi(bildirim.tarih);
       // Cuma kontrolü TAZE `bildirim.tarih`'ten hesaplanır — saklı `cumaMi`
       // bayrağı DEĞİL. Bu alan eksikse (backfill çalıştırılmamış eski
       // belgeler, ya da ileride bir yazım yolunun alanı unutması) eski
@@ -313,7 +302,7 @@ export async function processVekaletDevirleri(dryRun = false) {
           bildirimUygulandi: true,
           talepSonuc: 'reddedildi',
           durum: 'reddedildi',
-          sonGuncelleme: Timestamp.now()
+          sonGuncelleme: Timestamp.now(),
         });
         if (alarmSnap.empty) {
           transaction.set(db.collection('adminUyarilari').doc(), {
@@ -322,7 +311,7 @@ export async function processVekaletDevirleri(dryRun = false) {
             tarih: kontrolTarih,
             vakit: kontrolVakit,
             cozuldu: false,
-            olusturmaTarihi: Timestamp.now()
+            olusturmaTarihi: Timestamp.now(),
           });
         }
         sonuc = 'reddedildi';
@@ -333,7 +322,7 @@ export async function processVekaletDevirleri(dryRun = false) {
         uid: talep.aliciUid,
         vekaletDevredildi: true,
         vekaletDevriBekliyor: false,
-        sonGuncelleme: Timestamp.now()
+        sonGuncelleme: Timestamp.now(),
       });
       transaction.update(talepDoc.ref, { bildirimUygulandi: true, talepSonuc: 'uygulandi', sonGuncelleme: Timestamp.now() });
       transaction.set(db.collection('audit_logs').doc(), {
@@ -342,7 +331,7 @@ export async function processVekaletDevirleri(dryRun = false) {
         details: `${talep.gonderenIsim} görevi otonom vekalet ile ${talep.aliciIsim} hocaya devretti.`,
         userId: talep.aliciUid,
         userDisplayName: talep.aliciIsim,
-        timestamp: Timestamp.now()
+        timestamp: Timestamp.now(),
       });
       sonuc = 'uygulandi';
     });
@@ -356,9 +345,13 @@ export async function processVekaletDevirleri(dryRun = false) {
       console.log(`${talep.tarih} ${talep.vakit}: vekalet transferi uygulandı (${talep.gonderenUid} -> ${talep.aliciUid}).`);
       transferUygulandi++;
     } else if (finalSonuc === 'zatenUygulanmis') {
-      console.log(`${talep.tarih} ${talep.vakit}: transfer zaten uygulanmış (eski istemci/kural devreye alma penceresi) — yalnızca işaretlendi.`);
+      console.log(
+        `${talep.tarih} ${talep.vakit}: transfer zaten uygulanmış (eski istemci/kural devreye alma penceresi) — yalnızca işaretlendi.`
+      );
     } else if (finalSonuc === 'reddedildi') {
-      console.log(`${talep.tarih} ${talep.vakit}: kabul edilmiş vekalet transferi artık uygulanamıyor (alıcı uygunluğu değişti) — talep reddedildi ve admin uyarısı AYNI transaction'da yazıldı.`);
+      console.log(
+        `${talep.tarih} ${talep.vakit}: kabul edilmiş vekalet transferi artık uygulanamıyor (alıcı uygunluğu değişti) — talep reddedildi ve admin uyarısı AYNI transaction'da yazıldı.`
+      );
       transferReddedildi++;
     }
   }
@@ -367,10 +360,7 @@ export async function processVekaletDevirleri(dryRun = false) {
   // true) ama henüz senkronize edilmemiş belgeler için — mevcut davranış,
   // artık transferin kendisi de burada uygulandığı için aynı döngüde
   // hemen ardından çalışabilir.
-  const devirSnap = await db.collection('bildirimler')
-    .where('vekaletDevredildi', '==', true)
-    .where('tarih', '>=', otuzGunOnce)
-    .get();
+  const devirSnap = await db.collection('bildirimler').where('vekaletDevredildi', '==', true).where('tarih', '>=', otuzGunOnce).get();
 
   const senkronizeEdilecekler = devirSnap.docs.filter((docSnap) => {
     const data = docSnap.data() as BildirimData;
@@ -401,18 +391,20 @@ export async function processVekaletDevirleri(dryRun = false) {
       }
 
       transaction.update(planRef, {
-        [`gunler.${devir.tarih}.${devir.vakit}.${devir.tip}`]: freshDevirData.uid
+        [`gunler.${devir.tarih}.${devir.vakit}.${devir.tip}`]: freshDevirData.uid,
       });
       transaction.update(devirDoc.ref, {
         vekaletPlanSenkronEdildi: true,
-        sonGuncelleme: Timestamp.now()
+        sonGuncelleme: Timestamp.now(),
       });
     });
   }
 
   const bayatTemizlendi = await bayatDevirBayraklariniTemizle(dryRun);
 
-  console.log(`Tamamlandi. transferUygulandi=${transferUygulandi}, transferReddedildi=${transferReddedildi}, planSenkronlandi=${planSenkronlandi}, bayatBayrakTemizlendi=${bayatTemizlendi}`);
+  console.log(
+    `Tamamlandi. transferUygulandi=${transferUygulandi}, transferReddedildi=${transferReddedildi}, planSenkronlandi=${planSenkronlandi}, bayatBayrakTemizlendi=${bayatTemizlendi}`
+  );
 }
 
 /**
@@ -441,9 +433,7 @@ export async function processVekaletDevirleri(dryRun = false) {
  * serbest sayarken cron bayrağı hâlâ canlı sanabilirdi).
  */
 async function bayatDevirBayraklariniTemizle(dryRun: boolean): Promise<number> {
-  const bekleyenSnap = await db.collection('bildirimler')
-    .where('vekaletDevriBekliyor', '==', true)
-    .get();
+  const bekleyenSnap = await db.collection('bildirimler').where('vekaletDevriBekliyor', '==', true).get();
 
   const simdiMs = Date.now();
   let temizlenen = 0;
@@ -485,7 +475,7 @@ async function bayatDevirBayraklariniTemizle(dryRun: boolean): Promise<number> {
           tarih: freshVeri.tarih,
           vakit: freshVeri.vakit,
           cozuldu: false,
-          olusturmaTarihi: Timestamp.now()
+          olusturmaTarihi: Timestamp.now(),
         });
       }
     });

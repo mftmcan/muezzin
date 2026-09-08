@@ -47,4 +47,3 @@ export const hapticQiblaLock = (): void => {
     navigator.vibrate([100, 50, 100]);
   }
 };
-

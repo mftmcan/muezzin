@@ -37,7 +37,9 @@ describe('zamanAsimiIle', () => {
 
   it('zaman aşımı sonrası orijinal promise çözülse bile zaten reddedilmiş sonucu değiştirmez', async () => {
     let resolveGec: (v: string) => void = () => {};
-    const gecKalanPromise = new Promise<string>((resolve) => { resolveGec = resolve; });
+    const gecKalanPromise = new Promise<string>((resolve) => {
+      resolveGec = resolve;
+    });
     const sonuc = zamanAsimiIle(gecKalanPromise, 1000);
     const beklenen = expect(sonuc).rejects.toThrow(IslemZamanAsimi);
     await vi.advanceTimersByTimeAsync(1000);

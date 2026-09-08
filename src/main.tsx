@@ -12,26 +12,24 @@ import { useNotificationStore } from './store/useNotificationStore';
 // kullanıcıya engellemeyen bir "Yeni sürüm hazır" bildirimi gösteriliyor,
 // yenileme kullanıcının kararına bırakılıyor.
 const updateSW = registerSW({
- immediate: true,
- onNeedRefresh() {
- useNotificationStore.getState().showNotification(
- 'Yeni Sürüm Hazır',
- 'Uygulamanın yeni bir sürümü indirildi. Değişiklikleri görmek için yenileyin.',
- 'info',
- { action: { label: 'YENİLE', onClick: () => updateSW(true) }, durationMs: 30000 }
- );
- },
- onOfflineReady() {
- useNotificationStore.getState().showNotification(
- 'Çevrimdışı Kullanıma Hazır',
- 'Uygulama artık internet bağlantısı olmadan da açılabilir.',
- 'success'
- );
- }
+  immediate: true,
+  onNeedRefresh() {
+    useNotificationStore
+      .getState()
+      .showNotification('Yeni Sürüm Hazır', 'Uygulamanın yeni bir sürümü indirildi. Değişiklikleri görmek için yenileyin.', 'info', {
+        action: { label: 'YENİLE', onClick: () => updateSW(true) },
+        durationMs: 30000,
+      });
+  },
+  onOfflineReady() {
+    useNotificationStore
+      .getState()
+      .showNotification('Çevrimdışı Kullanıma Hazır', 'Uygulama artık internet bağlantısı olmadan da açılabilir.', 'success');
+  },
 });
 
 createRoot(document.getElementById('root')!).render(
- <StrictMode>
- <App />
- </StrictMode>,
+  <StrictMode>
+    <App />
+  </StrictMode>
 );

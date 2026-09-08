@@ -76,7 +76,7 @@ export const playSuccess = (): void => {
     hapticSuccess();
 
     const now = ctx.currentTime;
-    
+
     // Note 1: C5 (523.25 Hz)
     const osc1 = ctx.createOscillator();
     const gain1 = ctx.createGain();
@@ -101,7 +101,6 @@ export const playSuccess = (): void => {
     gain2.connect(ctx.destination);
     osc2.start(now + 0.09);
     osc2.stop(now + 0.5);
-
   } catch (err) {
     console.warn('Web Audio Success Sound Playback failed:', err);
   }

@@ -44,33 +44,39 @@ export const useKrizAlarmlariStore = create<KrizAlarmlariState>((set, get) => ({
 
     const q = query(collection(db, 'adminUyarilari'), orderBy('olusturmaTarihi', 'desc'));
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      let activeCount = 0;
-      const data = snapshot.docs.map(doc => {
-        const d = doc.data();
-        if (!d.cozuldu) activeCount++;
-        return { id: doc.id, ...d } as (AdminUyarisi & { id: string });
-      });
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        let activeCount = 0;
+        const data = snapshot.docs.map((doc) => {
+          const d = doc.data();
+          if (!d.cozuldu) activeCount++;
+          return { id: doc.id, ...d } as AdminUyarisi & { id: string };
+        });
 
-      // Çözülmemişler önce, ardından tarihe göre azalan sıra
-      data.sort((a, b) => {
-        if (a.cozuldu === b.cozuldu) return 0;
-        return a.cozuldu ? 1 : -1;
-      });
+        // Çözülmemişler önce, ardından tarihe göre azalan sıra
+        data.sort((a, b) => {
+          if (a.cozuldu === b.cozuldu) return 0;
+          return a.cozuldu ? 1 : -1;
+        });
 
-      set({ alarmlar: data, cozulmamisSayisi: activeCount, loading: false, initializing: false, initialized: true, error: null });
-    }, (err) => {
-      // handleFirestoreError'ın DÖNÜŞ değeri (ham SDK mesajını kullanıcıya
-      // uygun Türkçe metne çeviren) kullanılır — ham err.message değil,
-      // aksi halde "Missing or insufficient permissions" gibi ham İngilizce
-      // SDK metni doğrudan admin'e sızabilir (bkz. firestore-errors.ts).
-      const friendly = handleFirestoreError(err, OperationType.LIST, 'adminUyarilari');
-      // `initialized:true` YAZILMAZ (bkz. useAdminIzinlerStore.ts'teki AYNI
-      // düzeltme, premium hata analizi HS-O1) — dinleyici hata sonrası
-      // kalıcı öldüğünden, bunu yazmak store'u oturum boyunca kilitliyordu.
-      set({ loading: false, initializing: false, error: friendly.message });
-      setTimeout(() => { if (!get().initialized) get().init(); }, 15000);
-    });
+        set({ alarmlar: data, cozulmamisSayisi: activeCount, loading: false, initializing: false, initialized: true, error: null });
+      },
+      (err) => {
+        // handleFirestoreError'ın DÖNÜŞ değeri (ham SDK mesajını kullanıcıya
+        // uygun Türkçe metne çeviren) kullanılır — ham err.message değil,
+        // aksi halde "Missing or insufficient permissions" gibi ham İngilizce
+        // SDK metni doğrudan admin'e sızabilir (bkz. firestore-errors.ts).
+        const friendly = handleFirestoreError(err, OperationType.LIST, 'adminUyarilari');
+        // `initialized:true` YAZILMAZ (bkz. useAdminIzinlerStore.ts'teki AYNI
+        // düzeltme, premium hata analizi HS-O1) — dinleyici hata sonrası
+        // kalıcı öldüğünden, bunu yazmak store'u oturum boyunca kilitliyordu.
+        set({ loading: false, initializing: false, error: friendly.message });
+        setTimeout(() => {
+          if (!get().initialized) get().init();
+        }, 15000);
+      }
+    );
 
     return unsubscribe;
   },

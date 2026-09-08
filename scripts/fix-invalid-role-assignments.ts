@@ -51,7 +51,9 @@ export interface DuzeltmeOzeti {
  * kuru-çalıştırma koruması yoktu (premium hata analizi FR-O9).
  */
 export async function fixInvalidRoleAssignments(apply: boolean): Promise<DuzeltmeOzeti> {
-  console.log(apply ? 'UYGULAMA MODU — belgeler yazılacak.' : 'KURU ÇALIŞTIRMA — hiçbir şey yazılmayacak (--apply ile gerçek çalıştırma yapın).');
+  console.log(
+    apply ? 'UYGULAMA MODU — belgeler yazılacak.' : 'KURU ÇALIŞTIRMA — hiçbir şey yazılmayacak (--apply ile gerçek çalıştırma yapın).'
+  );
 
   const today = getTodayStr();
   console.log(`Tarama başlıyor. Referans tarih (TR): ${today}`);
@@ -103,8 +105,14 @@ export async function fixInvalidRoleAssignments(apply: boolean): Promise<Duzeltm
 
         const asilRole = asil ? userMap.get(asil)?.role : undefined;
         const yedekRole = yedek ? userMap.get(yedek)?.role : undefined;
-        const asilValid = !asil || asil === 'Sistem' || (userMap.get(asil)?.aktif === true && asilRole === 'muezzin' && userMap.get(asil)?.onayBekliyor !== true);
-        const yedekValid = !yedek || yedek === 'Sistem' || (userMap.get(yedek)?.aktif === true && yedekRole === 'muezzin' && userMap.get(yedek)?.onayBekliyor !== true);
+        const asilValid =
+          !asil ||
+          asil === 'Sistem' ||
+          (userMap.get(asil)?.aktif === true && asilRole === 'muezzin' && userMap.get(asil)?.onayBekliyor !== true);
+        const yedekValid =
+          !yedek ||
+          yedek === 'Sistem' ||
+          (userMap.get(yedek)?.aktif === true && yedekRole === 'muezzin' && userMap.get(yedek)?.onayBekliyor !== true);
         if (!asilValid || !yedekValid) {
           dayHasInvalid = true;
           invalidSlots++;
@@ -127,10 +135,7 @@ export async function fixInvalidRoleAssignments(apply: boolean): Promise<Duzeltm
       // dokunmadan atla" sözü tutulmuyor, planda yeni asil/yedek görünürken
       // bildirimler (ve verilmiş krediler) eski kişide kalıyor, yani düzeltmek
       // istenen tutarsızlığın aynısı plan↔bildirim arasında üretiliyordu.
-      const bildirimSnap = await db.collection('bildirimler')
-        .where('haftaId', '==', planDoc.id)
-        .where('tarih', '==', tarih)
-        .get();
+      const bildirimSnap = await db.collection('bildirimler').where('haftaId', '==', planDoc.id).where('tarih', '==', tarih).get();
 
       // `tarih === today` iken, o gün için yatsiSonuIslemleri.ts ZATEN
       // kredilendirmiş olabilir (`puanIslendi:true`). Bu belgeleri silip
@@ -154,16 +159,23 @@ export async function fixInvalidRoleAssignments(apply: boolean): Promise<Duzeltm
         return veri.puanIslendi === true || veri.vekaletDevredildi === true || veri.vekaletDevriBekliyor === true;
       });
       if (dokunulmazBildirim) {
-        console.warn(`ATLANDI (${tarih}): kredilendirilmiş ya da görev devri uygulanmış bildirim var (${dokunulmazBildirim.id}), geriye dönük tutarsızlık riski nedeniyle dokunulmadı.`);
+        console.warn(
+          `ATLANDI (${tarih}): kredilendirilmiş ya da görev devri uygulanmış bildirim var (${dokunulmazBildirim.id}), geriye dönük tutarsızlık riski nedeniyle dokunulmadı.`
+        );
         pastInvalidDays++;
         continue;
       }
 
-      const validAsilCandidates = asilVals.filter((uid) => userMap.get(uid)?.aktif === true && userMap.get(uid)?.role === 'muezzin' && userMap.get(uid)?.onayBekliyor !== true);
-      const validYedekCandidates = yedekVals.filter((uid) => userMap.get(uid)?.aktif === true && userMap.get(uid)?.role === 'muezzin' && userMap.get(uid)?.onayBekliyor !== true);
+      const validAsilCandidates = asilVals.filter(
+        (uid) => userMap.get(uid)?.aktif === true && userMap.get(uid)?.role === 'muezzin' && userMap.get(uid)?.onayBekliyor !== true
+      );
+      const validYedekCandidates = yedekVals.filter(
+        (uid) => userMap.get(uid)?.aktif === true && userMap.get(uid)?.role === 'muezzin' && userMap.get(uid)?.onayBekliyor !== true
+      );
 
       const asil = pickMostFrequent(validAsilCandidates) || aktifMuezzinler[0];
-      let yedek = pickMostFrequent(validYedekCandidates, new Set([asil])) || aktifMuezzinler.find((uid) => uid !== asil) || aktifMuezzinler[1];
+      let yedek =
+        pickMostFrequent(validYedekCandidates, new Set([asil])) || aktifMuezzinler.find((uid) => uid !== asil) || aktifMuezzinler[1];
       if (yedek === asil) {
         const fallback = aktifMuezzinler.find((uid) => uid !== asil);
         if (!fallback) throw new Error(`Yedek seçiminde farklı müezzin bulunamadı: ${tarih}`);

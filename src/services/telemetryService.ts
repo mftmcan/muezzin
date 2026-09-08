@@ -1,5 +1,17 @@
 import { db, auth } from '../lib/firebase';
-import { collection, addDoc, Timestamp, writeBatch, doc, getDocs, limit, onSnapshot, orderBy, query, type FirestoreError } from 'firebase/firestore';
+import {
+  collection,
+  addDoc,
+  Timestamp,
+  writeBatch,
+  doc,
+  getDocs,
+  limit,
+  onSnapshot,
+  orderBy,
+  query,
+  type FirestoreError,
+} from 'firebase/firestore';
 import { useAuthStore } from '../store/useAuthStore';
 
 export interface TelemetryEvent {
@@ -14,7 +26,7 @@ export interface Breadcrumb {
   category: 'navigation' | 'user_action' | 'network' | 'system';
   data?: Record<string, unknown>;
   timestamp: number; // performance.now()
-  wallTime: string;  // ISO tarih
+  wallTime: string; // ISO tarih
 }
 
 /** Hata anındaki uygulama durum fotoğrafı */
@@ -114,7 +126,7 @@ async function getSwInfo(): Promise<{ version: string | null; state: string | nu
     // SW scriptURL'den versiyon hash'ini çıkar (örn: /sw.js?v=abc123)
     const scriptUrl = sw?.scriptURL || '';
     const versionMatch = scriptUrl.match(/[?&]v=([^&]+)/);
-    const version = versionMatch ? versionMatch[1] : (scriptUrl.split('/').pop() || null);
+    const version = versionMatch ? versionMatch[1] : scriptUrl.split('/').pop() || null;
     return { version, state };
   } catch {
     return { version: null, state: null };
@@ -153,20 +165,24 @@ async function captureStateSnapshot(): Promise<StateSnapshot> {
   // doğrudan tarayıcının yerel hafızasından senkron ve hızlı okuma yapıyoruz.
   let theme: string | null = null;
   let gpsEnabled = false;
-  
+
   try {
     const themeStoreRaw = localStorage.getItem('muezzin-theme-storage');
     if (themeStoreRaw) {
       theme = JSON.parse(themeStoreRaw).state?.theme || null;
     }
-  } catch { /* yoksay */ }
-  
+  } catch {
+    /* yoksay */
+  }
+
   try {
     const gpsStoreRaw = localStorage.getItem('muezzin-gps-vakit-storage');
     if (gpsStoreRaw) {
       gpsEnabled = JSON.parse(gpsStoreRaw).state?.gpsEnabled || false;
     }
-  } catch { /* yoksay */ }
+  } catch {
+    /* yoksay */
+  }
 
   // NOT: Bu uygulama Firebase Auth custom claims KULLANMIYOR — rol bilgisi
   // Firestore'daki muezzins/{uid}.role alanında tutuluyor ve useAuthStore
@@ -251,9 +267,10 @@ class TelemetryService {
       window.addEventListener('unhandledrejection', (event) => {
         const reason = event.reason;
         if (reason?.message?.includes('ResizeObserver')) return;
-        const error = reason instanceof Error
-          ? reason
-          : new Error(typeof reason === 'string' ? reason : JSON.stringify(reason) || 'Unhandled Promise Rejection');
+        const error =
+          reason instanceof Error
+            ? reason
+            : new Error(typeof reason === 'string' ? reason : JSON.stringify(reason) || 'Unhandled Promise Rejection');
         pushBreadcrumb({
           action: `Unhandled Rejection: ${error.message.slice(0, 80)}`,
           category: 'system',
@@ -302,9 +319,7 @@ class TelemetryService {
           // uygulanır (bkz. oradaki yorum). Kullanıcı zaten belliyse burada
           // da erken elenir.
           const aktifUid = auth.currentUser?.uid;
-          const kullanilabilir = aktifUid
-            ? restored.filter((evt) => evt.userId === aktifUid)
-            : restored;
+          const kullanilabilir = aktifUid ? restored.filter((evt) => evt.userId === aktifUid) : restored;
           const restoredEvents: QueuedTelemetryEvent[] = kullanilabilir.map((evt) => {
             let timestampVal = Timestamp.now();
             if (evt.timestamp) {
@@ -325,7 +340,6 @@ class TelemetryService {
       console.warn('Telemetry kuyruk kurtarma başarısız oldu:', err);
     }
   }
-
 
   /** Kullanıcı rızasını günceller (KVKK / GDPR) */
   setConsent(consent: boolean) {
@@ -382,12 +396,15 @@ class TelemetryService {
     }
     try {
       localStorage.removeItem('muezzin-telemetry-backup');
-    } catch { /* yoksay */ }
+    } catch {
+      /* yoksay */
+    }
   }
 
   private getDeviceMetadata() {
     return {
-      os: (navigator as Navigator & { userAgentData?: NavigatorUADataLike }).userAgentData?.platform || navigator.platform || 'Bilinmeyen OS',
+      os:
+        (navigator as Navigator & { userAgentData?: NavigatorUADataLike }).userAgentData?.platform || navigator.platform || 'Bilinmeyen OS',
       browser: this.getBrowserName(),
       screenSize: `${window.innerWidth}x${window.innerHeight}`,
       pwaMode: window.matchMedia('(display-mode: standalone)').matches,
@@ -433,7 +450,7 @@ class TelemetryService {
     // `clearQueue`'nun docblock'u). Yabancı olaylar zaten hiçbir koşulda
     // gönderilemez (sahibi gitti), bu yüzden gönderim anında elenir/atılır.
     const aktifUid = auth.currentUser.uid;
-    const eventsToFlush = this.eventQueue.filter(evt => evt.userId === aktifUid);
+    const eventsToFlush = this.eventQueue.filter((evt) => evt.userId === aktifUid);
     const yabanciOlaySayisi = this.eventQueue.length - eventsToFlush.length;
     this.eventQueue = [];
     if (yabanciOlaySayisi > 0) {
@@ -443,7 +460,7 @@ class TelemetryService {
 
     try {
       const batch = writeBatch(db);
-      eventsToFlush.forEach(evt => {
+      eventsToFlush.forEach((evt) => {
         const docRef = doc(collection(db, 'telemetry_logs'));
         batch.set(docRef, evt);
       });
@@ -511,9 +528,7 @@ class TelemetryService {
     }
 
     const now = Date.now();
-    this.errorWriteTimestamps = this.errorWriteTimestamps.filter(
-      (ts) => now - ts < this.ERROR_RATE_WINDOW_MS
-    );
+    this.errorWriteTimestamps = this.errorWriteTimestamps.filter((ts) => now - ts < this.ERROR_RATE_WINDOW_MS);
     if (this.errorWriteTimestamps.length >= this.MAX_ERROR_WRITES_PER_MINUTE) {
       this.suppressedErrorCount++;
       console.warn('Hata günlüğü bastırıldı (dakikalık yazma kotası doldu).');
@@ -538,9 +553,7 @@ class TelemetryService {
       // reddediliyor ve dıştaki catch bloğu bunu yalnızca console.warn ile
       // yutuyordu. En ciddi çökmelerin (en uzun stack'lerin) tam da
       // loglanamayan tür olması riski vardı (bkz. beşinci denetim turu).
-      const suppressedPrefix = this.suppressedErrorCount > 0
-        ? `[${this.suppressedErrorCount} bastırılmış hata sonrası] `
-        : '';
+      const suppressedPrefix = this.suppressedErrorCount > 0 ? `[${this.suppressedErrorCount} bastırılmış hata sonrası] ` : '';
       const payload: EnrichedErrorLog = {
         errorMessage: (suppressedPrefix + error.message).slice(0, 2000),
         errorStack: (error.stack || '').slice(0, 8000),
@@ -594,7 +607,7 @@ export function errorLogsAbone(
   const q = query(collection(db, 'error_logs'), orderBy('timestamp', 'desc'), limit(20));
   return onSnapshot(
     q,
-    (snap) => onData(snap.docs.map(d => ({ id: d.id, ...d.data() }) as (Partial<EnrichedErrorLog> & { id: string }))),
+    (snap) => onData(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Partial<EnrichedErrorLog> & { id: string })),
     onError
   );
 }
@@ -605,7 +618,7 @@ export async function errorLoglariniTemizle(): Promise<void> {
   const CHUNK_SIZE = 400;
   for (let i = 0; i < snap.docs.length; i += CHUNK_SIZE) {
     const batch = writeBatch(db);
-    snap.docs.slice(i, i + CHUNK_SIZE).forEach(d => batch.delete(d.ref));
+    snap.docs.slice(i, i + CHUNK_SIZE).forEach((d) => batch.delete(d.ref));
     await batch.commit();
   }
 }

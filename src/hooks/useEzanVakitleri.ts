@@ -19,10 +19,10 @@ function adjustVakitWithOffset(officialVakit: string | undefined, offsetMinutes:
 function adjustSabahTime(vakitler: GunlukVakit | null): GunlukVakit | null {
   if (!vakitler) return null;
   const date = parseISO(vakitler.tarih);
-  
+
   // Orijinal imsak vaktini (ham sabah vaktini) sakla
   const originalImsak = vakitler.imsak || vakitler.sabah;
-  
+
   if (isRamazan(date)) {
     // Ramazan günlerinde: tam imsak vaktinde
     return {
@@ -102,4 +102,3 @@ export function useEzanVakitleri() {
 
   return { bugunVakitler, yarinVakitler, loading, resmiBugunVakitler };
 }
-

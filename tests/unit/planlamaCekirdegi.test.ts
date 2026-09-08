@@ -1,5 +1,15 @@
 import { describe, it, expect, vi } from 'vitest';
-import { haftalikPlanUret, tekKisiliGunleriBul, kapsamsizGunleriBul, nobeteAtanabilirMi, oncekiHaftaninArdArdaYedekSayilariniHesapla, gunIzinliUidler, VAKITLER, MuezzinAday, OnayliIzin } from '../../src/lib/planlamaCekirdegi';
+import {
+  haftalikPlanUret,
+  tekKisiliGunleriBul,
+  kapsamsizGunleriBul,
+  nobeteAtanabilirMi,
+  oncekiHaftaninArdArdaYedekSayilariniHesapla,
+  gunIzinliUidler,
+  VAKITLER,
+  MuezzinAday,
+  OnayliIzin,
+} from '../../src/lib/planlamaCekirdegi';
 import { Muezzin, Vakit } from '../../src/types';
 
 function muezzin(id: string, overrides: Partial<Muezzin> = {}): MuezzinAday {
@@ -52,11 +62,7 @@ describe('haftalikPlanUret', () => {
   });
 
   it('tek müsait personel varsa asil olarak atar, yedeği Sistem bırakır', () => {
-    const muezzinler = [
-      muezzin('a'),
-      muezzin('b', { haftalikIzinGunu: 1 }),
-      muezzin('c', { haftalikIzinGunu: 1 }),
-    ];
+    const muezzinler = [muezzin('a'), muezzin('b', { haftalikIzinGunu: 1 }), muezzin('c', { haftalikIzinGunu: 1 })];
 
     const plan = haftalikPlanUret(['2026-08-03'], muezzinler, []);
 
@@ -66,10 +72,7 @@ describe('haftalikPlanUret', () => {
   });
 
   it('hiç müsait personel yoksa tüm vakitleri Sistem/Sistem olarak bırakır', () => {
-    const muezzinler = [
-      muezzin('a', { haftalikIzinGunu: 1 }),
-      muezzin('b', { haftalikIzinGunu: 1 }),
-    ];
+    const muezzinler = [muezzin('a', { haftalikIzinGunu: 1 }), muezzin('b', { haftalikIzinGunu: 1 })];
 
     const plan = haftalikPlanUret(['2026-08-03'], muezzinler, []);
 
@@ -89,9 +92,7 @@ describe('haftalikPlanUret', () => {
 
   it('korunmuş atama verildiğinde o vakit için taze hesaplama atlanır ama yük dengesine dahil edilir', () => {
     const muezzinler = [muezzin('a'), muezzin('b'), muezzin('c'), muezzin('d')];
-    const korunmusAtama = vi.fn((gun: string, vakit: Vakit) =>
-      vakit === 'sabah' ? { asil: 'd', yedek: 'c' } : null
-    );
+    const korunmusAtama = vi.fn((gun: string, vakit: Vakit) => (vakit === 'sabah' ? { asil: 'd', yedek: 'c' } : null));
 
     const plan = haftalikPlanUret(['2026-08-03'], muezzinler, [], korunmusAtama);
 
@@ -111,8 +112,7 @@ describe('haftalikPlanUret', () => {
     // asil seçilmesine yol açardı. Düzeltmeyle 'a' hiç yük almadığından
     // (0 < 0.5) Salı günü yine 'a' en az yüklü kabul edilir.
     const muezzinler = [muezzin('a'), muezzin('b')];
-    const korunmusAtama = (gun: string) =>
-      gun === '2026-08-03' ? { asil: 'a', yedek: 'b', asilYukSayilmasin: true } : null;
+    const korunmusAtama = (gun: string) => (gun === '2026-08-03' ? { asil: 'a', yedek: 'b', asilYukSayilmasin: true } : null);
 
     const plan = haftalikPlanUret(['2026-08-03', '2026-08-04'], muezzinler, [], korunmusAtama);
 
@@ -122,8 +122,7 @@ describe('haftalikPlanUret', () => {
 
   it('yedekYukSayilmasin işaretli korunmuş atama, yedek tarafı için de aynı şekilde çalışır (PL-O5 regresyonu)', () => {
     const muezzinler = [muezzin('a'), muezzin('b'), muezzin('c'), muezzin('d')];
-    const korunmusAtama = (gun: string) =>
-      gun === '2026-08-03' ? { asil: 'a', yedek: 'b', yedekYukSayilmasin: true } : null;
+    const korunmusAtama = (gun: string) => (gun === '2026-08-03' ? { asil: 'a', yedek: 'b', yedekYukSayilmasin: true } : null);
 
     const plan = haftalikPlanUret(['2026-08-03'], muezzinler, [], korunmusAtama);
 
@@ -242,7 +241,10 @@ describe('haftalikPlanUret', () => {
     let oncekiGunPlan: Record<string, Record<Vakit, { asil: string; yedek: string }>> | undefined;
 
     for (const gunler of haftalar) {
-      const oncekiArdArdaYedekSayilari = oncekiHaftaninArdArdaYedekSayilariniHesapla(oncekiGunPlan, muezzinler.map((m) => m.id));
+      const oncekiArdArdaYedekSayilari = oncekiHaftaninArdArdaYedekSayilariniHesapla(
+        oncekiGunPlan,
+        muezzinler.map((m) => m.id)
+      );
       const plan = haftalikPlanUret(gunler, muezzinler, [], undefined, oncekiHaftaSonEkibi, oncekiArdArdaYedekSayilari);
 
       const haftaAsilKredi: Record<string, number> = { aaa: 0, bbb: 0, ccc: 0 };
@@ -304,7 +306,10 @@ describe('haftalikPlanUret', () => {
         gun.setDate(gun.getDate() + h * 7 + i);
         gunler.push(`${gun.getFullYear()}-${String(gun.getMonth() + 1).padStart(2, '0')}-${String(gun.getDate()).padStart(2, '0')}`);
       }
-      const oncekiArdArda = oncekiHaftaninArdArdaYedekSayilariniHesapla(oncekiGunPlan, muezzinler.map((m) => m.id));
+      const oncekiArdArda = oncekiHaftaninArdArdaYedekSayilariniHesapla(
+        oncekiGunPlan,
+        muezzinler.map((m) => m.id)
+      );
       const plan = haftalikPlanUret(gunler, muezzinler, [], undefined, oncekiHaftaSonEkibi, oncekiArdArda);
 
       const haftaAsil: Record<string, number> = { aaa: 0, bbb: 0, ccc: 0 };
@@ -443,10 +448,7 @@ describe('haftalikPlanUret', () => {
   });
 
   it('tekKisiliGunleriBul, hiç kimsenin müsait olmadığı (Sistem/Sistem) günleri saymaz', () => {
-    const muezzinler = [
-      muezzin('a', { haftalikIzinGunu: 1 }),
-      muezzin('b', { haftalikIzinGunu: 1 }),
-    ];
+    const muezzinler = [muezzin('a', { haftalikIzinGunu: 1 }), muezzin('b', { haftalikIzinGunu: 1 })];
 
     const plan = haftalikPlanUret(['2026-08-03'], muezzinler, []);
 
@@ -467,10 +469,7 @@ describe('haftalikPlanUret', () => {
   });
 
   it('kapsamsizGunleriBul, tek kişinin müsait olduğu günü kapsamsız saymaz', () => {
-    const muezzinler = [
-      muezzin('a'),
-      muezzin('b', { haftalikIzinGunu: 1 }),
-    ];
+    const muezzinler = [muezzin('a'), muezzin('b', { haftalikIzinGunu: 1 })];
 
     const plan = haftalikPlanUret(['2026-08-03'], muezzinler, []);
 

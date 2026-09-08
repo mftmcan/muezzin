@@ -23,13 +23,17 @@ export const SistemDenetimSekmesi = React.memo(({ formatDate }: { formatDate: (t
 
   useEffect(() => {
     const auditQuery = query(collection(db, 'audit_logs'), orderBy('timestamp', 'desc'), limit(30));
-    const unsub = onSnapshot(auditQuery, (snap) => {
-      setLogs(snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as AuditLog)));
-      setLoading(false);
-    }, (err) => {
-      console.error("Audit logs listen error:", err);
-      setLoading(false);
-    });
+    const unsub = onSnapshot(
+      auditQuery,
+      (snap) => {
+        setLogs(snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as AuditLog));
+        setLoading(false);
+      },
+      (err) => {
+        console.error('Audit logs listen error:', err);
+        setLoading(false);
+      }
+    );
     return () => unsub();
   }, []);
 
@@ -39,8 +43,10 @@ export const SistemDenetimSekmesi = React.memo(({ formatDate }: { formatDate: (t
     // Arşivleme"), locale'siz .toLowerCase() "İ"yi bozuk çeviriyordu.
     const t = toTurkishLowerCase(type);
     if (t.includes('sil') || t.includes('arşiv') || t.includes('red')) return 'bg-rose-500/10 text-rose-400 border-rose-500/20';
-    if (t.includes('ekle') || t.includes('onay') || t.includes('oluştur')) return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
-    if (t.includes('güncelle') || t.includes('düzenle') || t.includes('kaydet')) return 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+    if (t.includes('ekle') || t.includes('onay') || t.includes('oluştur'))
+      return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+    if (t.includes('güncelle') || t.includes('düzenle') || t.includes('kaydet'))
+      return 'bg-amber-500/10 text-amber-400 border-amber-500/20';
     return 'bg-[var(--dynamic-aura,var(--aura-indigo))]/10 text-[var(--dynamic-aura,var(--aura-indigo))] border-[var(--dynamic-aura,var(--aura-indigo))]/20';
   };
 
@@ -86,10 +92,10 @@ export const SistemDenetimSekmesi = React.memo(({ formatDate }: { formatDate: (t
                   </div>
                   <div>
                     <div className="flex items-center flex-wrap gap-2.5">
-                      <span className="text-sm font-medium text-[var(--text-primary)] tracking-tight">
-                        {log.userDisplayName}
-                      </span>
-                      <span className={`px-2 py-0.5 rounded-md text-2xs font-bold uppercase tracking-wider border ${getActionBadgeColor(log.actionType)}`}>
+                      <span className="text-sm font-medium text-[var(--text-primary)] tracking-tight">{log.userDisplayName}</span>
+                      <span
+                        className={`px-2 py-0.5 rounded-md text-2xs font-bold uppercase tracking-wider border ${getActionBadgeColor(log.actionType)}`}
+                      >
                         {log.actionType}
                       </span>
                     </div>
@@ -99,12 +105,8 @@ export const SistemDenetimSekmesi = React.memo(({ formatDate }: { formatDate: (t
                   </div>
                 </div>
                 <div className="text-right sm:flex-shrink-0">
-                  <span className="text-2xs text-muted font-bold block">
-                    {formatDate(log.timestamp)}
-                  </span>
-                  <span className="text-2xs text-muted font-mono block mt-1">
-                    LOG ID: {log.id}
-                  </span>
+                  <span className="text-2xs text-muted font-bold block">{formatDate(log.timestamp)}</span>
+                  <span className="text-2xs text-muted font-mono block mt-1">LOG ID: {log.id}</span>
                 </div>
               </div>
             </motion.div>

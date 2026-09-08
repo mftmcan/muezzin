@@ -8,33 +8,25 @@ const CUMA = '2026-08-07';
 
 describe('gunlukKredileriHesapla', () => {
   it('asil bekliyor kaldıysa kredi verir ve okundu_varsayilan işaretler', () => {
-    const sonuc = gunlukKredileriHesapla([
-      { tip: 'asil', durum: 'bekliyor', uid: 'a', tarih: PAZARTESI },
-    ]);
+    const sonuc = gunlukKredileriHesapla([{ tip: 'asil', durum: 'bekliyor', uid: 'a', tarih: PAZARTESI }]);
     expect(sonuc.asilKredi).toEqual({ a: 1 });
     expect(sonuc.okunduVarsayilanIndeksleri).toEqual([0]);
     expect(sonuc.uyariUids).toEqual([]);
   });
 
   it('asil kendi onayını verdiyse (onaylandi) kredi verir ama işaretlemez', () => {
-    const sonuc = gunlukKredileriHesapla([
-      { tip: 'asil', durum: 'onaylandi', uid: 'a', tarih: PAZARTESI },
-    ]);
+    const sonuc = gunlukKredileriHesapla([{ tip: 'asil', durum: 'onaylandi', uid: 'a', tarih: PAZARTESI }]);
     expect(sonuc.asilKredi).toEqual({ a: 1 });
     expect(sonuc.okunduVarsayilanIndeksleri).toEqual([]);
   });
 
   it('asil mazeret bildirdiyse (reddedildi) hiç kredi vermez', () => {
-    const sonuc = gunlukKredileriHesapla([
-      { tip: 'asil', durum: 'reddedildi', uid: 'a', tarih: PAZARTESI },
-    ]);
+    const sonuc = gunlukKredileriHesapla([{ tip: 'asil', durum: 'reddedildi', uid: 'a', tarih: PAZARTESI }]);
     expect(sonuc.asilKredi).toEqual({});
   });
 
   it('Cuma vaktinde asil olan için ayrıca cumaKredi verir', () => {
-    const sonuc = gunlukKredileriHesapla([
-      { tip: 'asil', durum: 'bekliyor', uid: 'a', tarih: CUMA },
-    ]);
+    const sonuc = gunlukKredileriHesapla([{ tip: 'asil', durum: 'bekliyor', uid: 'a', tarih: CUMA }]);
     expect(sonuc.asilKredi).toEqual({ a: 1 });
     expect(sonuc.cumaKredi).toEqual({ a: 1 });
   });
@@ -44,32 +36,24 @@ describe('gunlukKredileriHesapla', () => {
   // hesaplanan değere göre veriliyor — eksik/yanlış `cumaMi` alanı olan
   // (backfill öncesi eski) bir belge bile doğru kredilendirilir.
   it('cumaMi alanı eksik olsa bile tarih gerçekten Cuma ise cumaKredi verir (regresyon)', () => {
-    const sonuc = gunlukKredileriHesapla([
-      { tip: 'asil', durum: 'bekliyor', uid: 'a', tarih: CUMA },
-    ]);
+    const sonuc = gunlukKredileriHesapla([{ tip: 'asil', durum: 'bekliyor', uid: 'a', tarih: CUMA }]);
     expect(sonuc.cumaKredi).toEqual({ a: 1 });
   });
 
   it('cumaMi alanı yanlışlıkla true olsa bile tarih Cuma değilse cumaKredi vermez (regresyon)', () => {
-    const sonuc = gunlukKredileriHesapla([
-      { tip: 'asil', durum: 'bekliyor', uid: 'a', tarih: PAZARTESI, cumaMi: true },
-    ]);
+    const sonuc = gunlukKredileriHesapla([{ tip: 'asil', durum: 'bekliyor', uid: 'a', tarih: PAZARTESI, cumaMi: true }]);
     expect(sonuc.cumaKredi).toEqual({});
   });
 
   it('yedek bekliyor kaldıysa yedekKredi verir (asilKredi değil) ve işaretler', () => {
-    const sonuc = gunlukKredileriHesapla([
-      { tip: 'yedek', durum: 'bekliyor', uid: 'b', tarih: PAZARTESI },
-    ]);
+    const sonuc = gunlukKredileriHesapla([{ tip: 'yedek', durum: 'bekliyor', uid: 'b', tarih: PAZARTESI }]);
     expect(sonuc.yedekKredi).toEqual({ b: 1 });
     expect(sonuc.asilKredi).toEqual({});
     expect(sonuc.okunduVarsayilanIndeksleri).toEqual([0]);
   });
 
   it('yedek kendi onayını verdiyse (onaylandi) yedekKredi verir', () => {
-    const sonuc = gunlukKredileriHesapla([
-      { tip: 'yedek', durum: 'onaylandi', uid: 'b', tarih: PAZARTESI },
-    ]);
+    const sonuc = gunlukKredileriHesapla([{ tip: 'yedek', durum: 'onaylandi', uid: 'b', tarih: PAZARTESI }]);
     expect(sonuc.yedekKredi).toEqual({ b: 1 });
   });
 
@@ -78,26 +62,20 @@ describe('gunlukKredileriHesapla', () => {
   // bile aylikVakitSayisi'na hiç yansımıyordu, tekrar acil çağrılan biri
   // adalet algoritmasında sistematik olarak "az yüklü" görünüyordu.
   it('gorev_cagrisi onaylandi ise asil ile AYNI ağırlıkta kredi verir (mantık denetimi regresyonu)', () => {
-    const sonuc = gunlukKredileriHesapla([
-      { tip: 'gorev_cagrisi', durum: 'onaylandi', uid: 'c', tarih: PAZARTESI },
-    ]);
+    const sonuc = gunlukKredileriHesapla([{ tip: 'gorev_cagrisi', durum: 'onaylandi', uid: 'c', tarih: PAZARTESI }]);
     expect(sonuc.asilKredi).toEqual({ c: 1 });
     expect(sonuc.uyariUids).toEqual([]);
   });
 
   it('gorev_cagrisi bekliyor kaldıysa yine asilKredi verir, işaretler VE admin uyarısına düşer', () => {
-    const sonuc = gunlukKredileriHesapla([
-      { tip: 'gorev_cagrisi', durum: 'bekliyor', uid: 'c', tarih: PAZARTESI },
-    ]);
+    const sonuc = gunlukKredileriHesapla([{ tip: 'gorev_cagrisi', durum: 'bekliyor', uid: 'c', tarih: PAZARTESI }]);
     expect(sonuc.asilKredi).toEqual({ c: 1 });
     expect(sonuc.okunduVarsayilanIndeksleri).toEqual([0]);
     expect(sonuc.uyariUids).toEqual(['c']);
   });
 
   it('gorev_cagrisi Cuma vaktindeyse cumaKredi de verir', () => {
-    const sonuc = gunlukKredileriHesapla([
-      { tip: 'gorev_cagrisi', durum: 'onaylandi', uid: 'c', tarih: CUMA },
-    ]);
+    const sonuc = gunlukKredileriHesapla([{ tip: 'gorev_cagrisi', durum: 'onaylandi', uid: 'c', tarih: CUMA }]);
     expect(sonuc.cumaKredi).toEqual({ c: 1 });
   });
 

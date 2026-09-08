@@ -38,9 +38,7 @@ async function gercektenCevrimIciMi(): Promise<boolean> {
 }
 
 export function useNetworkStatus() {
-  const [isOnline, setIsOnline] = useState(() =>
-    typeof window !== 'undefined' ? navigator.onLine : true
-  );
+  const [isOnline, setIsOnline] = useState(() => (typeof window !== 'undefined' ? navigator.onLine : true));
   // Aynı anda birden fazla prob'un çakışmasını önler (ör. bir 'online'
   // olayı ile periyodik zamanlayıcı aynı ana denk gelirse).
   const probCalisiyorRef = useRef(false);
@@ -58,13 +56,17 @@ export function useNetworkStatus() {
       }
     };
 
-    const handleOnline = () => { void probEt(); };
+    const handleOnline = () => {
+      void probEt();
+    };
     const handleOffline = () => setIsOnline(false);
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
 
-    const interval = setInterval(() => { void probEt(); }, PROB_ARALIGI_MS);
+    const interval = setInterval(() => {
+      void probEt();
+    }, PROB_ARALIGI_MS);
     void probEt();
 
     return () => {

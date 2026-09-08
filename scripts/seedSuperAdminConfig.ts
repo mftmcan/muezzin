@@ -53,19 +53,21 @@ async function main() {
 
   const ref = db.collection('config').doc('bootstrap');
   const snap = await ref.get();
-  const existing: string[] = snap.exists ? (snap.data()?.superAdminEmails || []) : [];
+  const existing: string[] = snap.exists ? snap.data()?.superAdminEmails || [] : [];
 
-  const sonuc = remove
-    ? existing.filter((e) => !emails.includes(e))
-    : Array.from(new Set([...existing, ...emails]));
-  const degisenler = remove
-    ? emails.filter((e) => existing.includes(e))
-    : emails.filter((e) => !existing.includes(e));
+  const sonuc = remove ? existing.filter((e) => !emails.includes(e)) : Array.from(new Set([...existing, ...emails]));
+  const degisenler = remove ? emails.filter((e) => existing.includes(e)) : emails.filter((e) => !existing.includes(e));
 
-  console.log(apply ? 'UYGULAMA MODU — config/bootstrap yazılacak.' : 'KURU ÇALIŞTIRMA — hiçbir şey yazılmayacak (--apply ile gerçek çalıştırma yapın).');
+  console.log(
+    apply
+      ? 'UYGULAMA MODU — config/bootstrap yazılacak.'
+      : 'KURU ÇALIŞTIRMA — hiçbir şey yazılmayacak (--apply ile gerçek çalıştırma yapın).'
+  );
   console.log(`Mod: ${remove ? 'ÇIKARMA' : 'EKLEME'}`);
   console.log(`Mevcut süper-admin e-postaları: ${existing.length > 0 ? existing.join(', ') : '(yok)'}`);
-  console.log(`${remove ? 'Çıkarılacak' : 'Eklenecek'} e-postalar: ${degisenler.length > 0 ? degisenler.join(', ') : remove ? '(listede yoklar)' : '(hepsi zaten listede)'}`);
+  console.log(
+    `${remove ? 'Çıkarılacak' : 'Eklenecek'} e-postalar: ${degisenler.length > 0 ? degisenler.join(', ') : remove ? '(listede yoklar)' : '(hepsi zaten listede)'}`
+  );
 
   if (remove && sonuc.length === 0) {
     throw new Error('Bu işlem süper-admin listesini TAMAMEN boşaltır — en az bir süper-admin kalmalı. İşlem iptal edildi.');

@@ -8,13 +8,11 @@ import ProfileBadges from './profil/ProfileBadges';
 import ProfileStats from './profil/ProfileStats';
 
 // Ağır bileşenler — lazy: yalnızca ekrana gelince yüklensin
-const PersonalHistoryCard   = lazy(() => import('./profil/PersonalHistoryCard'));
+const PersonalHistoryCard = lazy(() => import('./profil/PersonalHistoryCard'));
 
 /** Hafif bir inline yükleme iskeleti */
 function SectionSkeleton() {
-  return (
-    <div className="skeleton-shimmer h-40 rounded-card border border-[var(--text-primary)]/[0.04]" />
-  );
+  return <div className="skeleton-shimmer h-40 rounded-card border border-[var(--text-primary)]/[0.04]" />;
 }
 
 /**
@@ -44,19 +42,12 @@ function LazySection({ children, fallback }: { children: React.ReactNode; fallba
     return () => observer.disconnect();
   }, []);
 
-  return (
-    <div ref={ref}>
-      {visible
-        ? children
-        : (fallback ?? <SectionSkeleton />)
-      }
-    </div>
-  );
+  return <div ref={ref}>{visible ? children : (fallback ?? <SectionSkeleton />)}</div>;
 }
 
 export default function Profil() {
-  const user = useAuthStore(s => s.user);
-  const authInitialized = useAuthStore(s => s.initialized);
+  const user = useAuthStore((s) => s.user);
+  const authInitialized = useAuthStore((s) => s.initialized);
 
   // Kendi profilimiz zaten global useMuezzinStore aboneliğinde mevcut
   // (bkz. StoreInitializer, tüm oturum boyunca `muezzins` koleksiyonunun
@@ -64,8 +55,8 @@ export default function Profil() {
   // yerine aynı veriyi paylaşılan store'dan okuyoruz. Önceden Profil.tsx ve
   // MuezzinAyarlari.tsx aynı dokümanı birbirinden bağımsız iki kez
   // dinliyordu (bkz. tasarım denetimi).
-  const userData = useMuezzinStore(s => (user ? s.muezzinMap[user.uid] : undefined)) ?? null;
-  const muezzinlerLoading = useMuezzinStore(s => s.loading);
+  const userData = useMuezzinStore((s) => (user ? s.muezzinMap[user.uid] : undefined)) ?? null;
+  const muezzinlerLoading = useMuezzinStore((s) => s.loading);
   const loading = !authInitialized || (!!user && muezzinlerLoading);
 
   // Rozetler KASITLI OLARAK aylikVakitSayisi değil toplamVakitSayisi
@@ -94,7 +85,6 @@ export default function Profil() {
           </div>
         ) : (
           <div className="space-y-10">
-
             {/* 1. Header Profile Box — kritik, hemen render */}
             <ProfileHeader userData={userData} user={user} />
 

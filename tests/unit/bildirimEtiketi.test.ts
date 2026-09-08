@@ -54,14 +54,7 @@ function serviceWorkerYukle() {
   const gosterilenler: { baslik: string; secenekler: BildirimSecenekleri }[] = [];
   let arkaPlanGeriCagrisi: ((payload: FcmPayload) => void) | undefined;
 
-  const calistir = new Function(
-    'importScripts',
-    'firebase',
-    'self',
-    'clients',
-    'console',
-    SW_KAYNAK
-  ) as unknown as SwCalistirici;
+  const calistir = new Function('importScripts', 'firebase', 'self', 'clients', 'console', SW_KAYNAK) as unknown as SwCalistirici;
 
   calistir(
     () => {},
@@ -70,16 +63,16 @@ function serviceWorkerYukle() {
       messaging: () => ({
         onBackgroundMessage: (cb) => {
           arkaPlanGeriCagrisi = cb;
-        }
-      })
+        },
+      }),
     },
     {
       registration: {
         showNotification: (baslik, secenekler) => {
           gosterilenler.push({ baslik, secenekler });
-        }
+        },
       },
-      addEventListener: () => {}
+      addEventListener: () => {},
     },
     {},
     { log: () => {} }
@@ -96,7 +89,7 @@ function serviceWorkerYukle() {
     etiket(payload: FcmPayload): string {
       surucu(payload);
       return gosterilenler[gosterilenler.length - 1]!.secenekler.tag;
-    }
+    },
   };
 }
 
@@ -104,7 +97,7 @@ function serviceWorkerYukle() {
 function duyuruPush(duyuruId: string, baslik = 'Duyuru'): FcmPayload {
   return {
     notification: { title: baslik, body: 'İçerik' },
-    data: { type: 'duyuru_yayinlandi', duyuruId, duyuruTip: 'duyuru' }
+    data: { type: 'duyuru_yayinlandi', duyuruId, duyuruTip: 'duyuru' },
   };
 }
 
@@ -112,7 +105,7 @@ function duyuruPush(duyuruId: string, baslik = 'Duyuru'): FcmPayload {
 function izinPush(izinId: string, durum = 'onaylandi'): FcmPayload {
   return {
     notification: { title: 'İzin Talebiniz Onaylandı ✅', body: 'Talebiniz onaylandı.' },
-    data: { type: 'izin_durumu', izinId, durum }
+    data: { type: 'izin_durumu', izinId, durum },
   };
 }
 
@@ -150,7 +143,7 @@ describe('firebase-messaging-sw.js — bildirim etiketi (Notification tag)', () 
     const sw = serviceWorkerYukle();
     const push = (tarih: string) => ({
       notification: { title: 'Yarınki Ezan Göreviniz var 🕌', body: `Yarın sabah göreviniz var.` },
-      data: { type: 'daily_duty_reminder', tarih }
+      data: { type: 'daily_duty_reminder', tarih },
     });
 
     expect(sw.etiket(push('2026-09-05'))).toBe('gorev-hatirlatma-2026-09-05');
@@ -162,7 +155,7 @@ describe('firebase-messaging-sw.js — bildirim etiketi (Notification tag)', () 
     const sw = serviceWorkerYukle();
     const push: FcmPayload = {
       notification: { title: 'Yeni Haftalık Plan Yayınlandı 🗓️', body: 'Plan hazır.' },
-      data: { type: 'weekly_plan_published' }
+      data: { type: 'weekly_plan_published' },
     };
     expect(sw.etiket(push)).toBe('haftalik-plan');
     expect(sw.etiket(push)).toBe('haftalik-plan');
@@ -172,7 +165,7 @@ describe('firebase-messaging-sw.js — bildirim etiketi (Notification tag)', () 
     const sw = serviceWorkerYukle();
     const push = (tip: string, bildirimId: string): FcmPayload => ({
       notification: { title: 'Görev', body: 'Göreviniz var' },
-      data: { type: tip, bildirimId, uid: 'u1' }
+      data: { type: tip, bildirimId, uid: 'u1' },
     });
 
     expect(sw.etiket(push('asil', 'b1'))).toBe('bildirim-b1');
@@ -186,7 +179,7 @@ describe('firebase-messaging-sw.js — bildirim etiketi (Notification tag)', () 
     const sw = serviceWorkerYukle();
     const push = (body: string): FcmPayload => ({
       notification: { title: 'Yeni tür', body },
-      data: { type: 'ileride_eklenen_tur' }
+      data: { type: 'ileride_eklenen_tur' },
     });
 
     expect(sw.etiket(push('A olayı'))).not.toBe(sw.etiket(push('B olayı')));
@@ -197,7 +190,7 @@ describe('firebase-messaging-sw.js — bildirim etiketi (Notification tag)', () 
     const sw = serviceWorkerYukle();
     const bozuk = (baslik: string): FcmPayload => ({
       notification: { title: baslik, body: 'İçerik' },
-      data: { type: 'duyuru_yayinlandi' }
+      data: { type: 'duyuru_yayinlandi' },
     });
     expect(sw.etiket(bozuk('Duyuru 1'))).not.toBe(sw.etiket(bozuk('Duyuru 2')));
   });

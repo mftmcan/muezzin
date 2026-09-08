@@ -22,10 +22,10 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
   const errInfo: FirestoreErrorInfo = {
     error: error instanceof Error ? error.message : String(error),
     authInfo: {
-      userId: 'SERVICE_ACCOUNT' // Admin SDK doesn't have a current user in the same way
+      userId: 'SERVICE_ACCOUNT', // Admin SDK doesn't have a current user in the same way
     },
     operationType,
-    path
+    path,
   };
   console.error('Firestore Error: ', JSON.stringify(errInfo));
   throw new Error(JSON.stringify(errInfo));

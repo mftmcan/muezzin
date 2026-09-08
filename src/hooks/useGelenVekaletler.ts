@@ -16,17 +16,17 @@ export function useGelenVekaletler(uid: string | undefined) {
   useEffect(() => {
     if (!uid) return;
 
-    const q = query(
-      collection(db, 'vekalet_talepleri'),
-      where('aliciUid', '==', uid),
-      where('durum', '==', 'beklemede')
-    );
+    const q = query(collection(db, 'vekalet_talepleri'), where('aliciUid', '==', uid), where('durum', '==', 'beklemede'));
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      setGelenVekaletler(snapshot.docs.map(doc => ({ id: doc.id, ...(doc.data() as VekaletTalebi) })));
-    }, (err) => {
-      handleFirestoreError(err, OperationType.LIST, 'vekalet_talepleri');
-    });
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        setGelenVekaletler(snapshot.docs.map((doc) => ({ id: doc.id, ...(doc.data() as VekaletTalebi) })));
+      },
+      (err) => {
+        handleFirestoreError(err, OperationType.LIST, 'vekalet_talepleri');
+      }
+    );
 
     return () => unsubscribe();
   }, [uid]);

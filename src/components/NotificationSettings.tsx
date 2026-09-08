@@ -31,7 +31,7 @@ export default function NotificationSettings({ userData, user }: NotificationSet
       setUiMessage('Bu tarayıcı anlık bildirim dizgesini desteklemiyor.');
       return;
     }
-    
+
     if (Notification.permission === 'denied') {
       setUiMessage('Bildirim izinleri tarayıcınızda engellenmiş. Adres çubuğunun solundaki kilit simgesinden manuel izin verin.');
       return;
@@ -87,7 +87,7 @@ export default function NotificationSettings({ userData, user }: NotificationSet
         // '/favicon.ico' public/'te yoktu (yalnızca favicon.svg var) — test
         // bildiriminin ikonu her zaman bozuk çıkıyordu (bkz. premium denetim,
         // bölüm 11).
-        icon: '/pwa-192x192.png'
+        icon: '/pwa-192x192.png',
       });
       setUiMessage(null);
     } else {
@@ -97,21 +97,21 @@ export default function NotificationSettings({ userData, user }: NotificationSet
 
   const handleToggleSetting = async (key: 'nobetHatirlatici' | 'duyurular' | 'mazeretDurumu') => {
     if (!user || !userData) return;
-    
+
     const currentSettings = userData.notificationSettings || {
       nobetHatirlatici: true,
       duyurular: true,
-      mazeretDurumu: true
+      mazeretDurumu: true,
     };
-    
+
     const newSettings = {
       ...currentSettings,
-      [key]: !currentSettings[key]
+      [key]: !currentSettings[key],
     };
-    
+
     try {
       await updateDoc(doc(db, 'muezzins', user.uid), {
-        notificationSettings: newSettings
+        notificationSettings: newSettings,
       });
     } catch (err) {
       // Anahtar canlı `userData.notificationSettings` dinleyicisini
@@ -125,7 +125,7 @@ export default function NotificationSettings({ userData, user }: NotificationSet
   };
 
   return (
-    <motion.div 
+    <motion.div
       whileHover={{ y: -4 }}
       className="p-5 sm:p-8 spatial-glass rounded-card border-[var(--glass-border)] shadow-[var(--spatial-shadow)] relative overflow-hidden"
     >
@@ -142,13 +142,15 @@ export default function NotificationSettings({ userData, user }: NotificationSet
             göre değişen marka rengiyle karışıp "dikkat gerekiyor" sinyali
             birincil eylem butonundan ayrışamıyordu (bkz. görsel tasarım
             denetimi). */}
-        <span className={`self-start sm:self-auto text-2xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wide ${
-          userData?.fcmToken
-            ? 'text-[var(--status-success)] bg-[var(--status-success)]/10'
-            : typeof window !== 'undefined' && (!('Notification' in window) || Notification.permission === 'denied')
-            ? 'text-[var(--status-danger)] bg-[var(--status-danger)]/10'
-            : 'text-[var(--status-warning)] bg-[var(--status-warning)]/10'
-        }`}>
+        <span
+          className={`self-start sm:self-auto text-2xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wide ${
+            userData?.fcmToken
+              ? 'text-[var(--status-success)] bg-[var(--status-success)]/10'
+              : typeof window !== 'undefined' && (!('Notification' in window) || Notification.permission === 'denied')
+                ? 'text-[var(--status-danger)] bg-[var(--status-danger)]/10'
+                : 'text-[var(--status-warning)] bg-[var(--status-warning)]/10'
+          }`}
+        >
           {userData?.fcmToken ? 'BAĞLANTI AKTİF' : 'İZİN GEREKLİ'}
         </span>
       </div>
@@ -156,34 +158,38 @@ export default function NotificationSettings({ userData, user }: NotificationSet
       {uiMessage && (
         <div className="mb-4 px-4 py-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-2xs font-medium leading-relaxed flex justify-between items-start gap-3">
           <span>{uiMessage}</span>
-          <button onClick={() => setUiMessage(null)} aria-label="Kapat" className="shrink-0 opacity-50 hover:opacity-100 text-xs">✕</button>
+          <button onClick={() => setUiMessage(null)} aria-label="Kapat" className="shrink-0 opacity-50 hover:opacity-100 text-xs">
+            ✕
+          </button>
         </div>
       )}
 
       <div className="mb-6 p-4 bg-[var(--text-primary)]/[0.02] border border-[var(--glass-border)] rounded-[20px] flex items-start gap-4 flex-col sm:flex-row">
-        <div className={`p-2.5 rounded-xl flex items-center justify-center shrink-0 ${
-          userData?.fcmToken 
-            ? 'bg-[var(--status-success)]/10 text-[var(--status-success)]' 
-            : typeof window !== 'undefined' && !('Notification' in window)
-            ? 'bg-[var(--status-danger)]/10 text-[var(--status-danger)]'
-            : typeof window !== 'undefined' && Notification.permission === 'denied'
-            ? 'bg-[var(--status-danger)]/10 text-[var(--status-danger)]'
-            : 'bg-[var(--status-warning)]/10 text-[var(--status-warning)]'
-        }`}>
+        <div
+          className={`p-2.5 rounded-xl flex items-center justify-center shrink-0 ${
+            userData?.fcmToken
+              ? 'bg-[var(--status-success)]/10 text-[var(--status-success)]'
+              : typeof window !== 'undefined' && !('Notification' in window)
+                ? 'bg-[var(--status-danger)]/10 text-[var(--status-danger)]'
+                : typeof window !== 'undefined' && Notification.permission === 'denied'
+                  ? 'bg-[var(--status-danger)]/10 text-[var(--status-danger)]'
+                  : 'bg-[var(--status-warning)]/10 text-[var(--status-warning)]'
+          }`}
+        >
           <BellRing size={16} />
         </div>
         <div className="space-y-1">
           <h5 className="text-2xs font-bold uppercase tracking-wider text-[var(--text-primary)]">DİZGE DURUM TANI</h5>
           <p className="text-2xs text-muted leading-relaxed font-light">
-            {userData?.fcmToken 
-              ? 'Anlık bildirim alıcınız başarıyla Google sunucularına bağlandı ve bu cihaz yetkilendirildi.' 
+            {userData?.fcmToken
+              ? 'Anlık bildirim alıcınız başarıyla Google sunucularına bağlandı ve bu cihaz yetkilendirildi.'
               : typeof window !== 'undefined' && !('Notification' in window)
-              ? 'Bu cihazın tarayıcısı Web-Push anlık bildirim dizgesini desteklemiyor.'
-              : typeof window !== 'undefined' && Notification.permission === 'denied'
-              ? 'Tarayıcı bildirim izinleri kalıcı olarak engellenmiş. Lütfen adres çubuğundaki kilit simgesinden izin verin.'
-              : 'İzin verilmemiş veya cihaz kaydı yok. Bildirimleri etkinleştirerek görev ve duyuru uyarılarını alabilirsiniz.'}
+                ? 'Bu cihazın tarayıcısı Web-Push anlık bildirim dizgesini desteklemiyor.'
+                : typeof window !== 'undefined' && Notification.permission === 'denied'
+                  ? 'Tarayıcı bildirim izinleri kalıcı olarak engellenmiş. Lütfen adres çubuğundaki kilit simgesinden izin verin.'
+                  : 'İzin verilmemiş veya cihaz kaydı yok. Bildirimleri etkinleştirerek görev ve duyuru uyarılarını alabilirsiniz.'}
           </p>
-          
+
           {typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted' && (
             <motion.button
               whileHover={{ y: -1, scale: 1.02 }}
@@ -221,24 +227,24 @@ export default function NotificationSettings({ userData, user }: NotificationSet
             {
               key: 'nobetHatirlatici',
               title: 'Nöbet & Vakit Hatırlatıcıları',
-              desc: 'Adınıza atanan nöbet saatleri yaklaşırken anlık uyarı alırsınız.'
+              desc: 'Adınıza atanan nöbet saatleri yaklaşırken anlık uyarı alırsınız.',
             },
             {
               key: 'duyurular',
               title: 'Resmi Tebliğler & Duyurular',
-              desc: 'Yönetim tarafından yayınlanan resmi tebliğlerden anında haberdar olursunuz.'
+              desc: 'Yönetim tarafından yayınlanan resmi tebliğlerden anında haberdar olursunuz.',
             },
             {
               key: 'mazeretDurumu',
               title: 'Mazeret & İzin Talebi Güncellemeleri',
-              desc: 'Gönderdiğiniz mazeret veya izin talebi onaylandığında anlık bildirim alırsınız.'
-            }
+              desc: 'Gönderdiğiniz mazeret veya izin talebi onaylandığında anlık bildirim alırsınız.',
+            },
           ] as const
         ).map((setting) => {
           const currentSettings = userData?.notificationSettings || {
             nobetHatirlatici: true,
             duyurular: true,
-            mazeretDurumu: true
+            mazeretDurumu: true,
           };
           const isChecked = currentSettings[setting.key] !== false;
 

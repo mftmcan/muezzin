@@ -41,7 +41,7 @@ const tests: TestCase[] = [
       assert.equal(doc.exists, true);
       assert.equal(doc.data()?.cozuldu, false);
       assert.equal(doc.data()?.tip, 'otomasyonHatasi');
-    }
+    },
   },
   {
     name: 'raporlaBasari acik uyariyi otomatik cozer',
@@ -54,7 +54,7 @@ const tests: TestCase[] = [
       const doc = await db.collection('adminUyarilari').doc(docId).get();
       assert.equal(doc.data()?.cozuldu, true);
       assert.equal(typeof doc.data()?.cozulmeTarihi, 'object');
-    }
+    },
   },
   {
     name: 'raporlaBasari uyari hic olusmamissa sessizce hicbir sey yapmaz',
@@ -65,7 +65,7 @@ const tests: TestCase[] = [
       const docId = otomasyonUyarisiDocId('otomasyonHatasi', IS_ADI);
       const doc = await db.collection('adminUyarilari').doc(docId).get();
       assert.equal(doc.exists, false);
-    }
+    },
   },
   {
     name: 'Ayni is tekrar basarisiz olursa YENI belge degil AYNI belge guncellenir',
@@ -80,7 +80,7 @@ const tests: TestCase[] = [
       const snap = await db.collection('adminUyarilari').get();
       assert.equal(snap.size, 1);
       assert.equal(snap.docs[0]!.data().cozuldu, false);
-    }
+    },
   },
   {
     name: 'Farkli is adlari farkli belgeler uretir, birbirini etkilemez',
@@ -94,8 +94,8 @@ const tests: TestCase[] = [
       const docB = await db.collection('adminUyarilari').doc(otomasyonUyarisiDocId('otomasyonHatasi', 'İş B')).get();
       assert.equal(docA.data()?.cozuldu, true);
       assert.equal(docB.data()?.cozuldu, false);
-    }
-  }
+    },
+  },
 ];
 
 async function main() {

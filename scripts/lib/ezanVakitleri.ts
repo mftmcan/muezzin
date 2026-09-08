@@ -25,7 +25,10 @@ export class EzanVakitOkuyucu {
 
   private ilceIdGetir(): Promise<string> {
     if (!this.ilceIdPromise) {
-      this.ilceIdPromise = db.collection('settings').doc('system').get()
+      this.ilceIdPromise = db
+        .collection('settings')
+        .doc('system')
+        .get()
         .then((snap) => (snap.data()?.ilceId as string) || '9148');
     }
     return this.ilceIdPromise;
@@ -37,13 +40,15 @@ export class EzanVakitOkuyucu {
     if (!this.ayCache.has(docId)) {
       this.ayCache.set(
         docId,
-        db.collection('vakitler').doc(docId).get().then((snap) => {
-          if (!snap.exists) return null;
-          const gunler = snap.data()?.gunler;
-          return (gunler && typeof gunler === 'object')
-            ? gunler as Record<string, Record<string, unknown>>
-            : null;
-        })
+        db
+          .collection('vakitler')
+          .doc(docId)
+          .get()
+          .then((snap) => {
+            if (!snap.exists) return null;
+            const gunler = snap.data()?.gunler;
+            return gunler && typeof gunler === 'object' ? (gunler as Record<string, Record<string, unknown>>) : null;
+          })
       );
     }
     return this.ayCache.get(docId)!;

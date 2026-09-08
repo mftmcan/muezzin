@@ -86,7 +86,10 @@ export function NotificationHistoryPanel({ isOpen, onClose }: NotificationHistor
       <ConfirmModal
         isOpen={confirmClearOpen}
         onClose={() => setConfirmClearOpen(false)}
-        onConfirm={() => { clearHistory(); setConfirmClearOpen(false); }}
+        onConfirm={() => {
+          clearHistory();
+          setConfirmClearOpen(false);
+        }}
         title="Tümünü Temizle"
         message="Bildirim geçmişindeki tüm kayıtlar bu cihazdan kalıcı olarak silinecektir. Bu işlem geri alınamaz."
         confirmText="Temizle"

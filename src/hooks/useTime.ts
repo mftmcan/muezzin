@@ -9,7 +9,7 @@ let globalInterval: NodeJS.Timeout | null = null;
 
 function updateTime() {
   globalNow = getTurkeyNow();
-  listeners.forEach(listener => listener(globalNow));
+  listeners.forEach((listener) => listener(globalNow));
 }
 
 function startGlobalClock() {
@@ -64,23 +64,23 @@ export function useTime() {
  * useMinuteTick — Synchronized minute watcher.
  */
 export function useMinuteTick() {
- const [tick, setTick] = useState(0);
+  const [tick, setTick] = useState(0);
 
- useEffect(() => {
- const now = new Date();
- const delay = (60 - now.getSeconds()) * 1000 - now.getMilliseconds();
- 
- let interval: NodeJS.Timeout;
- const timeout = setTimeout(() => {
- setTick(t => t + 1);
- interval = setInterval(() => setTick(t => t + 1), 60000);
- }, delay);
+  useEffect(() => {
+    const now = new Date();
+    const delay = (60 - now.getSeconds()) * 1000 - now.getMilliseconds();
 
- return () => {
- clearTimeout(timeout);
- if (interval) clearInterval(interval);
- };
- }, []);
+    let interval: NodeJS.Timeout;
+    const timeout = setTimeout(() => {
+      setTick((t) => t + 1);
+      interval = setInterval(() => setTick((t) => t + 1), 60000);
+    }, delay);
 
- return tick;
+    return () => {
+      clearTimeout(timeout);
+      if (interval) clearInterval(interval);
+    };
+  }, []);
+
+  return tick;
 }

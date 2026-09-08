@@ -23,37 +23,37 @@ const OZELLIKLER = [
     icon: CalendarClock,
     title: 'Otomatik Nöbet Planı',
     desc: 'Haftalık ezan vakti nöbetleri, adil sırayla her hafta sonu otomatik oluşturulur.',
-    color: 'var(--aura-indigo)'
+    color: 'var(--aura-indigo)',
   },
   {
     icon: BellRing,
     title: 'Anlık Vakit Hatırlatmaları',
     desc: 'Göreviniz yaklaşınca anlık bildirimle (isteğe bağlı sesli okuma ile) uyarılırsınız.',
-    color: 'var(--aura-amber)'
+    color: 'var(--aura-amber)',
   },
   {
     icon: Repeat,
     title: 'Mazeret & Vekalet Yönetimi',
     desc: 'Göreve gelemeyeceğinizde mazeret bildirin — yedek personel otomatik devreye girer.',
-    color: 'var(--status-success)'
+    color: 'var(--status-success)',
   },
   {
     icon: Megaphone,
     title: 'Resmi Duyurular',
     desc: 'Yönetimin yayınladığı tebliğler ve kurum duyuruları anında elinize ulaşır.',
-    color: 'var(--aura-rose)'
+    color: 'var(--aura-rose)',
   },
   {
     icon: MapPinned,
     title: 'Konuma Duyarlı Ezan Vakitleri',
     desc: 'Bulunduğunuz yere göre hesaplanan hassas ezan vakitlerini gösterir.',
-    color: 'var(--status-info)'
+    color: 'var(--status-info)',
   },
   {
     icon: WifiOff,
     title: 'Çevrimdışı Çalışır',
     desc: 'İnternet olmasa bile o günün vakitleri ve nöbet planı cihazınızda kalır.',
-    color: 'var(--text-secondary)'
+    color: 'var(--text-secondary)',
   },
 ] as const;
 
@@ -115,16 +115,21 @@ export const HakkindaModal: React.FC<HakkindaModalProps> = ({ isOpen, onClose })
               <motion.div
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.1, duration: 0.8, ease: "easeOut" }}
+                transition={{ delay: 0.1, duration: 0.8, ease: 'easeOut' }}
                 className="relative z-10 mb-6"
               >
-                <Logo size={64} variant="dynamic" className="text-[var(--text-primary)] drop-shadow-[0_0_30px_rgba(255,255,255,0.4)]" glowColor="rgba(255,255,255,0.6)" />
+                <Logo
+                  size={64}
+                  variant="dynamic"
+                  className="text-[var(--text-primary)] drop-shadow-[0_0_30px_rgba(255,255,255,0.4)]"
+                  glowColor="rgba(255,255,255,0.6)"
+                />
               </motion.div>
 
               <motion.div
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.2, duration: 0.8, ease: "easeOut" }}
+                transition={{ delay: 0.2, duration: 0.8, ease: 'easeOut' }}
                 className="flex flex-col items-center mb-5 relative z-10"
               >
                 <h2 className="text-3xl font-light tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-white to-white/60 mb-2">
@@ -148,7 +153,7 @@ export const HakkindaModal: React.FC<HakkindaModalProps> = ({ isOpen, onClose })
               <motion.div
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.3, duration: 0.8, ease: "easeOut" }}
+                transition={{ delay: 0.3, duration: 0.8, ease: 'easeOut' }}
                 className="text-center mb-6 relative z-10"
               >
                 <p className="text-sm font-light text-[var(--text-primary)]/60 leading-relaxed max-w-[300px]">
@@ -168,7 +173,7 @@ export const HakkindaModal: React.FC<HakkindaModalProps> = ({ isOpen, onClose })
                     key={ozellik.title}
                     initial={{ y: 14, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.35 + i * 0.05, duration: 0.6, ease: "easeOut" }}
+                    transition={{ delay: 0.35 + i * 0.05, duration: 0.6, ease: 'easeOut' }}
                     className="flex items-start gap-3.5 py-3 border-b border-[var(--glass-border)] last:border-b-0"
                   >
                     <div

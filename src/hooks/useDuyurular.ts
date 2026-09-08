@@ -22,27 +22,26 @@ export function useDuyurular(count = 3) {
 
   useEffect(() => {
     const path = 'duyurular';
-    const q = query(
-      collection(db, path),
-      orderBy('tarih', 'desc'),
-      limit(count)
-    );
+    const q = query(collection(db, path), orderBy('tarih', 'desc'), limit(count));
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as Duyuru[];
-      setDuyurular(data);
-      setLoading(false);
-    }, (err) => {
-      handleFirestoreError(err, OperationType.GET, path);
-      setLoading(false);
-    });
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const data = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as Duyuru[];
+        setDuyurular(data);
+        setLoading(false);
+      },
+      (err) => {
+        handleFirestoreError(err, OperationType.GET, path);
+        setLoading(false);
+      }
+    );
 
     return () => unsubscribe();
   }, [count]);
 
   return { duyurular, loading };
 }
-

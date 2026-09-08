@@ -15,44 +15,39 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const rootRef = React.useRef<HTMLDivElement>(null);
   useSpecularHighlight();
 
+  // Global Audio Autoplay Failsafe: Unlocks audio/speech synthesis on first interaction
+  React.useEffect(() => {
+    const unlockAudio = () => {
+      unlockAudioContext();
+      window.removeEventListener('click', unlockAudio);
+      window.removeEventListener('touchstart', unlockAudio);
+    };
 
- // Global Audio Autoplay Failsafe: Unlocks audio/speech synthesis on first interaction
- React.useEffect(() => {
- const unlockAudio = () => {
- unlockAudioContext();
- window.removeEventListener('click', unlockAudio);
- window.removeEventListener('touchstart', unlockAudio);
- };
+    window.addEventListener('click', unlockAudio);
+    window.addEventListener('touchstart', unlockAudio);
 
- window.addEventListener('click', unlockAudio);
- window.addEventListener('touchstart', unlockAudio);
+    return () => {
+      window.removeEventListener('click', unlockAudio);
+      window.removeEventListener('touchstart', unlockAudio);
+    };
+  }, []);
 
- return () => {
- window.removeEventListener('click', unlockAudio);
- window.removeEventListener('touchstart', unlockAudio);
- };
- }, []);
+  const location = useLocation();
+  useFcmToken();
+  const { isInstallable, isIosPrompt, install, dismissIosPrompt, dismissInstallPrompt } = usePWAInstall();
 
- const location = useLocation();
- useFcmToken();
- const { isInstallable, isIosPrompt, install, dismissIosPrompt, dismissInstallPrompt } = usePWAInstall();
+  // Sayfa geçişlerini otomatik izleme (Telemetry tracking)
+  React.useEffect(() => {
+    const pageName = `PAGE_${location.pathname === '/' ? 'VAKIT' : location.pathname.slice(1).replace(/\//g, '_').toUpperCase()}`;
+    telemetryService.logEvent({
+      eventType: 'page_view',
+      eventName: pageName,
+      metadata: { path: location.pathname },
+    });
+    telemetryService.addBreadcrumb(`Sayfa Geçişi → ${location.pathname}`, 'navigation', { page: pageName });
+  }, [location.pathname]);
 
- // Sayfa geçişlerini otomatik izleme (Telemetry tracking)
- React.useEffect(() => {
- const pageName = `PAGE_${location.pathname === '/' ? 'VAKIT' : location.pathname.slice(1).replace(/\//g, '_').toUpperCase()}`;
- telemetryService.logEvent({
- eventType: 'page_view',
- eventName: pageName,
- metadata: { path: location.pathname }
- });
- telemetryService.addBreadcrumb(
-   `Sayfa Geçişi → ${location.pathname}`,
-   'navigation',
-   { page: pageName }
- );
- }, [location.pathname]);
-
- const isAdminRoute = location.pathname.startsWith('/admin');
+  const isAdminRoute = location.pathname.startsWith('/admin');
 
   return (
     <div ref={rootRef} className="flex flex-col min-h-screen noise-surface relative overflow-hidden transition-colors duration-[3000ms]">
@@ -72,13 +67,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <motion.div
           className="absolute top-[-10%] right-[-10%] w-[70%] h-[70%] blur-[180px] rounded-full opacity-[0.14] sm:opacity-[0.22] transition-all duration-[3000ms]"
           style={{
-            background: 'radial-gradient(circle, var(--dynamic-aura, var(--aura-amber)) 0%, transparent 70%)'
+            background: 'radial-gradient(circle, var(--dynamic-aura, var(--aura-amber)) 0%, transparent 70%)',
           }}
         />
         <motion.div
           className="absolute bottom-[-10%] left-[-10%] w-[70%] h-[70%] blur-[180px] rounded-full opacity-[0.12] sm:opacity-[0.18] transition-all duration-[3000ms]"
           style={{
-            background: 'radial-gradient(circle, var(--dynamic-aura-secondary, var(--aura-indigo)) 0%, transparent 70%)'
+            background: 'radial-gradient(circle, var(--dynamic-aura-secondary, var(--aura-indigo)) 0%, transparent 70%)',
           }}
         />
       </div>
@@ -89,15 +84,19 @@ export function Layout({ children }: { children: React.ReactNode }) {
       {/* PWA install/iOS banner'ları nav dock'un ÜZERİNDE ayrıca yüzen sabit
           elemanlar — görünürken alttaki içerikle (ör. AnaEkranHero vakit
           matrisi) çakışmaması için ekstra alt boşluk eklenir. */}
-      <main id="main-content" tabIndex={-1} className={`flex-1 w-full outline-none transition-all duration-300 relative z-10 ${
-        isAdminRoute
-          ? 'pb-0'
-          : isIosPrompt
-            ? 'pb-[calc(230px+env(safe-area-inset-bottom,0px))] md:pb-36'
-            : isInstallable
-              ? 'pb-[calc(150px+env(safe-area-inset-bottom,0px))] md:pb-36'
-              : 'pb-[calc(96px+env(safe-area-inset-bottom,0px))] md:pb-36'
-      }`}>
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className={`flex-1 w-full outline-none transition-all duration-300 relative z-10 ${
+          isAdminRoute
+            ? 'pb-0'
+            : isIosPrompt
+              ? 'pb-[calc(230px+env(safe-area-inset-bottom,0px))] md:pb-36'
+              : isInstallable
+                ? 'pb-[calc(150px+env(safe-area-inset-bottom,0px))] md:pb-36'
+                : 'pb-[calc(96px+env(safe-area-inset-bottom,0px))] md:pb-36'
+        }`}
+      >
         {children}
       </main>
 
@@ -149,9 +148,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </button>
             <p className="text-sm font-semibold text-[var(--text-primary)] pr-6">Uygulamayı Ana Ekrana Ekleyin</p>
             <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
-              iPhone cihazlarda <b>görev alarmlarını ve anlık bildirimleri sesli/yazılı alabilmek için</b> bu uygulamayı ana ekranınıza kurmanız gerekmektedir.
-              <br /><br />
-              Bunun için Safari altındaki <Share size={12} className="inline-block align-text-bottom mx-1 text-[var(--status-info)]" /> <b>Paylaş</b> ikonuna dokunun, ardından aşağı kaydırıp <b>"Ana Ekrana Ekle"</b> seçeneğini seçin.
+              iPhone cihazlarda <b>görev alarmlarını ve anlık bildirimleri sesli/yazılı alabilmek için</b> bu uygulamayı ana ekranınıza
+              kurmanız gerekmektedir.
+              <br />
+              <br />
+              Bunun için Safari altındaki <Share size={12} className="inline-block align-text-bottom mx-1 text-[var(--status-info)]" />{' '}
+              <b>Paylaş</b> ikonuna dokunun, ardından aşağı kaydırıp <b>"Ana Ekrana Ekle"</b> seçeneğini seçin.
             </p>
           </motion.div>
         )}

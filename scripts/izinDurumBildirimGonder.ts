@@ -1,5 +1,11 @@
 import { db, FieldValue, Timestamp } from './lib/firebaseAdminInit.ts';
-import { fcmGonderVeTemizle, FcmGonderimBasarisizHatasi, kullaniciFcmTokenleriniTopla, type FcmMessage, type FcmGonderici } from './lib/fcmNotify.ts';
+import {
+  fcmGonderVeTemizle,
+  FcmGonderimBasarisizHatasi,
+  kullaniciFcmTokenleriniTopla,
+  type FcmMessage,
+  type FcmGonderici,
+} from './lib/fcmNotify.ts';
 import { parcaliBatchUygula, type BatchIslemi } from './lib/firestoreBatch.ts';
 import { GONDERIM_CLAIM_ALANI, gonderimClaimBayatMi, gonderimClaimSerbestBirak, gonderimClaimYaz } from './lib/gonderimClaim.ts';
 
@@ -23,7 +29,7 @@ type MuezzinData = {
 const TIP_ETIKETI: Record<IzinData['tip'], string> = {
   haftalik: 'Haftalık izin',
   yillik: 'Yıllık izin',
-  mazeret: 'Mazeret'
+  mazeret: 'Mazeret',
 };
 
 /**
@@ -51,9 +57,7 @@ export async function processIzinDurumBildirimleri(
 ): Promise<{ kararSayisi: number; mesajSayisi: number }> {
   console.log(`İzin durumu bildirimleri gönderiliyor${dryRun ? ' (dry-run)' : ''}...`);
 
-  const izinSnap = await db.collection('izinler')
-    .where('bildirimGonderildi', '==', false)
-    .get();
+  const izinSnap = await db.collection('izinler').where('bildirimGonderildi', '==', false).get();
 
   if (izinSnap.empty) {
     console.log('Bildirilecek yeni izin kararı yok.');
@@ -106,16 +110,17 @@ export async function processIzinDurumBildirimleri(
 
     const tipEtiketi = TIP_ETIKETI[izin.tip];
     const title = izin.durum === 'onaylandi' ? 'İzin Talebiniz Onaylandı ✅' : 'İzin Talebiniz Reddedildi';
-    const body = izin.durum === 'onaylandi'
-      ? `${tipEtiketi} talebiniz (${izin.baslangic} - ${izin.bitis}) onaylandı.`
-      : `${tipEtiketi} talebiniz (${izin.baslangic} - ${izin.bitis}) reddedildi.${izin.redSebebi ? ` Gerekçe: ${izin.redSebebi}` : ''}`;
+    const body =
+      izin.durum === 'onaylandi'
+        ? `${tipEtiketi} talebiniz (${izin.baslangic} - ${izin.bitis}) onaylandı.`
+        : `${tipEtiketi} talebiniz (${izin.baslangic} - ${izin.bitis}) reddedildi.${izin.redSebebi ? ` Gerekçe: ${izin.redSebebi}` : ''}`;
 
     tokens.forEach((token) => {
       tokenToUidMap[token] = izin.uid;
       tumMesajlar.push({
         token,
         notification: { title, body },
-        data: { type: 'izin_durumu', izinId: docSnap.id, durum: izin.durum }
+        data: { type: 'izin_durumu', izinId: docSnap.id, durum: izin.durum },
       });
     });
     mesajSayisi += tokens.length;
@@ -149,9 +154,11 @@ export async function processIzinDurumBildirimleri(
 
   // 3. FAZ — MARK: bu turda ele alınan TÜM kayıtlar (mesaj üretmeyenler
   // dahil) işaretlenir, damga silinir.
-  await parcaliBatchUygula(islenecekler.map<BatchIslemi>((docSnap) => (batch) => {
-    batch.update(docSnap.ref, { bildirimGonderildi: true, [GONDERIM_CLAIM_ALANI]: FieldValue.delete() });
-  }));
+  await parcaliBatchUygula(
+    islenecekler.map<BatchIslemi>((docSnap) => (batch) => {
+      batch.update(docSnap.ref, { bildirimGonderildi: true, [GONDERIM_CLAIM_ALANI]: FieldValue.delete() });
+    })
+  );
   console.log(`Tamamlandi. kararSayisi=${kararSayisi}`);
   return { kararSayisi, mesajSayisi };
 }

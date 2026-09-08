@@ -15,60 +15,60 @@ const VAKIT_SIRASI = ['sabah', 'ogle', 'ikindi', 'aksam', 'yatsi'];
 const TIP_SIRASI = ['asil', 'yedek', 'gorev_cagrisi'];
 
 function sortGorevler(gorevler: Bildirim[]) {
- return [...gorevler].sort((a, b) => {
- const vakitDiff = VAKIT_SIRASI.indexOf(a.vakit) - VAKIT_SIRASI.indexOf(b.vakit);
- if (vakitDiff !== 0) return vakitDiff;
- return TIP_SIRASI.indexOf(a.tip) - TIP_SIRASI.indexOf(b.tip);
- });
+  return [...gorevler].sort((a, b) => {
+    const vakitDiff = VAKIT_SIRASI.indexOf(a.vakit) - VAKIT_SIRASI.indexOf(b.vakit);
+    if (vakitDiff !== 0) return vakitDiff;
+    return TIP_SIRASI.indexOf(a.tip) - TIP_SIRASI.indexOf(b.tip);
+  });
 }
 
 export function useBugunkuGorevlerim() {
- const uid = useAuthStore(s => s.user?.uid);
- const [currentTarih, setCurrentTarih] = useState(getTurkeyDateString());
- 
- const cacheKey = uid ? `${uid}_${currentTarih}` : '';
+  const uid = useAuthStore((s) => s.user?.uid);
+  const [currentTarih, setCurrentTarih] = useState(getTurkeyDateString());
 
- const [gorevler, setGorevler] = useState<Bildirim[]>(() => sortGorevler(globalGorevlerCache.get(cacheKey) || []));
- const [loading, setLoading] = useState(cacheKey ? !globalGorevlerCache.has(cacheKey) : false);
+  const cacheKey = uid ? `${uid}_${currentTarih}` : '';
 
- if (useChangeKey(cacheKey)) {
- setGorevler(sortGorevler(globalGorevlerCache.get(cacheKey) || []));
- setLoading(cacheKey ? !globalGorevlerCache.has(cacheKey) : false);
- }
+  const [gorevler, setGorevler] = useState<Bildirim[]>(() => sortGorevler(globalGorevlerCache.get(cacheKey) || []));
+  const [loading, setLoading] = useState(cacheKey ? !globalGorevlerCache.has(cacheKey) : false);
 
- useEffect(() => {
- if (!uid || !cacheKey) {
- return;
- }
+  if (useChangeKey(cacheKey)) {
+    setGorevler(sortGorevler(globalGorevlerCache.get(cacheKey) || []));
+    setLoading(cacheKey ? !globalGorevlerCache.has(cacheKey) : false);
+  }
 
- const q = query(
- collection(db, 'bildirimler'),
- where('uid', '==', uid),
- where('tarih', '==', currentTarih)
- );
+  useEffect(() => {
+    if (!uid || !cacheKey) {
+      return;
+    }
 
- const unsubscribe = onSnapshot(q, (snapshot) => {
- const data = sortGorevler(snapshot.docs.map(doc => ({ id: doc.id, ...(doc.data() as Omit<Bildirim, 'id'>) } as Bildirim)));
- globalGorevlerCache.set(cacheKey, data);
- setGorevler(data);
- setLoading(false);
- }, (error) => {
- handleFirestoreError(error, OperationType.LIST, 'bildirimler');
- setLoading(false);
- });
+    const q = query(collection(db, 'bildirimler'), where('uid', '==', uid), where('tarih', '==', currentTarih));
 
- return () => unsubscribe();
- }, [uid, currentTarih, cacheKey]);
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const data = sortGorevler(snapshot.docs.map((doc) => ({ id: doc.id, ...(doc.data() as Omit<Bildirim, 'id'>) }) as Bildirim));
+        globalGorevlerCache.set(cacheKey, data);
+        setGorevler(data);
+        setLoading(false);
+      },
+      (error) => {
+        handleFirestoreError(error, OperationType.LIST, 'bildirimler');
+        setLoading(false);
+      }
+    );
 
- useEffect(() => {
- const interval = setInterval(() => {
- const yeniTarih = getTurkeyDateString();
- if (yeniTarih !== currentTarih) {
- setCurrentTarih(yeniTarih);
- }
- }, 60000);
- return () => clearInterval(interval);
- }, [currentTarih]);
+    return () => unsubscribe();
+  }, [uid, currentTarih, cacheKey]);
 
- return { gorevler, loading };
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const yeniTarih = getTurkeyDateString();
+      if (yeniTarih !== currentTarih) {
+        setCurrentTarih(yeniTarih);
+      }
+    }, 60000);
+    return () => clearInterval(interval);
+  }, [currentTarih]);
+
+  return { gorevler, loading };
 }

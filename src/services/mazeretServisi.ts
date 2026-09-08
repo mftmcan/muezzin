@@ -11,7 +11,7 @@ import {
   runTransaction,
   serverTimestamp,
   where,
-  writeBatch
+  writeBatch,
 } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
 import { Bildirim, Vakit } from '../types';
@@ -21,14 +21,14 @@ import { handleFirestoreError, OperationType } from '../lib/firestore-errors';
 import { telemetryService } from './telemetryService';
 
 async function getEzanVakti(tarih: string, vakit: string): Promise<Date | null> {
- const settingsDoc = await getDoc(doc(db, 'settings', 'system'));
- const ilceId = (settingsDoc.data()?.ilceId as string) || '9148';
- const monthKey = tarih.slice(0, 7);
- const vakitDoc = await getDoc(doc(db, 'vakitler', `${ilceId}_${monthKey}`));
- if (!vakitDoc.exists()) return null;
- const saat = vakitDoc.data()?.gunler?.[tarih]?.[vakit];
- if (typeof saat !== 'string') return null;
- return parseVakitToDate(tarih, saat);
+  const settingsDoc = await getDoc(doc(db, 'settings', 'system'));
+  const ilceId = (settingsDoc.data()?.ilceId as string) || '9148';
+  const monthKey = tarih.slice(0, 7);
+  const vakitDoc = await getDoc(doc(db, 'vakitler', `${ilceId}_${monthKey}`));
+  if (!vakitDoc.exists()) return null;
+  const saat = vakitDoc.data()?.gunler?.[tarih]?.[vakit];
+  if (typeof saat !== 'string') return null;
+  return parseVakitToDate(tarih, saat);
 }
 
 /**
@@ -40,23 +40,13 @@ async function getEzanVakti(tarih: string, vakit: string): Promise<Date | null> 
  * belgesindeki (potansiyel olarak eski/eksik) `cumaMi` alanına GÜVENMEZ,
  * Cuma'yı `tarih`'ten taze türetir (bkz. mimari denetim K3/K4).
  */
-export async function mazeretZamanKontrolYap(
-  tarih: string,
-  vakit: Vakit,
-  ezanSaati?: string
-): Promise<MazeretDurumu> {
+export async function mazeretZamanKontrolYap(tarih: string, vakit: Vakit, ezanSaati?: string): Promise<MazeretDurumu> {
   const [gY, gM, gD] = tarih.split('-').map(Number);
   const gunTarihi = new Date(gY, gM - 1, gD);
 
-  const vakitSaati = vakit === 'sabah'
-    ? null
-    : ezanSaati
-      ? parseVakitToDate(tarih, ezanSaati)
-      : await getEzanVakti(tarih, vakit);
+  const vakitSaati = vakit === 'sabah' ? null : ezanSaati ? parseVakitToDate(tarih, ezanSaati) : await getEzanVakti(tarih, vakit);
 
-  const oncekiGunYatsiSaati = vakit === 'sabah'
-    ? await getEzanVakti(getTurkeyDateString(new Date(gY, gM - 1, gD - 1)), 'yatsi')
-    : null;
+  const oncekiGunYatsiSaati = vakit === 'sabah' ? await getEzanVakti(getTurkeyDateString(new Date(gY, gM - 1, gD - 1)), 'yatsi') : null;
 
   const referansSaatYok = vakit === 'sabah' ? !oncekiGunYatsiSaati : !vakitSaati;
   if (referansSaatYok) {
@@ -70,7 +60,7 @@ export async function mazeretZamanKontrolYap(
     telemetryService.logEvent({
       eventType: 'performance',
       eventName: 'MAZERET_SURE_KISITLAMASI_ATLANDI',
-      metadata: { tarih, vakit }
+      metadata: { tarih, vakit },
     });
   }
 
@@ -78,32 +68,32 @@ export async function mazeretZamanKontrolYap(
 }
 
 async function dinamikGorevKontrolMekanizmasi(tarih: string, vakit: string, haricUidler: string[]): Promise<void> {
- const path = 'adminUyarilari';
- try {
- const mazeretGirisiVar = haricUidler.length > 0;
+  const path = 'adminUyarilari';
+  try {
+    const mazeretGirisiVar = haricUidler.length > 0;
 
- const alarmSorgu = query(
- collection(db, 'adminUyarilari'),
- where('tarih', '==', tarih),
- where('vakit', '==', vakit),
- where('cozuldu', '==', false)
- );
- const alarmSnap = await getDocs(alarmSorgu);
- if (!alarmSnap.empty) return;
+    const alarmSorgu = query(
+      collection(db, 'adminUyarilari'),
+      where('tarih', '==', tarih),
+      where('vakit', '==', vakit),
+      where('cozuldu', '==', false)
+    );
+    const alarmSnap = await getDocs(alarmSorgu);
+    if (!alarmSnap.empty) return;
 
-  await addDoc(collection(db, 'adminUyarilari'), {
-    tip: 'zincirTukendi',
-    mesaj: mazeretGirisiVar
-      ? 'Mazeret sonrası yedek görevi devralamadı. Kural gereği ek görevli atanamaz; admin müdahalesi gerekir.'
-      : 'Kritik Hata: Veri zinciri tükendi ve yedek görevli de uygun değil.',
-    tarih,
-    vakit,
-    cozuldu: false,
-    olusturmaTarihi: serverTimestamp()
-  });
- } catch (err) {
- throw handleFirestoreError(err, OperationType.WRITE, path);
- }
+    await addDoc(collection(db, 'adminUyarilari'), {
+      tip: 'zincirTukendi',
+      mesaj: mazeretGirisiVar
+        ? 'Mazeret sonrası yedek görevi devralamadı. Kural gereği ek görevli atanamaz; admin müdahalesi gerekir.'
+        : 'Kritik Hata: Veri zinciri tükendi ve yedek görevli de uygun değil.',
+      tarih,
+      vakit,
+      cozuldu: false,
+      olusturmaTarihi: serverTimestamp(),
+    });
+  } catch (err) {
+    throw handleFirestoreError(err, OperationType.WRITE, path);
+  }
 }
 
 /**
@@ -171,12 +161,12 @@ export async function mazeretBildir(bildirimId: string, retSebebi: string, ezanS
         durum: 'reddedildi',
         pendingAck: false,
         devirSonucu: 'alarm_bekliyor',
-        sonGuncelleme: serverTimestamp()
+        sonGuncelleme: serverTimestamp(),
       });
       batch.set(doc(db, 'mazeret_detaylari', bildirimId), {
         uid: currentUid,
         retSebebi,
-        olusturmaTarihi: serverTimestamp()
+        olusturmaTarihi: serverTimestamp(),
       });
       await batch.commit();
       return;
@@ -210,7 +200,7 @@ export async function mazeretBildir(bildirimId: string, retSebebi: string, ezanS
         durum: 'reddedildi',
         pendingAck: false,
         devirSonucu: yedekUygun ? 'yedek_atandi' : 'alarm_bekliyor',
-        sonGuncelleme: serverTimestamp()
+        sonGuncelleme: serverTimestamp(),
       });
 
       // retSebebi artık `bildirimler` belgesine YAZILMAZ — ayrı,
@@ -220,7 +210,7 @@ export async function mazeretBildir(bildirimId: string, retSebebi: string, ezanS
       transaction.set(doc(db, 'mazeret_detaylari', bildirimId), {
         uid: currentUid,
         retSebebi,
-        olusturmaTarihi: serverTimestamp()
+        olusturmaTarihi: serverTimestamp(),
       });
 
       // NOT ("1000 ifade tavanı" kök neden çözümü): yedeğin 'asil' rolüne
@@ -236,7 +226,6 @@ export async function mazeretBildir(bildirimId: string, retSebebi: string, ezanS
       // ile (kural bütçesi yok) gerçekleşiyor; script'in bir sonraki
       // çalışmasına kadar (~10-15 dk) gecikmeli.
     });
-
   } catch (err) {
     throw handleFirestoreError(err, OperationType.WRITE, `bildirimler/${bildirimId}`);
   }
@@ -282,10 +271,7 @@ export async function kriziBaslat(tarih: string, vakit: string, haricUidler: str
         // plan belgesi burada okunmazsa yoksa (nadir ama olası — bu manuel
         // bir admin müdahale yolu) transaction.update ham bir NOT_FOUND
         // fırlatıyordu (bkz. mimari denetim O2).
-        const [currentYedekSnap, planSnap] = await Promise.all([
-          transaction.get(yedekRef),
-          transaction.get(planRef)
-        ]);
+        const [currentYedekSnap, planSnap] = await Promise.all([transaction.get(yedekRef), transaction.get(planRef)]);
         if (!currentYedekSnap.exists() || currentYedekSnap.data()?.durum === 'reddedildi') {
           throw new Error('Yedek görevli artık uygun değil.');
         }
@@ -297,7 +283,7 @@ export async function kriziBaslat(tarih: string, vakit: string, haricUidler: str
           tip: 'asil',
           durum: 'bekliyor',
           pendingAck: true,
-          sonGuncelleme: serverTimestamp()
+          sonGuncelleme: serverTimestamp(),
         });
 
         // `.yedek` alanı 'Sistem'e çekilmezse, terfi eden kişi planda hem
@@ -307,7 +293,7 @@ export async function kriziBaslat(tarih: string, vakit: string, haricUidler: str
         // her iki alanı da yazması, mimari denetim O2).
         transaction.update(planRef, {
           [`gunler.${tarih}.${vakit}.asil`]: yedekData.uid,
-          [`gunler.${tarih}.${vakit}.yedek`]: 'Sistem'
+          [`gunler.${tarih}.${vakit}.yedek`]: 'Sistem',
         });
       });
 

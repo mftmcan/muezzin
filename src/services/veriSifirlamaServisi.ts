@@ -20,17 +20,59 @@ import { zamanAsimiIle } from '../lib/timeoutUtils';
  * atlanmıyor.
  */
 export const SIFIRLANABILIR_KOLEKSIYONLAR = [
-  { anahtar: 'bildirimler', koleksiyon: 'bildirimler', etiket: 'Bildirimler', aciklama: 'Nöbet/onay/mazeret durumları', varsayilanSecili: true },
-  { anahtar: 'haftaPlanlari', koleksiyon: 'haftaPlanlari', etiket: 'Haftalık Planlar', aciklama: 'Yayındaki tüm hizmet çizelgeleri', varsayilanSecili: true },
-  { anahtar: 'izinler', koleksiyon: 'izinler', etiket: 'İzin Talepleri', aciklama: 'Onaylı/bekleyen/reddedilen tüm izinler', varsayilanSecili: true },
-  { anahtar: 'vekalet_talepleri', koleksiyon: 'vekalet_talepleri', etiket: 'Vekalet Talepleri', aciklama: 'Görev devri teklifleri', varsayilanSecili: true },
-  { anahtar: 'adminUyarilari', koleksiyon: 'adminUyarilari', etiket: 'Admin Uyarıları', aciklama: 'Çözülmüş/çözülmemiş kriz alarmları', varsayilanSecili: true },
+  {
+    anahtar: 'bildirimler',
+    koleksiyon: 'bildirimler',
+    etiket: 'Bildirimler',
+    aciklama: 'Nöbet/onay/mazeret durumları',
+    varsayilanSecili: true,
+  },
+  {
+    anahtar: 'haftaPlanlari',
+    koleksiyon: 'haftaPlanlari',
+    etiket: 'Haftalık Planlar',
+    aciklama: 'Yayındaki tüm hizmet çizelgeleri',
+    varsayilanSecili: true,
+  },
+  {
+    anahtar: 'izinler',
+    koleksiyon: 'izinler',
+    etiket: 'İzin Talepleri',
+    aciklama: 'Onaylı/bekleyen/reddedilen tüm izinler',
+    varsayilanSecili: true,
+  },
+  {
+    anahtar: 'vekalet_talepleri',
+    koleksiyon: 'vekalet_talepleri',
+    etiket: 'Vekalet Talepleri',
+    aciklama: 'Görev devri teklifleri',
+    varsayilanSecili: true,
+  },
+  {
+    anahtar: 'adminUyarilari',
+    koleksiyon: 'adminUyarilari',
+    etiket: 'Admin Uyarıları',
+    aciklama: 'Çözülmüş/çözülmemiş kriz alarmları',
+    varsayilanSecili: true,
+  },
   { anahtar: 'duyurular', koleksiyon: 'duyurular', etiket: 'Duyurular', aciklama: 'Cemaate yayınlanan panolar', varsayilanSecili: false },
-  { anahtar: 'error_logs', koleksiyon: 'error_logs', etiket: 'Hata Günlükleri', aciklama: 'İstemci tarafı hata izleri', varsayilanSecili: false },
-  { anahtar: 'telemetry_logs', koleksiyon: 'telemetry_logs', etiket: 'Telemetri Günlükleri', aciklama: 'Sayfa görüntüleme/tıklama izleri', varsayilanSecili: false },
+  {
+    anahtar: 'error_logs',
+    koleksiyon: 'error_logs',
+    etiket: 'Hata Günlükleri',
+    aciklama: 'İstemci tarafı hata izleri',
+    varsayilanSecili: false,
+  },
+  {
+    anahtar: 'telemetry_logs',
+    koleksiyon: 'telemetry_logs',
+    etiket: 'Telemetri Günlükleri',
+    aciklama: 'Sayfa görüntüleme/tıklama izleri',
+    varsayilanSecili: false,
+  },
 ] as const;
 
-export type SifirlanabilirKoleksiyonAnahtari = typeof SIFIRLANABILIR_KOLEKSIYONLAR[number]['anahtar'];
+export type SifirlanabilirKoleksiyonAnahtari = (typeof SIFIRLANABILIR_KOLEKSIYONLAR)[number]['anahtar'];
 
 /** Her koleksiyon için `getCountFromServer` ile ucuz bir belge sayısı okur
  * (tüm belgeleri çekmez) — onay ekranında admin'e "kaç belge silinecek"
@@ -165,7 +207,10 @@ export async function operasyonelVeriyiSifirla(
     hataMesaji = err instanceof Error ? err.message : String(err);
     throw handleFirestoreError(err, OperationType.DELETE, 'operasyonel-veri-sifirlama');
   } finally {
-    const ozet = Object.entries(koleksiyonBazinda).map(([k, n]) => `${k}: ${n}`).join(', ') || '(hiçbir koleksiyon tamamlanmadı)';
+    const ozet =
+      Object.entries(koleksiyonBazinda)
+        .map(([k, n]) => `${k}: ${n}`)
+        .join(', ') || '(hiçbir koleksiyon tamamlanmadı)';
     // isValidAuditLog `details.size() <= 500` şart koşuyor — hata mesajı
     // dahil edilince bu sınırı aşıp audit yazımının KENDİSİNİN de
     // reddedilmesi (ve kısmi işlemin hiç iz bırakmaması) riskini önlemek

@@ -57,7 +57,7 @@ beforeEach(() => {
 });
 
 describe('telemetryService kuyruk izolasyonu', () => {
-  it('önceki kullanıcının kuyrukta kalan olaylarını yeni kullanıcının batch\'ine karıştırmaz', () => {
+  it("önceki kullanıcının kuyrukta kalan olaylarını yeni kullanıcının batch'ine karıştırmaz", () => {
     // Kullanıcı A bir olay üretir (çıkış YAPMADAN sekme kapanır senaryosu:
     // olay kuyrukta kalır, BATCH_SIZE'a ulaşmadığı için gönderilmemiştir).
     authMock.currentUser = { uid: 'kullaniciA' };
@@ -79,7 +79,7 @@ describe('telemetryService kuyruk izolasyonu', () => {
     expect(olaylar.some((o) => o.eventName === 'A_SAYFA')).toBe(false);
   });
 
-  it('yabancı olay geri kuyruğa KONULMAZ — sonraki batch\'leri de zehirlemez', () => {
+  it("yabancı olay geri kuyruğa KONULMAZ — sonraki batch'leri de zehirlemez", () => {
     authMock.currentUser = { uid: 'kullaniciA' };
     telemetryService.logEvent({ eventType: 'click', eventName: 'A_TIKLAMA' });
 

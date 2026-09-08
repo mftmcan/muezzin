@@ -20,9 +20,11 @@ export class IslemZamanAsimi extends Error {}
 export function zamanAsimiIle<T>(promise: Promise<T>, sureMs = 8000): Promise<T> {
   return new Promise<T>((resolve, reject) => {
     const timer = setTimeout(() => {
-      reject(new IslemZamanAsimi(
-        'Bu işlem şu anda tamamlanamadı. Çevrimdışı olabilirsiniz — bağlantınız sağlanınca işlem kendiliğinden tamamlanabilir; birkaç dakika sonra tekrar kontrol edin.'
-      ));
+      reject(
+        new IslemZamanAsimi(
+          'Bu işlem şu anda tamamlanamadı. Çevrimdışı olabilirsiniz — bağlantınız sağlanınca işlem kendiliğinden tamamlanabilir; birkaç dakika sonra tekrar kontrol edin.'
+        )
+      );
     }, sureMs);
 
     promise.then(

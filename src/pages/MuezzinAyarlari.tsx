@@ -21,16 +21,16 @@ export default function MuezzinAyarlari() {
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
 
-  const user = useAuthStore(s => s.user);
-  const authInitialized = useAuthStore(s => s.initialized);
+  const user = useAuthStore((s) => s.user);
+  const authInitialized = useAuthStore((s) => s.initialized);
 
   // Kendi profilimiz zaten global useMuezzinStore aboneliğinde mevcut
   // (bkz. StoreInitializer) — burada ayrı bir muezzins/{uid} dinleyicisi
   // açmak yerine aynı veriyi paylaşılan store'dan okuyoruz (bkz. Profil.tsx'teki
   // aynı düzeltme; tasarım denetimi: önceden bu iki sayfa aynı dokümanı
   // birbirinden bağımsız iki kez dinliyordu).
-  const userData = useMuezzinStore(s => (user ? s.muezzinMap[user.uid] : undefined)) ?? null;
-  const muezzinlerLoading = useMuezzinStore(s => s.loading);
+  const userData = useMuezzinStore((s) => (user ? s.muezzinMap[user.uid] : undefined)) ?? null;
+  const muezzinlerLoading = useMuezzinStore((s) => s.loading);
   const loading = !authInitialized || (!!user && muezzinlerLoading);
 
   const confirmLogout = async () => {

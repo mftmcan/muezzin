@@ -3,24 +3,24 @@
  */
 
 /* Fontlar self-host edilir (npm @fontsource paketleri) — offline PWA'da CDN'e bağımlı kalınmaz. */
-@import "@fontsource-variable/inter/opsz.css";
-@import "@fontsource-variable/inter/opsz-italic.css";
-@import "@fontsource/instrument-serif/index.css";
-@import "@fontsource/instrument-serif/400-italic.css";
-@import "@fontsource-variable/jetbrains-mono/wght.css";
+@import '@fontsource-variable/inter/opsz.css';
+@import '@fontsource-variable/inter/opsz-italic.css';
+@import '@fontsource/instrument-serif/index.css';
+@import '@fontsource/instrument-serif/400-italic.css';
+@import '@fontsource-variable/jetbrains-mono/wght.css';
 /* wght-italic: mono + italic hiçbir yerde birlikte kullanılmıyor (0 gerçek
    kullanım, ölçüldü) — 42 KB ham font gereksiz yere deploy ediliyordu (bkz.
    premium denetim, bölüm 3). Inter'in italic varyantı KALDIRILMADI: 22
    gerçek `italic` kullanımı var, kaldırmak tarayıcının sentetik/oblik
    italiğe düşmesine (gerçek regresyon) yol açardı. */
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 @theme {
-  --font-sans: "Inter Variable", system-ui, -apple-system, BlinkMacSystemFont, ui-sans-serif, sans-serif;
-  --font-serif: "Instrument Serif", serif;
-  --font-mono: "JetBrains Mono Variable", monospace;
+  --font-sans: 'Inter Variable', system-ui, -apple-system, BlinkMacSystemFont, ui-sans-serif, sans-serif;
+  --font-serif: 'Instrument Serif', serif;
+  --font-mono: 'JetBrains Mono Variable', monospace;
 
   /* text-[11px] resmi ölçeğin dışında ~468 kez kullanılıyordu — tüm standart
      Tailwind boyut sınıflarının toplam kullanımından fazla. Buraya taşınarak
@@ -52,7 +52,7 @@
   --app-bg: #000000;
   --spatial-glass-bg: rgba(255, 255, 255, 0.02);
   --spatial-highlight: rgba(255, 255, 255, 0.15);
-  
+
   /* Ambient Aura Palette (Base HSL - Velvet Jewel-Toned Circadian Color System) */
   --aura-ruby-h: 343;
   --aura-amber-h: 38;
@@ -83,16 +83,18 @@
 }
 
 [data-theme='light'] {
-  --bg-h: 38; --bg-s: 20%; --bg-l: 94.5%;
+  --bg-h: 38;
+  --bg-s: 20%;
+  --bg-l: 94.5%;
   --app-bg: hsl(var(--bg-h), var(--bg-s), var(--bg-l));
   /* Cam arka plan doygunlugu ve opakligi artirildi (Apple HIG cam morfizasyonu standardi) */
   --spatial-glass-bg: hsla(38, 25%, 98.5%, 0.65);
-  --spatial-highlight: hsla(38, 30%, 100%, 0.90);
+  --spatial-highlight: hsla(38, 30%, 100%, 0.9);
   --glass-fallback-bg: hsla(38, 25%, 98.5%, 0.98);
-  
+
   /* Lüks ve yuksek kontrastli Nordic Graphite tipografi standardı */
-  --text-primary: hsl(210, 25%, 8%);     /* Deep Graphite Obsidian */
-  --text-secondary: hsl(210, 15%, 34%);  /* Soft Graphite Dark Muted for WCAG AA */
+  --text-primary: hsl(210, 25%, 8%); /* Deep Graphite Obsidian */
+  --text-secondary: hsl(210, 15%, 34%); /* Soft Graphite Dark Muted for WCAG AA */
   --aura-opacity: 0.16;
 
   /* text-muted/subtle/faint (P2.6): aşağıdaki 60 satırlık escape-hatch
@@ -127,8 +129,8 @@
   --surface-medium: hsla(210, 15%, 10%, 0.04);
   --surface-high: hsla(210, 15%, 10%, 0.06);
   --card-elevated-bg: hsla(38, 25%, 100%, 0.96);
-  --card-flat-bg: hsla(210, 10%, 94%, 0.50);
-  --card-active-bg: hsla(38, 30%, 91%, 0.70);
+  --card-flat-bg: hsla(210, 10%, 94%, 0.5);
+  --card-active-bg: hsla(38, 30%, 91%, 0.7);
 
   /* status-success/warning ölçüldüğünde app-bg üzerinde WCAG AA'nın altındaydı
      (sırasıyla 3.31:1 ve 2.86:1) — koyulaştırılarak ≥4.5:1'e çekildi (bkz. tasarım denetimi). */
@@ -148,7 +150,7 @@
   --aura-emerald: hsl(var(--aura-emerald-h), 82%, 26%); /* 4.84:1 */
   --aura-indigo: hsl(var(--aura-indigo-h), 62%, 48%);
   --aura-rose: hsl(var(--aura-rose-h), 76%, 42%);
-  --specular-glow: rgba(255, 255, 255, 0.70);
+  --specular-glow: rgba(255, 255, 255, 0.7);
 
   /* ─────────────────────────────────────────
    * Ham Tailwind palet renkleri (bg-rose-500, text-emerald-500 vb.) --aura-*/
@@ -210,10 +212,10 @@
   --color-blue-600: hsl(217, 62%, 36%);
 }
 
-
-
 [data-theme='dark'] {
-  --bg-h: 240; --bg-s: 10%; --bg-l: 3.5%;
+  --bg-h: 240;
+  --bg-s: 10%;
+  --bg-l: 3.5%;
   --app-bg: hsl(var(--bg-h), var(--bg-s), var(--bg-l));
   --spatial-glass-bg: rgba(20, 20, 24, 0.35);
   --spatial-highlight: hsla(240, 100%, 100%, 0.05);
@@ -232,7 +234,9 @@
   --label-secondary-opacity: 0.6;
   --label-tertiary-opacity: 0.4;
   --glass-border: rgba(255, 255, 255, 0.09);
-  --spatial-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.18), inset 0 -1px 1px rgba(0, 0, 0, 0.2), 0 4px 24px -1px rgba(0, 0, 0, 0.03), 0 20px 40px -12px rgba(0, 0, 0, 0.65);
+  --spatial-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.18), inset 0 -1px 1px rgba(0, 0, 0, 0.2), 0 4px 24px -1px rgba(0, 0, 0, 0.03),
+    0 20px 40px -12px rgba(0, 0, 0, 0.65);
 
   --surface-low: rgba(255, 255, 255, 0.01);
   --surface-medium: rgba(255, 255, 255, 0.025);
@@ -258,7 +262,6 @@
   --specular-glow: rgba(255, 255, 255, 0.04);
 }
 
-
 @layer base {
   html {
     scrollbar-gutter: stable;
@@ -270,9 +273,11 @@
     -moz-osx-font-smoothing: grayscale;
     background: var(--app-bg) !important;
     color: var(--text-primary);
-    transition: background 1.2s var(--spring-easing), color 0.8s var(--spring-easing);
+    transition:
+      background 1.2s var(--spring-easing),
+      color 0.8s var(--spring-easing);
     text-rendering: optimizeLegibility;
-    font-feature-settings: "ss01", "cv01", "cv03";
+    font-feature-settings: 'ss01', 'cv01', 'cv03';
   }
 
   /* outline-offset ÖNCEDEN +3px (dışa doğru) idi — .spatial-glass/.apple-glass
@@ -289,10 +294,15 @@
   }
 
   /* Apple Standard Button Physics - Subtle fade, no aggressive scale globally */
-  button, 
-  [role="button"] {
-    transition: transform 0.3s var(--spring-easing), background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, opacity 0.2s ease;
-    
+  button,
+  [role='button'] {
+    transition:
+      transform 0.3s var(--spring-easing),
+      background 0.3s ease,
+      border-color 0.3s ease,
+      box-shadow 0.3s ease,
+      opacity 0.2s ease;
+
     &:active {
       opacity: 0.6;
       transition: opacity 0.1s ease;
@@ -304,8 +314,6 @@
     will-change: transform;
   }
 }
-
-
 
 @utility spatial-glass {
   background: var(--spatial-glass-bg) !important;
@@ -321,24 +329,31 @@
   overflow: hidden;
   border: 1px solid var(--glass-border) !important;
   box-shadow: var(--spatial-shadow) !important;
-  transition: background 0.4s var(--spring-easing), border-color 0.4s var(--spring-easing), box-shadow 0.4s var(--spring-easing) !important;
-  
+  transition:
+    background 0.4s var(--spring-easing),
+    border-color 0.4s var(--spring-easing),
+    box-shadow 0.4s var(--spring-easing) !important;
+
   /* GPU Layer and Compositor Optimization (Anti-gravity Rendering) */
   will-change: transform, backdrop-filter;
   transform: translateZ(0);
   backface-visibility: hidden;
-  
+
   /* Webkit Border-Radius Backdrop-Filter Overflow clipping fix */
   -webkit-mask-image: -webkit-radial-gradient(white, black);
-  
+
   /* Specular Highlight + Kristal Dokusu (Noise) */
   &::before {
-    content: "";
+    content: '';
     position: absolute;
     inset: 0;
     pointer-events: none;
-    background-image: 
-      radial-gradient(circle at var(--specular-x, 50%) var(--specular-y, 0%), var(--specular-glow, rgba(255, 255, 255, 0.04)) 0%, transparent 60%),
+    background-image:
+      radial-gradient(
+        circle at var(--specular-x, 50%) var(--specular-y, 0%),
+        var(--specular-glow, rgba(255, 255, 255, 0.04)) 0%,
+        transparent 60%
+      ),
       url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.015'/%3E%3C/svg%3E");
     z-index: 1;
     transition: opacity 0.5s ease;
@@ -364,7 +379,10 @@
   border: 1px solid var(--glass-border) !important;
   border-radius: var(--radius-card);
   box-shadow: var(--spatial-shadow) !important;
-  transition: background 0.5s var(--spring-easing), border-color 0.5s var(--spring-easing), box-shadow 0.5s var(--spring-easing) !important;
+  transition:
+    background 0.5s var(--spring-easing),
+    border-color 0.5s var(--spring-easing),
+    box-shadow 0.5s var(--spring-easing) !important;
   overflow: hidden;
 }
 
@@ -375,7 +393,9 @@
   overflow: hidden;
   border: 1px solid var(--glass-border);
   box-shadow: var(--spatial-shadow);
-  transition: background 0.4s var(--spring-easing), border-color 0.4s var(--spring-easing);
+  transition:
+    background 0.4s var(--spring-easing),
+    border-color 0.4s var(--spring-easing);
 }
 
 @utility apple-card {
@@ -389,11 +409,15 @@
      dikkat dağıtıcı bir layout kaymasına neden oluyordu (bkz. premium
      denetim B11, Y2). Kaldırılması ağırlık değişimini ANİ yapar — kayma
      hâlâ olur ama uzatılmış bir animasyonla vurgulanmaz. */
-  transition: box-shadow 0.6s var(--spring-easing), background 0.6s var(--spring-easing), border-color 0.6s var(--spring-easing), transform 0.5s var(--spring-easing);
+  transition:
+    box-shadow 0.6s var(--spring-easing),
+    background 0.6s var(--spring-easing),
+    border-color 0.6s var(--spring-easing),
+    transform 0.5s var(--spring-easing);
   border-radius: var(--radius-card) !important;
   cursor: pointer;
   will-change: transform;
-  
+
   &:active {
     transform: scale(0.985) translateY(0);
     background: var(--card-active-bg);
@@ -413,12 +437,10 @@
 @utility spatial-glass-elevated {
   @apply spatial-glass;
   background: var(--card-elevated-bg);
-  box-shadow: 
+  box-shadow:
     var(--spatial-shadow),
     inset 0 0 80px rgba(255, 255, 255, 0.02);
 }
-
-
 
 @utility vibrant-text {
   background: linear-gradient(135deg, var(--text-primary) 0%, var(--aura-indigo) 50%, var(--text-secondary) 100%);
@@ -454,9 +476,15 @@
 }
 
 @keyframes pulse-danger-ring {
-  0% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.7); }
-  70% { box-shadow: 0 0 0 6px rgba(244, 63, 94, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0); }
+  0% {
+    box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(244, 63, 94, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(244, 63, 94, 0);
+  }
 }
 
 @utility badge-pulse-danger {
@@ -465,9 +493,18 @@
 }
 
 @keyframes ping-slow {
-  0% { transform: scale(1); opacity: 0.8; }
-  50% { transform: scale(1.5); opacity: 0; }
-  100% { transform: scale(1); opacity: 0; }
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
 }
 .animate-ping-slow {
   animation: ping-slow 3s cubic-bezier(0, 0, 0.2, 1) infinite;
@@ -485,15 +522,15 @@
 }
 
 @layer base {
-  input[type="text"],
-  input[type="email"],
-  input[type="password"],
-  input[type="number"],
+  input[type='text'],
+  input[type='email'],
+  input[type='password'],
+  input[type='number'],
   textarea,
   select {
     @apply bg-[var(--text-primary)]/[0.03] border border-[var(--glass-border)] rounded-2xl px-5 py-3 text-[14px] font-sans font-light text-[var(--text-primary)] outline-none transition-all duration-500 placeholder:opacity-30;
     backdrop-filter: blur(20px);
-    
+
     &:focus {
       @apply bg-[var(--text-primary)]/[0.06] border-[var(--status-info)]/30;
       box-shadow: 0 0 20px -5px var(--status-info);
@@ -502,18 +539,18 @@
     /* :focus ile simetrik ama danger tonunda — alan-seviyesi hata durumu
        (FormField.tsx) hiç görsel karşılık bulmuyordu (bkz. premium denetim,
        bölüm 14). */
-    &[aria-invalid="true"] {
+    &[aria-invalid='true'] {
       @apply border-[var(--status-danger)]/40 bg-[var(--status-danger)]/[0.04];
       box-shadow: 0 0 20px -5px var(--status-danger);
     }
   }
 
-  input[type="checkbox"] {
+  input[type='checkbox'] {
     @apply w-5 h-5 rounded-lg border border-[var(--glass-border)] bg-[var(--text-primary)]/[0.05] transition-all cursor-pointer appearance-none relative overflow-hidden;
     &:checked {
       @apply bg-[var(--status-info)] border-[var(--status-info)];
       &::after {
-        content: "✓";
+        content: '✓';
         @apply absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white;
       }
     }
@@ -577,7 +614,7 @@
 @utility noise-surface {
   position: relative;
   &::before {
-    content: "";
+    content: '';
     position: absolute;
     inset: 0;
     z-index: 0;
@@ -616,7 +653,8 @@
    tarayıcılar tarafından yok sayıldığından) nabız ayrı bir ::after halkası
    üzerinde çalışır. */
 @keyframes living-glow-ring {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 0 0 color-mix(in srgb, var(--dynamic-aura, var(--aura-indigo)) 55%, transparent);
   }
   50% {
@@ -627,7 +665,7 @@
   position: relative;
 }
 .animate-living-glow::after {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
   z-index: 2;
@@ -640,20 +678,27 @@
   transition: all var(--fluid-duration) var(--spring-easing);
 }
 
-.phi-padding { padding: var(--phi-space); }
+.phi-padding {
+  padding: var(--phi-space);
+}
 
 /* Custom Scrollbar macOS Style */
-::-webkit-scrollbar { width: 14px; height: 14px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { 
-  background: rgba(150, 150, 150, 0.3); 
-  border-radius: 9999px; 
-  border: 4px solid var(--app-bg); 
+::-webkit-scrollbar {
+  width: 14px;
+  height: 14px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(150, 150, 150, 0.3);
+  border-radius: 9999px;
+  border: 4px solid var(--app-bg);
   background-clip: padding-box;
 }
-::-webkit-scrollbar-thumb:hover { 
-  background: rgba(150, 150, 150, 0.5); 
-  border: 4px solid var(--app-bg); 
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(150, 150, 150, 0.5);
+  border: 4px solid var(--app-bg);
   background-clip: padding-box;
 }
 
@@ -680,8 +725,13 @@
 
 /* Subtle floating animation */
 @keyframes float-y {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-5px); }
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
 }
 .animate-float {
   animation: float-y 5s ease-in-out infinite;
@@ -690,8 +740,12 @@
 
 /* Skeleton shimmer sweep */
 @keyframes skeleton-sweep {
-  0%   { background-position: -200% 0; }
-  100% { background-position:  200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 .skeleton-shimmer {
   /* rgba(255,255,255,…) sabitti — açık temada beyaz zemin üzerinde görünmezdi
@@ -721,7 +775,7 @@
   letter-spacing: 0.15em;
   transition: all 0.5s var(--spring-easing);
   box-shadow: 0 4px 15px -3px color-mix(in srgb, var(--dynamic-aura, var(--text-primary)) 20%, transparent);
-  
+
   &:hover {
     transform: translateY(-2px);
     opacity: 0.95;
@@ -731,15 +785,20 @@
 
 @utility tactile-card {
   @apply spatial-glass;
-  transition: transform 0.6s var(--spring-easing), background 0.6s var(--spring-easing), box-shadow 0.6s var(--spring-easing);
+  transition:
+    transform 0.6s var(--spring-easing),
+    background 0.6s var(--spring-easing),
+    box-shadow 0.6s var(--spring-easing);
   will-change: transform;
-  
+
   &:hover {
     transform: translateY(-4px) scale(1.01);
     background: var(--surface-medium);
-    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    box-shadow:
+      0 20px 40px -10px rgba(0, 0, 0, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.04);
   }
-  
+
   &:active {
     transform: scale(0.985);
     transition: transform 0.1s cubic-bezier(0.25, 1, 0.5, 1);
@@ -783,18 +842,17 @@
 }
 
 /* Expressive View Transition Theme Ripple Overrides */
-::view-transition-old(root), 
-::view-transition-new(root) { 
-  animation: none; 
-  mix-blend-mode: normal; 
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
 }
-::view-transition-old(root) { 
-  z-index: 1; 
+::view-transition-old(root) {
+  z-index: 1;
 }
-::view-transition-new(root) { 
-  z-index: 9999; 
+::view-transition-new(root) {
+  z-index: 9999;
 }
-
 
 /* ─────────────────────────────────────────
  * Premium Layout & Responsive Viewport Utils
@@ -907,11 +965,12 @@
 [data-theme='dark'] .spatial-glass,
 [data-theme='dark'] .apple-card,
 [data-theme='dark'] .spatial-glass-elevated {
-  border-top: 1px solid rgba(255, 255, 255, 0.20) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.2) !important;
 }
 
 @keyframes aura-float {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1) translate(0px, 0px) rotate(0deg);
   }
   33% {
@@ -962,11 +1021,21 @@
 
 /* Premium Apple-Style Soft Heartbeat / Respiration Avatar Effect */
 @keyframes heartbeat {
-  0% { transform: scale(1); }
-  14% { transform: scale(1.03); }
-  28% { transform: scale(1); }
-  42% { transform: scale(1.03); }
-  70% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+  14% {
+    transform: scale(1.03);
+  }
+  28% {
+    transform: scale(1);
+  }
+  42% {
+    transform: scale(1.03);
+  }
+  70% {
+    transform: scale(1);
+  }
 }
 
 .animate-heartbeat {

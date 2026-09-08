@@ -1,6 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { AlertTriangle, ShieldAlert, CheckCircle, Trash2, Wifi, WifiOff, Cpu, Navigation, Layers, Activity, ChevronDown, ChevronUp, Clock } from 'lucide-react';
+import {
+  AlertTriangle,
+  ShieldAlert,
+  CheckCircle,
+  Trash2,
+  Wifi,
+  WifiOff,
+  Cpu,
+  Navigation,
+  Layers,
+  Activity,
+  ChevronDown,
+  ChevronUp,
+  Clock,
+} from 'lucide-react';
 import { ConfirmModal } from '../../../components/ui/ConfirmModal';
 import { LoadingState } from '../../../components/ui/LoadingState';
 import { EmptyState } from '../../../components/ui/EmptyState';
@@ -17,7 +31,8 @@ interface ErrorLog extends Partial<EnrichedErrorLog> {
 
 const categoryColors: Record<Breadcrumb['category'], string> = {
   navigation: 'text-sky-400 bg-sky-400/10 border-sky-400/20',
-  user_action: 'text-[var(--dynamic-aura,var(--aura-indigo))] bg-[var(--dynamic-aura,var(--aura-indigo))]/10 border-[var(--dynamic-aura,var(--aura-indigo))]/20',
+  user_action:
+    'text-[var(--dynamic-aura,var(--aura-indigo))] bg-[var(--dynamic-aura,var(--aura-indigo))]/10 border-[var(--dynamic-aura,var(--aura-indigo))]/20',
   network: 'text-amber-400 bg-amber-400/10 border-amber-400/20',
   system: 'text-rose-400 bg-rose-400/10 border-rose-400/20',
 };
@@ -34,11 +49,7 @@ const ERROR_DETAIL_PANEL_KEYS: readonly ErrorDetailPanelKey[] = ['stack', 'bread
 
 function BreadcrumbTrail({ breadcrumbs }: { breadcrumbs: Breadcrumb[] }) {
   if (!breadcrumbs || breadcrumbs.length === 0) {
-    return (
-      <p className="text-2xs text-[var(--text-secondary)]/75 italic font-light">
-        Bu hata için breadcrumb verisi bulunmuyor.
-      </p>
-    );
+    return <p className="text-2xs text-[var(--text-secondary)]/75 italic font-light">Bu hata için breadcrumb verisi bulunmuyor.</p>;
   }
 
   return (
@@ -54,28 +65,31 @@ function BreadcrumbTrail({ breadcrumbs }: { breadcrumbs: Breadcrumb[] }) {
           {/* Zaman Çizelgesi Çizgisi */}
           <div className="flex flex-col items-center flex-shrink-0 mt-1">
             <div className={`w-1.5 h-1.5 rounded-full border ${categoryColors[crumb.category]}`} />
-            {i < breadcrumbs.length - 1 && (
-              <div className="w-px h-3 bg-[var(--glass-border)] mt-0.5" />
-            )}
+            {i < breadcrumbs.length - 1 && <div className="w-px h-3 bg-[var(--glass-border)] mt-0.5" />}
           </div>
           <div className="flex-1 pb-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className={`text-2xs font-bold px-1.5 py-0.5 rounded-md border uppercase tracking-widest ${categoryColors[crumb.category]}`}>
+              <span
+                className={`text-2xs font-bold px-1.5 py-0.5 rounded-md border uppercase tracking-widest ${categoryColors[crumb.category]}`}
+              >
                 {categoryLabels[crumb.category]}
               </span>
-              <span className="text-2xs text-[var(--text-primary)]/80 font-light leading-tight truncate">
-                {crumb.action}
-              </span>
+              <span className="text-2xs text-[var(--text-primary)]/80 font-light leading-tight truncate">{crumb.action}</span>
             </div>
             <div className="flex items-center gap-2 mt-0.5">
               <Clock size={8} className="text-muted flex-shrink-0" />
               <span className="text-2xs font-mono text-muted">
-                {crumb.wallTime ? new Date(crumb.wallTime).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit', fractionalSecondDigits: 3 }) : `+${crumb.timestamp}ms`}
+                {crumb.wallTime
+                  ? new Date(crumb.wallTime).toLocaleTimeString('tr-TR', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      second: '2-digit',
+                      fractionalSecondDigits: 3,
+                    })
+                  : `+${crumb.timestamp}ms`}
               </span>
               {crumb.data && Object.keys(crumb.data).length > 0 && (
-                <span className="text-2xs font-mono text-muted truncate">
-                  {JSON.stringify(crumb.data).slice(0, 60)}
-                </span>
+                <span className="text-2xs font-mono text-muted truncate">{JSON.stringify(crumb.data).slice(0, 60)}</span>
               )}
             </div>
           </div>
@@ -87,11 +101,7 @@ function BreadcrumbTrail({ breadcrumbs }: { breadcrumbs: Breadcrumb[] }) {
 
 function StateSnapshotCard({ snapshot }: { snapshot: ErrorLog['stateSnapshot'] }) {
   if (!snapshot) {
-    return (
-      <p className="text-2xs text-[var(--text-secondary)]/75 italic font-light">
-        Bu hata için durum fotoğrafı bulunmuyor.
-      </p>
-    );
+    return <p className="text-2xs text-[var(--text-secondary)]/75 italic font-light">Bu hata için durum fotoğrafı bulunmuyor.</p>;
   }
 
   const items = [
@@ -111,7 +121,10 @@ function StateSnapshotCard({ snapshot }: { snapshot: ErrorLog['stateSnapshot'] }
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
       {items.map(({ label, value, icon: Icon }) => (
-        <div key={label} className="px-3 py-2 rounded-xl bg-[var(--text-primary)]/[0.02] border border-[var(--glass-border)] flex items-start gap-2">
+        <div
+          key={label}
+          className="px-3 py-2 rounded-xl bg-[var(--text-primary)]/[0.02] border border-[var(--glass-border)] flex items-start gap-2"
+        >
           <Icon size={10} className="text-muted flex-shrink-0 mt-0.5" />
           <div className="min-w-0">
             <p className="text-2xs text-[var(--text-secondary)]/75 uppercase tracking-wider leading-none mb-0.5">{label}</p>
@@ -134,7 +147,7 @@ export const SistemHatalariSekmesi = React.memo(({ formatDate }: { formatDate: (
   // Sunucu tarafı da daraltıldı: firestore.rules `error_logs` update/delete
   // artık `isSuperAdmin()` istiyor, yani bu düğme atlansa bile yazım
   // reddedilir.
-  const isSuperAdmin = useAuthStore(s => s.isSuperAdmin);
+  const isSuperAdmin = useAuthStore((s) => s.isSuperAdmin);
 
   // Roving tabindex ok-tuşu navigasyonu olmadan uygulanmıştı — klavye
   // kullanıcısı Tab ile yalnızca aktif sekmeye ulaşıp diğerlerine hiç
@@ -212,7 +225,9 @@ export const SistemHatalariSekmesi = React.memo(({ formatDate }: { formatDate: (
         <motion.button
           whileHover={isSuperAdmin ? { y: -2, scale: 1.02 } : {}}
           whileTap={isSuperAdmin ? { scale: 0.98 } : {}}
-          onClick={() => { if (isSuperAdmin) setConfirmClearOpen(true); }}
+          onClick={() => {
+            if (isSuperAdmin) setConfirmClearOpen(true);
+          }}
           disabled={errorLogs.length === 0 || !isSuperAdmin}
           title={isSuperAdmin ? undefined : SUPER_ADMIN_GEREKLI_IPUCU}
           className="px-4 py-2 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 border border-rose-500/20 rounded-xl text-2xs font-bold uppercase tracking-wide shadow-lg disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center gap-2"
@@ -261,11 +276,19 @@ export const SistemHatalariSekmesi = React.memo(({ formatDate }: { formatDate: (
                           bir eylem sunmuyor). */}
                       {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
                       <div className="flex flex-wrap gap-2 mt-3" onClick={(e) => e.stopPropagation()}>
-                        <span className="px-2.5 py-1 bg-[var(--text-primary)]/[0.03] text-2xs font-sans font-light rounded-lg border border-[var(--glass-border)] text-[var(--text-secondary)]">OS: {log.device?.os}</span>
-                        <span className="px-2.5 py-1 bg-[var(--text-primary)]/[0.03] text-2xs font-sans font-light rounded-lg border border-[var(--glass-border)] text-[var(--text-secondary)]">Tarayıcı: {log.device?.browser}</span>
-                        <span className="px-2.5 py-1 bg-[var(--text-primary)]/[0.03] text-2xs font-sans font-light rounded-lg border border-[var(--glass-border)] text-[var(--text-secondary)]">Ekran: {log.device?.screenSize}</span>
+                        <span className="px-2.5 py-1 bg-[var(--text-primary)]/[0.03] text-2xs font-sans font-light rounded-lg border border-[var(--glass-border)] text-[var(--text-secondary)]">
+                          OS: {log.device?.os}
+                        </span>
+                        <span className="px-2.5 py-1 bg-[var(--text-primary)]/[0.03] text-2xs font-sans font-light rounded-lg border border-[var(--glass-border)] text-[var(--text-secondary)]">
+                          Tarayıcı: {log.device?.browser}
+                        </span>
+                        <span className="px-2.5 py-1 bg-[var(--text-primary)]/[0.03] text-2xs font-sans font-light rounded-lg border border-[var(--glass-border)] text-[var(--text-secondary)]">
+                          Ekran: {log.device?.screenSize}
+                        </span>
                         {log.device?.pwaMode && (
-                          <span className="px-2.5 py-1 bg-[var(--dynamic-aura,var(--aura-indigo))]/10 text-[var(--dynamic-aura,var(--aura-indigo))] border border-[var(--dynamic-aura,var(--aura-indigo))]/20 text-2xs font-bold tracking-wider rounded-lg uppercase">PWA YÜKLÜ</span>
+                          <span className="px-2.5 py-1 bg-[var(--dynamic-aura,var(--aura-indigo))]/10 text-[var(--dynamic-aura,var(--aura-indigo))] border border-[var(--dynamic-aura,var(--aura-indigo))]/20 text-2xs font-bold tracking-wider rounded-lg uppercase">
+                            PWA YÜKLÜ
+                          </span>
                         )}
                         {breadcrumbCount > 0 && (
                           <span className="px-2.5 py-1 bg-sky-400/10 text-sky-400 border border-sky-400/20 text-2xs font-bold tracking-wider rounded-lg uppercase">
@@ -284,9 +307,7 @@ export const SistemHatalariSekmesi = React.memo(({ formatDate }: { formatDate: (
                   <div className="text-right sm:flex-shrink-0 flex flex-col items-end gap-2">
                     <span className="text-2xs text-muted font-bold block">{formatDate(log.timestamp)}</span>
                     <span className="text-2xs text-muted font-mono block">ID: {log.id}</span>
-                    <div className="text-muted">
-                      {isOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                    </div>
+                    <div className="text-muted">{isOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}</div>
                   </div>
                 </div>
 
@@ -302,7 +323,11 @@ export const SistemHatalariSekmesi = React.memo(({ formatDate }: { formatDate: (
                       onClick={(e) => e.stopPropagation()}
                     >
                       {/* Panel Sekme Seçici */}
-                      <div role="tablist" aria-label="Hata detay sekmeleri" className="flex gap-1 mb-5 p-1 bg-[var(--text-primary)]/[0.03] rounded-2xl border border-[var(--glass-border)] w-full sm:w-fit overflow-x-auto no-scrollbar">
+                      <div
+                        role="tablist"
+                        aria-label="Hata detay sekmeleri"
+                        className="flex gap-1 mb-5 p-1 bg-[var(--text-primary)]/[0.03] rounded-2xl border border-[var(--glass-border)] w-full sm:w-fit overflow-x-auto no-scrollbar"
+                      >
                         {(
                           [
                             { key: 'stack', label: 'Stack Trace', icon: AlertTriangle },
@@ -360,7 +385,13 @@ export const SistemHatalariSekmesi = React.memo(({ formatDate }: { formatDate: (
 
                       {/* ─── Breadcrumb Kullanıcı İzleri ─── */}
                       {activePanel === 'breadcrumbs' && (
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} role="tabpanel" id="error-panel-breadcrumbs" aria-labelledby="error-tab-breadcrumbs">
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          role="tabpanel"
+                          id="error-panel-breadcrumbs"
+                          aria-labelledby="error-tab-breadcrumbs"
+                        >
                           <span className="premium-label !text-2xs !opacity-30 block mb-4">
                             KULLANICI EYLEM KIRINTI İZLERİ — HATADAN ÖNCEKİ {breadcrumbCount} ADIM
                           </span>
@@ -370,10 +401,14 @@ export const SistemHatalariSekmesi = React.memo(({ formatDate }: { formatDate: (
 
                       {/* ─── Durum Fotoğrafı ─── */}
                       {activePanel === 'snapshot' && (
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} role="tabpanel" id="error-panel-snapshot" aria-labelledby="error-tab-snapshot">
-                          <span className="premium-label !text-2xs !opacity-30 block mb-4">
-                            HATA ANINDAKİ UYGULAMA DURUM FOTOĞRAFI
-                          </span>
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          role="tabpanel"
+                          id="error-panel-snapshot"
+                          aria-labelledby="error-tab-snapshot"
+                        >
+                          <span className="premium-label !text-2xs !opacity-30 block mb-4">HATA ANINDAKİ UYGULAMA DURUM FOTOĞRAFI</span>
                           <StateSnapshotCard snapshot={log.stateSnapshot} />
                         </motion.div>
                       )}

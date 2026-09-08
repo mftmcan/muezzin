@@ -39,9 +39,9 @@ export default function PersonalHistoryCard({ user }: PersonalHistoryCardProps) 
         );
 
         const snapshot = await getDocs(q);
-        const data = snapshot.docs.map(doc => ({
+        const data = snapshot.docs.map((doc) => ({
           id: doc.id,
-          ...doc.data()
+          ...doc.data(),
         })) as TarihselGorev[];
 
         // Further sort on client by date (just in case) and then updates
@@ -59,7 +59,7 @@ export default function PersonalHistoryCard({ user }: PersonalHistoryCardProps) 
   }, [user]);
 
   return (
-    <motion.div 
+    <motion.div
       whileHover={{ y: -4 }}
       className="p-8 spatial-glass rounded-card border-[var(--glass-border)] shadow-[var(--spatial-shadow)] relative overflow-hidden text-left"
     >
@@ -88,7 +88,9 @@ export default function PersonalHistoryCard({ user }: PersonalHistoryCardProps) 
               (limit(30)) sınırlıdır; hiç kaydı olmayan biri için "30 gün
               içinde bulunamadı" ifadesi var olmayan bir zaman penceresi
               kontrol edilmiş gibi yanıltıyordu (bkz. kod denetimi). */}
-          <p className="text-2xs text-[var(--text-secondary)]/75 font-light">Henüz onaylanmış veya mazeret bildirilmiş bir göreviniz bulunmamaktadır.</p>
+          <p className="text-2xs text-[var(--text-secondary)]/75 font-light">
+            Henüz onaylanmış veya mazeret bildirilmiş bir göreviniz bulunmamaktadır.
+          </p>
         </div>
       ) : (
         <div className="relative pl-6 space-y-6 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-[1px] before:bg-[var(--glass-border)]">
@@ -98,10 +100,12 @@ export default function PersonalHistoryCard({ user }: PersonalHistoryCardProps) 
             const dateFormatted = format(dateObj, 'd MMMM yyyy', { locale: tr });
             const dayName = format(dateObj, 'EEEE', { locale: tr });
             const vakitName = VAKIT_GORA_ISIMLERI[gorev.vakit] || gorev.vakit;
-            
+
             // Dynamic badge color
-            const statusColor = isConfirmed ? 'text-[var(--status-success)] border-[var(--status-success)]/10 bg-[var(--status-success)]/5' : 'text-[var(--status-danger)] border-[var(--status-danger)]/10 bg-[var(--status-danger)]/5';
-            
+            const statusColor = isConfirmed
+              ? 'text-[var(--status-success)] border-[var(--status-success)]/10 bg-[var(--status-success)]/5'
+              : 'text-[var(--status-danger)] border-[var(--status-danger)]/10 bg-[var(--status-danger)]/5';
+
             return (
               <motion.div
                 key={gorev.id}
@@ -111,9 +115,13 @@ export default function PersonalHistoryCard({ user }: PersonalHistoryCardProps) 
                 className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-3 group pb-1.5"
               >
                 {/* Timeline node */}
-                <div className={`absolute -left-[22px] top-1.5 w-3 h-3 rounded-full border-2 border-[var(--app-bg)] shadow-[var(--spatial-shadow)] ${
-                  isConfirmed ? 'bg-[var(--status-success)] shadow-[var(--status-success)]/20' : 'bg-[var(--status-danger)] shadow-[var(--status-danger)]/20'
-                }`} />
+                <div
+                  className={`absolute -left-[22px] top-1.5 w-3 h-3 rounded-full border-2 border-[var(--app-bg)] shadow-[var(--spatial-shadow)] ${
+                    isConfirmed
+                      ? 'bg-[var(--status-success)] shadow-[var(--status-success)]/20'
+                      : 'bg-[var(--status-danger)] shadow-[var(--status-danger)]/20'
+                  }`}
+                />
 
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
@@ -124,7 +132,9 @@ export default function PersonalHistoryCard({ user }: PersonalHistoryCardProps) 
                   </div>
                   <div className="flex items-center gap-2 text-2xs text-muted font-light">
                     <Clock size={11} className="text-[var(--dynamic-aura,var(--aura-indigo))]/50" />
-                    <span>{dateFormatted}, {dayName}</span>
+                    <span>
+                      {dateFormatted}, {dayName}
+                    </span>
                     <span className="opacity-40">•</span>
                     <span className="uppercase tracking-wider font-semibold text-2xs">
                       {gorev.tip === 'asil' ? 'ASİL VARDİYA' : 'DESTEK NÖBETİ'}

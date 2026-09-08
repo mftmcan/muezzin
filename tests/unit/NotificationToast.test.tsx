@@ -9,9 +9,7 @@ describe('NotificationToast', () => {
   });
 
   it('renders the title and message', () => {
-    render(
-      <NotificationToast id="1" title="Görev Onaylandı" message="Allah kabul etsin." onClose={() => {}} />
-    );
+    render(<NotificationToast id="1" title="Görev Onaylandı" message="Allah kabul etsin." onClose={() => {}} />);
 
     expect(screen.getByText('Görev Onaylandı')).toBeInTheDocument();
     expect(screen.getByText('Allah kabul etsin.')).toBeInTheDocument();

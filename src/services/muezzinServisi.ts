@@ -31,7 +31,7 @@ type InviteDoc = Invite & { id: string };
  * o fonksiyonun yorumu) — burada true dönmesi işlemi engellemek için
  * yeterli, ama false dönmesi TEK BAŞINA yeterli değil. */
 export function isLastActiveAdmin(m: MuezzinDoc, muezzinler: MuezzinDoc[]): boolean {
-  const activeAdmins = muezzinler.filter(user => user.role === 'admin' && user.aktif === true && user.arsivlendi !== true);
+  const activeAdmins = muezzinler.filter((user) => user.role === 'admin' && user.aktif === true && user.arsivlendi !== true);
   return m.role === 'admin' && m.aktif === true && activeAdmins.length <= 1;
 }
 
@@ -44,7 +44,7 @@ export function isLastActiveAdmin(m: MuezzinDoc, muezzinler: MuezzinDoc[]): bool
 async function aktifAdminUidleriGetir(): Promise<string[]> {
   const q = query(collection(db, 'muezzins'), where('role', '==', 'admin'), where('aktif', '==', true));
   const snap = await getDocsFromServer(q);
-  return snap.docs.filter(d => d.data().arsivlendi !== true).map(d => d.id);
+  return snap.docs.filter((d) => d.data().arsivlendi !== true).map((d) => d.id);
 }
 
 /**
@@ -67,16 +67,12 @@ async function aktifAdminUidleriGetir(): Promise<string[]> {
  * bu tasarım onu tamamen KAPATIR, ayrı bir sayaç belgesi/şema göçü
  * gerektirmeden.)
  */
-async function sonAdminKorumaliGuncelle(
-  hedefUid: string,
-  guncelleme: DocumentData,
-  hataMesaji: string
-): Promise<void> {
+async function sonAdminKorumaliGuncelle(hedefUid: string, guncelleme: DocumentData, hataMesaji: string): Promise<void> {
   const adayUidler = await aktifAdminUidleriGetir();
   const tumUidler = adayUidler.includes(hedefUid) ? adayUidler : [...adayUidler, hedefUid];
   await runTransaction(db, async (transaction) => {
-    const snaps = await Promise.all(tumUidler.map(uid => transaction.get(doc(db, 'muezzins', uid))));
-    const aktifAdminSayisi = snaps.filter(s => {
+    const snaps = await Promise.all(tumUidler.map((uid) => transaction.get(doc(db, 'muezzins', uid))));
+    const aktifAdminSayisi = snaps.filter((s) => {
       const data = s.data();
       return s.exists() && data?.role === 'admin' && data?.aktif === true && data?.arsivlendi !== true;
     }).length;
@@ -111,15 +107,8 @@ export async function kendiAdiniGuncelle(uid: string, displayName: string): Prom
 }
 
 /** Bekleyen davetleri canlı dinler (yalnızca admin panelinde kullanılır). */
-export function invitesAbone(
-  onData: (invites: InviteDoc[]) => void,
-  onError: (error: FirestoreError) => void
-): () => void {
-  return onSnapshot(
-    collection(db, 'invites'),
-    (snap) => onData(snap.docs.map(d => ({ id: d.id, ...d.data() }) as InviteDoc)),
-    onError
-  );
+export function invitesAbone(onData: (invites: InviteDoc[]) => void, onError: (error: FirestoreError) => void): () => void {
+  return onSnapshot(collection(db, 'invites'), (snap) => onData(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as InviteDoc)), onError);
 }
 
 /** Gece cron'unun (scripts/haftalikPlanOlustur.ts) ürettiği kadar ileri hafta
@@ -177,7 +166,11 @@ export async function personelAktiflikDegistir(m: MuezzinDoc, muezzinler: Muezzi
       await updateDoc(doc(db, 'muezzins', m.id), { aktif: !m.aktif, onayBekliyor: false });
     }
     const planRefreshed = await haftaPlaniniGuvenliYenile(m);
-    await telemetryService.logAudit('Kadro Durumu Değiştirme', m.displayName, `Personel aktiflik durumu ${!m.aktif ? 'AKTİF' : 'PASİF'} yapıldı.`);
+    await telemetryService.logAudit(
+      'Kadro Durumu Değiştirme',
+      m.displayName,
+      `Personel aktiflik durumu ${!m.aktif ? 'AKTİF' : 'PASİF'} yapıldı.`
+    );
     return { planRefreshed };
   } catch (err) {
     throw handleFirestoreError(err, OperationType.UPDATE, path);
@@ -270,8 +263,9 @@ export async function personelKaydet(params: PersonelKaydetParams): Promise<{ pl
   const { editingUser, muezzinler, fullName, role, haftalikIzinGunu } = params;
 
   if (editingUser) {
-    const activeAdmins = muezzinler.filter(user => user.role === 'admin' && user.aktif === true && user.arsivlendi !== true);
-    const isLastActiveAdminRoleChange = editingUser.role === 'admin' && editingUser.aktif === true && role !== 'admin' && activeAdmins.length <= 1;
+    const activeAdmins = muezzinler.filter((user) => user.role === 'admin' && user.aktif === true && user.arsivlendi !== true);
+    const isLastActiveAdminRoleChange =
+      editingUser.role === 'admin' && editingUser.aktif === true && role !== 'admin' && activeAdmins.length <= 1;
     if (isLastActiveAdminRoleChange) {
       throw new Error('Son aktif yöneticinin yetki seviyesi değiştirilemez.');
     }
@@ -300,7 +294,11 @@ export async function personelKaydet(params: PersonelKaydetParams): Promise<{ pl
         // (bkz. mimari denetim O1).
         planRefreshed = await haftalikPlanlariYenile();
       }
-      await telemetryService.logAudit('Profil Güncelleme', fullName, `Kullanıcı rolü: ${toTurkishUpperCase(role)}, İzin günü: ${haftalikIzinGunu > 0 ? haftalikIzinGunu : 'Yok'}`);
+      await telemetryService.logAudit(
+        'Profil Güncelleme',
+        fullName,
+        `Kullanıcı rolü: ${toTurkishUpperCase(role)}, İzin günü: ${haftalikIzinGunu > 0 ? haftalikIzinGunu : 'Yok'}`
+      );
       return { planRefreshed };
     } catch (err) {
       throw handleFirestoreError(err, OperationType.UPDATE, path);

@@ -74,10 +74,7 @@ async function son24SaatBelgeSayisi(koleksiyon: string, esik: Timestamp): Promis
  * (yalnızca eşitlik filtreleri, orderBy yok — composite index gerekmez)
  * bu pencere sınırını tamamen ortadan kaldırır. */
 async function acikKotaUyarilariniGetir() {
-  return db.collection('adminUyarilari')
-    .where('cozuldu', '==', false)
-    .where('tip', '==', UYARI_TIPI)
-    .get();
+  return db.collection('adminUyarilari').where('cozuldu', '==', false).where('tip', '==', UYARI_TIPI).get();
 }
 
 async function main() {
@@ -93,7 +90,7 @@ async function main() {
 
   console.log(
     `Son 24 saat — error_logs: ${hataSayisi}, telemetry_logs: ${telemetriSayisi}, toplam: ${toplam} belge ` +
-    `(günlük ${GUNLUK_YAZMA_KOTASI} yazma kotasının TAHMİNİ %${yuzde}'i; eşik: ${ESIK_BELGE_SAYISI}).`
+      `(günlük ${GUNLUK_YAZMA_KOTASI} yazma kotasının TAHMİNİ %${yuzde}'i; eşik: ${ESIK_BELGE_SAYISI}).`
   );
 
   if (toplam < ESIK_BELGE_SAYISI) {

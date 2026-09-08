@@ -22,12 +22,18 @@ const BASLIKLAR: Record<AdminUyarisi['tip'], string> = {
 
 function getIcon(tip: AdminUyarisi['tip']) {
   switch (tip) {
-    case 'zincirTukendi': return <AlertTriangle size={16} strokeWidth={1.5} />;
-    case 'apiHatasi': return <ServerCrash size={16} strokeWidth={1.5} />;
-    case 'planOlusturulamadi': return <CalendarX size={16} strokeWidth={1.5} />;
-    case 'otomasyonHatasi': return <RefreshCcw size={16} strokeWidth={1.5} />;
-    case 'kotaUyarisi': return <Gauge size={16} strokeWidth={1.5} />;
-    default: return <AlertTriangle size={16} strokeWidth={1.5} />;
+    case 'zincirTukendi':
+      return <AlertTriangle size={16} strokeWidth={1.5} />;
+    case 'apiHatasi':
+      return <ServerCrash size={16} strokeWidth={1.5} />;
+    case 'planOlusturulamadi':
+      return <CalendarX size={16} strokeWidth={1.5} />;
+    case 'otomasyonHatasi':
+      return <RefreshCcw size={16} strokeWidth={1.5} />;
+    case 'kotaUyarisi':
+      return <Gauge size={16} strokeWidth={1.5} />;
+    default:
+      return <AlertTriangle size={16} strokeWidth={1.5} />;
   }
 }
 

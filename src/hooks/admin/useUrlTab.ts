@@ -24,7 +24,7 @@ export function useUrlTab<T extends string>(paramName: string, validIds: readonl
 
   const setActiveTab = (tab: T) => {
     startTransition(() => {
-      setSearchParams(prev => {
+      setSearchParams((prev) => {
         const next = new URLSearchParams(prev);
         if (tab === defaultId) {
           next.delete(paramName);

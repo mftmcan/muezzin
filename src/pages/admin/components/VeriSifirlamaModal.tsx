@@ -26,20 +26,20 @@ interface Props {
 }
 
 export function VeriSifirlamaModal({ isOpen, onClose }: Props) {
-  const user = useAuthStore(s => s.user);
+  const user = useAuthStore((s) => s.user);
   // Süper-admin kapısı SistemAyarlari.tsx'teki tetikleyici düğmede de var;
   // burada TEKRAR edilir çünkü modal ileride başka bir yerden de
   // açılabilir ve bu işlem geri alınamaz (bkz. premium denetim P1.6).
   // Gerçek sınır yine sunucudadır — firestore.rules `isSuperAdmin()`
   // yalnızca error_logs/telemetry_logs için daraltıldı, diğer
   // koleksiyonlar admin iş akışlarını kırmamak adına isAdmin()'de kaldı.
-  const isSuperAdmin = useAuthStore(s => s.isSuperAdmin);
-  const showNotification = useNotificationStore(s => s.showNotification);
+  const isSuperAdmin = useAuthStore((s) => s.isSuperAdmin);
+  const showNotification = useNotificationStore((s) => s.showNotification);
 
   const [sayilar, setSayilar] = useState<Record<SifirlanabilirKoleksiyonAnahtari, number> | null>(null);
   const [sayilarYukleniyor, setSayilarYukleniyor] = useState(false);
   const [secili, setSecili] = useState<Set<SifirlanabilirKoleksiyonAnahtari>>(
-    () => new Set(SIFIRLANABILIR_KOLEKSIYONLAR.filter(k => k.varsayilanSecili).map(k => k.anahtar))
+    () => new Set(SIFIRLANABILIR_KOLEKSIYONLAR.filter((k) => k.varsayilanSecili).map((k) => k.anahtar))
   );
   const [sayaclariDaSifirla, setSayaclariDaSifirla] = useState(true);
   const [onayMetni, setOnayMetni] = useState('');
@@ -76,16 +76,15 @@ export function VeriSifirlamaModal({ isOpen, onClose }: Props) {
   }, [isOpen]);
 
   const toggleSecim = (anahtar: SifirlanabilirKoleksiyonAnahtari) => {
-    setSecili(prev => {
+    setSecili((prev) => {
       const next = new Set(prev);
-      if (next.has(anahtar)) next.delete(anahtar); else next.add(anahtar);
+      if (next.has(anahtar)) next.delete(anahtar);
+      else next.add(anahtar);
       return next;
     });
   };
 
-  const secilenSayilarToplami = sayilar
-    ? Array.from(secili).reduce((acc, k) => acc + (sayilar[k] || 0), 0)
-    : null;
+  const secilenSayilarToplami = sayilar ? Array.from(secili).reduce((acc, k) => acc + (sayilar[k] || 0), 0) : null;
 
   // Kadro sayaçları (aylikVakitSayisi vb.) yalnızca bildirimler/izinler
   // silindiğinde anlamlı bir "sıfırla" seçeneği — bkz. veriSifirlamaServisi.ts
@@ -98,11 +97,8 @@ export function VeriSifirlamaModal({ isOpen, onClose }: Props) {
     setIlerlemeMesaji('Başlatılıyor...');
     try {
       const adminAdi = user.displayName || user.email || 'Bilinmeyen Admin';
-      const islemSonucu = await operasyonelVeriyiSifirla(
-        Array.from(secili),
-        sayaclariDaSifirla && sayaclarIlgiliMi,
-        adminAdi,
-        (mesaj) => setIlerlemeMesaji(mesaj)
+      const islemSonucu = await operasyonelVeriyiSifirla(Array.from(secili), sayaclariDaSifirla && sayaclarIlgiliMi, adminAdi, (mesaj) =>
+        setIlerlemeMesaji(mesaj)
       );
       showNotification('Sıfırlama Tamamlandı', `${islemSonucu.toplamSilinenBelge} belge kalıcı olarak silindi.`, 'success');
       playSuccess();
@@ -134,11 +130,12 @@ export function VeriSifirlamaModal({ isOpen, onClose }: Props) {
           <AlertTriangle className="text-rose-500 shrink-0 mt-0.5" size={22} strokeWidth={1.5} />
           <div className="text-xs text-[var(--text-secondary)] leading-relaxed space-y-1">
             <p className="font-semibold text-rose-400">Bu işlem GERİ ALINAMAZ.</p>
-            <p>Seçtiğiniz koleksiyonlardaki TÜM belgeler kalıcı olarak silinir. Ekranı açık olan tüm kullanıcılar bunu ANINDA görür (bekleyen görevler/planlar boşalır).</p>
+            <p>
+              Seçtiğiniz koleksiyonlardaki TÜM belgeler kalıcı olarak silinir. Ekranı açık olan tüm kullanıcılar bunu ANINDA görür (bekleyen
+              görevler/planlar boşalır).
+            </p>
             <p className="opacity-70">Mazeret geçmişi ve denetim kayıtları bu işlemden etkilenmez — kalıcı olarak korunur.</p>
-            {!isSuperAdmin && (
-              <p className="font-semibold text-amber-400 pt-1">{SUPER_ADMIN_GEREKLI_IPUCU}</p>
-            )}
+            {!isSuperAdmin && <p className="font-semibold text-amber-400 pt-1">{SUPER_ADMIN_GEREKLI_IPUCU}</p>}
           </div>
         </div>
 
@@ -148,7 +145,9 @@ export function VeriSifirlamaModal({ isOpen, onClose }: Props) {
             <label
               key={k.anahtar}
               className={`flex items-center justify-between gap-4 p-4 rounded-2xl border cursor-pointer transition-all ${
-                secili.has(k.anahtar) ? 'bg-rose-500/[0.04] border-rose-500/25' : 'bg-[var(--text-primary)]/[0.02] border-[var(--glass-border)]'
+                secili.has(k.anahtar)
+                  ? 'bg-rose-500/[0.04] border-rose-500/25'
+                  : 'bg-[var(--text-primary)]/[0.02] border-[var(--glass-border)]'
               } ${calisiyor ? 'opacity-50 pointer-events-none' : ''}`}
             >
               <div className="flex items-center gap-4 min-w-0">
@@ -165,7 +164,7 @@ export function VeriSifirlamaModal({ isOpen, onClose }: Props) {
                 </div>
               </div>
               <span className="text-2xs font-bold tabular-nums text-[var(--text-secondary)]/70 shrink-0">
-                {sayilarYukleniyor ? '…' : (sayilar ? `${sayilar[k.anahtar] ?? 0} belge` : '—')}
+                {sayilarYukleniyor ? '…' : sayilar ? `${sayilar[k.anahtar] ?? 0} belge` : '—'}
               </span>
             </label>
           ))}
@@ -185,15 +184,15 @@ export function VeriSifirlamaModal({ isOpen, onClose }: Props) {
             />
             <div>
               <p className="text-sm font-medium text-[var(--text-primary)]">Kadro sayaçlarını da sıfırla</p>
-              <p className="text-2xs text-[var(--text-secondary)]/60">Aylık görev yükü ve yıllık izin kotası bu verilerden türetilir; sıfırlanmazsa kaynaksız (hayalet) değer olarak kalır.</p>
+              <p className="text-2xs text-[var(--text-secondary)]/60">
+                Aylık görev yükü ve yıllık izin kotası bu verilerden türetilir; sıfırlanmazsa kaynaksız (hayalet) değer olarak kalır.
+              </p>
             </div>
           </label>
         )}
 
         {secilenSayilarToplami !== null && secili.size > 0 && (
-          <p className="text-xs text-rose-400 font-semibold text-center">
-            Toplam {secilenSayilarToplami} belge kalıcı olarak silinecek.
-          </p>
+          <p className="text-xs text-rose-400 font-semibold text-center">Toplam {secilenSayilarToplami} belge kalıcı olarak silinecek.</p>
         )}
 
         <div className="space-y-3">

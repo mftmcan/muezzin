@@ -31,9 +31,7 @@ export function Switch({ checked, onChange, label, description, disabled }: Swit
       <span className="space-y-1">
         <span className="block text-xs font-semibold text-[var(--text-primary)]">{label}</span>
         {description && (
-          <span className="block text-2xs text-[var(--text-secondary)]/75 leading-normal max-w-[280px] font-light">
-            {description}
-          </span>
+          <span className="block text-2xs text-[var(--text-secondary)]/75 leading-normal max-w-[280px] font-light">{description}</span>
         )}
       </span>
       <span

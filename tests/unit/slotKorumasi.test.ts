@@ -141,12 +141,7 @@ describe('self-healing turu, mazeret sonrası yedek terfisini GERİ ALMAZ', () =
       [GUN]: Object.fromEntries(VAKITLER.map((v) => [v, { asil: 'terfi_eden', yedek: 'Sistem' }])),
     };
 
-    const plan = haftalikPlanUret(
-      [GUN],
-      muezzinler,
-      [],
-      selfHealSimulasyonu(terfiSonrasiSlotlar(), mevcutGunler)
-    );
+    const plan = haftalikPlanUret([GUN], muezzinler, [], selfHealSimulasyonu(terfiSonrasiSlotlar(), mevcutGunler));
 
     for (const vakit of VAKITLER) {
       // Hatalı davranış: { asil: 'mazeretli', yedek: 'Sistem' } — terfi
@@ -161,12 +156,7 @@ describe('self-healing turu, mazeret sonrası yedek terfisini GERİ ALMAZ', () =
       [GUN]: Object.fromEntries(VAKITLER.map((v) => [v, { asil: 'terfi_eden', yedek: 'Sistem' }])),
     };
 
-    const plan = haftalikPlanUret(
-      [GUN, ERTESI],
-      muezzinler,
-      [],
-      selfHealSimulasyonu(terfiSonrasiSlotlar(), mevcutGunler)
-    );
+    const plan = haftalikPlanUret([GUN, ERTESI], muezzinler, [], selfHealSimulasyonu(terfiSonrasiSlotlar(), mevcutGunler));
 
     // Terfi eden kişi Pazartesi fiilen asil görev yaptı — Salı günü SOS
     // (dinlenme) kuralıyla asil seçilemez. Hatalı davranışta bu gün hiç
@@ -197,9 +187,7 @@ describe('korumaliSlotMu — onaylı izin ezmesi', () => {
   });
 
   it('elle atanmış (manuelAtama) bir slotun korumasını da izin ezer', () => {
-    const manuel: SlotBildirimVerisi[] = [
-      { tip: 'asil', uid: 'a', durum: 'bekliyor', manuelAtama: true },
-    ];
+    const manuel: SlotBildirimVerisi[] = [{ tip: 'asil', uid: 'a', durum: 'bekliyor', manuelAtama: true }];
     expect(korumaliSlotMu(manuel)).toBe(true);
     expect(korumaliSlotMu(manuel, new Set(['a']))).toBe(false);
   });
@@ -209,27 +197,25 @@ describe('korumaliSlotMu — onaylı izin ezmesi', () => {
   });
 
   it('mazeret (reddedildi) kaydını izin EZMEZ — denetim izi ve devir hedefidir', () => {
-    const mazeretli: SlotBildirimVerisi[] = [
-      { tip: 'asil', uid: 'a', durum: 'reddedildi', sonGuncelleme: ts(10) },
-    ];
+    const mazeretli: SlotBildirimVerisi[] = [{ tip: 'asil', uid: 'a', durum: 'reddedildi', sonGuncelleme: ts(10) }];
     expect(korumaliSlotMu(mazeretli, new Set(['a']))).toBe(true);
   });
 
   it('tamamlanmış geçmiş günü (okundu_varsayilan) izin EZMEZ (K7 regresyonu)', () => {
-    const gecmis: SlotBildirimVerisi[] = [
-      { tip: 'asil', uid: 'a', durum: 'okundu_varsayilan', sonGuncelleme: ts(10) },
-    ];
+    const gecmis: SlotBildirimVerisi[] = [{ tip: 'asil', uid: 'a', durum: 'okundu_varsayilan', sonGuncelleme: ts(10) }];
     expect(korumaliSlotMu(gecmis, new Set(['a']))).toBe(true);
   });
 
   it('görev çağrısını ve devam eden vekalet devrini izin EZMEZ', () => {
     const simdi = 1_800_000_000_000;
     expect(korumaliSlotMu([{ tip: 'gorev_cagrisi', uid: 'a', durum: 'bekliyor' }], new Set(['a']))).toBe(true);
-    expect(korumaliSlotMu(
-      [{ tip: 'asil', uid: 'a', durum: 'bekliyor', vekaletDevriBekliyor: true, sonGuncelleme: ts(simdi - 60_000) }],
-      new Set(['a']),
-      simdi
-    )).toBe(true);
+    expect(
+      korumaliSlotMu(
+        [{ tip: 'asil', uid: 'a', durum: 'bekliyor', vekaletDevriBekliyor: true, sonGuncelleme: ts(simdi - 60_000) }],
+        new Set(['a']),
+        simdi
+      )
+    ).toBe(true);
     expect(korumaliSlotMu([{ tip: 'asil', uid: 'a', durum: 'bekliyor', vekaletDevredildi: true }], new Set(['a']))).toBe(true);
   });
 
@@ -264,7 +250,7 @@ describe('vekaletDevriBekliyor zaman aşımı (kilitlenen slot kurtarması)', ()
     expect(vekaletDevriBekliyorGecerliMi(taze(VEKALET_DEVRI_BEKLEME_ASIMI_MS + 1), SIMDI)).toBe(false);
   });
 
-  it('KÖK NEDEN: uzlaştırma cron\'u 30 günlük sorgu penceresinden uzun süre durduğunda slot artık kalıcı kilitlenmez', () => {
+  it("KÖK NEDEN: uzlaştırma cron'u 30 günlük sorgu penceresinden uzun süre durduğunda slot artık kalıcı kilitlenmez", () => {
     // Senaryo: bayrak 45 gün önce yazıldı, scripts/vekaletDevirleriniIsle.ts o
     // gün bugüne kadar hiç çalışmadı. Bayrağı temizleyecek tek yol o script ve
     // onun sorgusu `tarih >= otuzGunOnce` ile sınırlı — yani bu talep artık
@@ -344,22 +330,12 @@ describe('onaylandıktan SONRA onaylanan izin, kişiyi slottan çıkarır (self-
 
     // Ezme OLMADAN (eski davranış): koruma slotu taze hesaplamaya hiç
     // ulaştırmıyor, izinli kişi nöbetçi kalıyor.
-    const eskiPlan = haftalikPlanUret(
-      [GUN],
-      muezzinler,
-      onayliIzinler,
-      selfHealSimulasyonu(slotlar, mevcutGunler)
-    );
+    const eskiPlan = haftalikPlanUret([GUN], muezzinler, onayliIzinler, selfHealSimulasyonu(slotlar, mevcutGunler));
     expect(eskiPlan[GUN].sabah.asil).toBe('izinli');
 
     // Ezme İLE: slot korumasız sayılır, çekirdeğin izin filtresi devreye
     // girer ve yerine adalet/tie-breaker ile seçilmiş biri atanır.
-    const yeniPlan = haftalikPlanUret(
-      [GUN],
-      muezzinler,
-      onayliIzinler,
-      selfHealSimulasyonu(slotlar, mevcutGunler, izinliSet)
-    );
+    const yeniPlan = haftalikPlanUret([GUN], muezzinler, onayliIzinler, selfHealSimulasyonu(slotlar, mevcutGunler, izinliSet));
     for (const vakit of VAKITLER) {
       expect(yeniPlan[GUN][vakit].asil).not.toBe('izinli');
       expect(yeniPlan[GUN][vakit].yedek).not.toBe('izinli');

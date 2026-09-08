@@ -67,14 +67,24 @@ function acikPencereDamgasi() {
 async function vakitleriTohumla(todayStr: string) {
   const ilceId = '9148';
   await db.collection('settings').doc('system').set({ ilceId }, { merge: true });
-  await db.collection('vakitler').doc(`${ilceId}_${todayStr.slice(0, 7)}`).set({
-    gunler: {
-      [todayStr]: {
-        sabah: '04:10', gunes: '05:42', ogle: '12:45',
-        ikindi: '16:30', aksam: '19:51', yatsi: '21:18'
-      }
-    }
-  }, { merge: true });
+  await db
+    .collection('vakitler')
+    .doc(`${ilceId}_${todayStr.slice(0, 7)}`)
+    .set(
+      {
+        gunler: {
+          [todayStr]: {
+            sabah: '04:10',
+            gunes: '05:42',
+            ogle: '12:45',
+            ikindi: '16:30',
+            aksam: '19:51',
+            yatsi: '21:18',
+          },
+        },
+      },
+      { merge: true }
+    );
 }
 
 async function seed(): Promise<string> {
@@ -93,25 +103,31 @@ async function seed(): Promise<string> {
   // (bkz. E2E flakiness soruşturması).
   await auth.createUser({ uid: UID, email: `${UID}@example.test`, displayName: 'E2E Asil', emailVerified: true });
 
-  await db.collection('muezzins').doc(UID).set({
-    displayName: 'E2E Asil',
-    email: `${UID}@example.test`,
-    role: 'muezzin',
-    aktif: true,
-    photoURL: '',
-    fcmToken: null,
-    aylikVakitSayisi: 0
-  });
+  await db
+    .collection('muezzins')
+    .doc(UID)
+    .set({
+      displayName: 'E2E Asil',
+      email: `${UID}@example.test`,
+      role: 'muezzin',
+      aktif: true,
+      photoURL: '',
+      fcmToken: null,
+      aylikVakitSayisi: 0,
+    });
 
-  await db.collection('muezzins').doc(YEDEK_UID).set({
-    displayName: 'E2E Yedek',
-    email: `${YEDEK_UID}@example.test`,
-    role: 'muezzin',
-    aktif: true,
-    photoURL: '',
-    fcmToken: null,
-    aylikVakitSayisi: 0
-  });
+  await db
+    .collection('muezzins')
+    .doc(YEDEK_UID)
+    .set({
+      displayName: 'E2E Yedek',
+      email: `${YEDEK_UID}@example.test`,
+      role: 'muezzin',
+      aktif: true,
+      photoURL: '',
+      fcmToken: null,
+      aylikVakitSayisi: 0,
+    });
 
   const todayStr = turkeyTodayStr();
   const haftaId = `W${todayStr}`;
@@ -142,7 +158,7 @@ async function seed(): Promise<string> {
     retSebebi: null,
     olusturmaTarihi: Timestamp.now(),
     sonGuncelleme: Timestamp.now(),
-    mazeretSonBasvuru: acikPencereDamgasi()
+    mazeretSonBasvuru: acikPencereDamgasi(),
   });
 
   await db.collection('bildirimler').doc(`${haftaId}_${todayStr}_yatsi_yedek`).set({
@@ -156,7 +172,7 @@ async function seed(): Promise<string> {
     retSebebi: null,
     olusturmaTarihi: Timestamp.now(),
     sonGuncelleme: Timestamp.now(),
-    mazeretSonBasvuru: acikPencereDamgasi()
+    mazeretSonBasvuru: acikPencereDamgasi(),
   });
 
   return auth.createCustomToken(UID);

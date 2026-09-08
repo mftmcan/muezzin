@@ -20,7 +20,8 @@ import { getTurkeyNow, getTurkeyDateString } from '../src/lib/dateUtils.ts';
  * öncelikli bulgu; bkz. src/services/planServisi.ts `cozulmemisUyariVarMi`
  * ile AYNI desen — tip+tarih+cozuldu üçlü eşitlik sorgusu). */
 async function bugunIcinApiHatasiUyarisiVarMi(bugun: string): Promise<boolean> {
-  const snap = await db.collection('adminUyarilari')
+  const snap = await db
+    .collection('adminUyarilari')
     .where('tip', '==', 'apiHatasi')
     .where('tarih', '==', bugun)
     .where('cozuldu', '==', false)
@@ -49,10 +50,7 @@ const MESAJ_ON_EKI = 'Vakit verisi otomatik tazelendi:';
  * veri artık sağlıklıysa, bu script'in daha önce açtığı (ve hâlâ çözülmemiş
  * kalmış) apiHatasi uyarılarını otomatik çözer. */
 async function kendiApiHatasiUyarilariniCoz(): Promise<number> {
-  const snap = await db.collection('adminUyarilari')
-    .where('tip', '==', 'apiHatasi')
-    .where('cozuldu', '==', false)
-    .get();
+  const snap = await db.collection('adminUyarilari').where('tip', '==', 'apiHatasi').where('cozuldu', '==', false).get();
   const kendiUyarilari = snap.docs.filter((d) => (d.data().mesaj as string | undefined)?.startsWith(MESAJ_ON_EKI));
   if (kendiUyarilari.length === 0) return 0;
 
@@ -74,16 +72,13 @@ async function main() {
   yarinTarih.setDate(simdi.getDate() + 1);
   const yarin = getTurkeyDateString(yarinTarih);
 
-  const [bugunTamam, yarinTamam] = await Promise.all([
-    gunVerisiTamMi(ilceId, bugun),
-    gunVerisiTamMi(ilceId, yarin),
-  ]);
+  const [bugunTamam, yarinTamam] = await Promise.all([gunVerisiTamMi(ilceId, bugun), gunVerisiTamMi(ilceId, yarin)]);
 
   if (bugunTamam && yarinTamam) {
     const cozulen = await kendiApiHatasiUyarilariniCoz();
     console.log(
       `Vakit verisi sağlıklı: ${bugun} ve ${yarin} için tam kayıt mevcut (${ilceId}).` +
-      (cozulen > 0 ? ` ${cozulen} eski apiHatasi uyarısı otomatik çözüldü.` : '')
+        (cozulen > 0 ? ` ${cozulen} eski apiHatasi uyarısı otomatik çözüldü.` : '')
     );
     return;
   }
@@ -152,10 +147,7 @@ async function main() {
     });
   }
 
-  const [bugunTamam2, yarinTamam2] = await Promise.all([
-    gunVerisiTamMi(ilceId, bugun),
-    gunVerisiTamMi(ilceId, yarin),
-  ]);
+  const [bugunTamam2, yarinTamam2] = await Promise.all([gunVerisiTamMi(ilceId, bugun), gunVerisiTamMi(ilceId, yarin)]);
   if (!bugunTamam2 || !yarinTamam2) {
     console.error('Tazeleme denemesinden sonra hâlâ eksik veri var (API de veri döndürmemiş olabilir).');
     process.exitCode = 1;

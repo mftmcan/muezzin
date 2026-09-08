@@ -23,7 +23,13 @@
 import { useMemo } from 'react';
 import { addDays, format } from 'date-fns';
 import { GunlukVakit, Vakit } from '../types';
-import { parseVakitToDate, calculateKerahatTimes, calculateLastThirdOfNight, isFriday as isFridayTarih, toTurkishUpperCase } from '../lib/dateUtils';
+import {
+  parseVakitToDate,
+  calculateKerahatTimes,
+  calculateLastThirdOfNight,
+  isFriday as isFridayTarih,
+  toTurkishUpperCase,
+} from '../lib/dateUtils';
 import {
   isRamazanBayram,
   isKurbanBayram,
@@ -88,18 +94,23 @@ export interface OzelVakitDurumu {
 // Teşrik tekbiri metni
 const TESRIK_TEKBIR_ARAPCA =
   'اللَّهُ أَكْبَرُ اللَّهُ أَكْبَرُ لَا إِلَهَ إِلَّا اللَّهُ وَاللَّهُ أَكْبَرُ اللَّهُ أَكْبَرُ وَلِلَّهِ الْحَمْدُ';
-const TESRIK_TEKBIR_TRANSKRIPT =
-  'Allahu Ekber, Allahu Ekber. Lâ ilâhe illallah. Vallahu Ekber, Allahu Ekber. Ve lillâhil hamd.';
+const TESRIK_TEKBIR_TRANSKRIPT = 'Allahu Ekber, Allahu Ekber. Lâ ilâhe illallah. Vallahu Ekber, Allahu Ekber. Ve lillâhil hamd.';
 
 /** Vakit adına göre teşrik banner rengi */
 function getTesrikRenk(vakit: Vakit | null): TesrikVakitRenk {
   switch (vakit) {
-    case 'sabah':  return 'emerald';
-    case 'ogle':   return 'amber';
-    case 'ikindi': return 'orange';
-    case 'aksam':  return 'rose';
-    case 'yatsi':  return 'violet';
-    default:       return 'violet';
+    case 'sabah':
+      return 'emerald';
+    case 'ogle':
+      return 'amber';
+    case 'ikindi':
+      return 'orange';
+    case 'aksam':
+      return 'rose';
+    case 'yatsi':
+      return 'violet';
+    default:
+      return 'violet';
   }
 }
 
@@ -109,11 +120,7 @@ function getTesrikRenk(vakit: Vakit | null): TesrikVakitRenk {
  * @param bugunDate     - Bugünün tarih nesnesi
  * @param now           - Gerçek zamanlı saat (useTime() hook'undan)
  */
-export function useOzelVakitMesaji(
-  bugunVakitler: GunlukVakit | null,
-  bugunDate: Date,
-  now: Date
-): OzelVakitDurumu {
+export function useOzelVakitMesaji(bugunVakitler: GunlukVakit | null, bugunDate: Date, now: Date): OzelVakitDurumu {
   const { settings } = useSystemSettingsStore();
 
   // Bu hesaplamanın TÜM sınır koşulları (ezan vakti, kerahat, teşrik hazırlık
@@ -138,28 +145,24 @@ export function useOzelVakitMesaji(
     const yarinDate = addDays(bugunDate, 1);
 
     // Tüm vakit nesnelerini parse et
-    const sabahDate  = parseVakitToDate(dateStr, bugunVakitler.sabah);
-    const imsakDate  = parseVakitToDate(dateStr, bugunVakitler.imsak || bugunVakitler.sabah);
-    const gunesDate  = parseVakitToDate(dateStr, bugunVakitler.gunes);
-    const ogleDate   = parseVakitToDate(dateStr, bugunVakitler.ogle);
+    const sabahDate = parseVakitToDate(dateStr, bugunVakitler.sabah);
+    const imsakDate = parseVakitToDate(dateStr, bugunVakitler.imsak || bugunVakitler.sabah);
+    const gunesDate = parseVakitToDate(dateStr, bugunVakitler.gunes);
+    const ogleDate = parseVakitToDate(dateStr, bugunVakitler.ogle);
     const ikindiDate = parseVakitToDate(dateStr, bugunVakitler.ikindi);
-    const aksamDate  = parseVakitToDate(dateStr, bugunVakitler.aksam);
-    const yatsiDate  = parseVakitToDate(dateStr, bugunVakitler.yatsi);
+    const aksamDate = parseVakitToDate(dateStr, bugunVakitler.aksam);
+    const yatsiDate = parseVakitToDate(dateStr, bugunVakitler.yatsi);
 
     // Bir sonraki güne ait imsak (sabah) = 24 saat sonra
-    const yarinSabahDate = sabahDate
-      ? new Date(sabahDate.getTime() + 24 * 60 * 60 * 1000)
-      : null;
+    const yarinSabahDate = sabahDate ? new Date(sabahDate.getTime() + 24 * 60 * 60 * 1000) : null;
 
-    const yarinImsakDate = imsakDate
-      ? new Date(imsakDate.getTime() + 24 * 60 * 60 * 1000)
-      : null;
+    const yarinImsakDate = imsakDate ? new Date(imsakDate.getTime() + 24 * 60 * 60 * 1000) : null;
 
     // Yatsı'dan imsak'a olan gece aralığı (teheccüd hesabı için)
     // calculateLastThirdOfNight(aksam, imsak) API'si mevcut — bunu yatsi→yarinSabah aralığı üzerinden kullanıyoruz
     // ancak gece uzunluğu aksamdan imsaksa daha doğru hesaplanır
     const geceBaslangicDate = aksamDate; // Gece akşamdan başlar
-    const geceBitisDate = yarinImsakDate;  // İmsak = astronomik imsak vaktidir (sabah namazı saati değil)
+    const geceBitisDate = yarinImsakDate; // İmsak = astronomik imsak vaktidir (sabah namazı saati değil)
 
     // ─────────────────────────────────────────────────────
     // 1. BAYRAM NAMAZI VAKTİ (güneş doğuşu + 40 dk → Öğle)
@@ -187,11 +190,11 @@ export function useOzelVakitMesaji(
     // ─────────────────────────────────────────────────────
     if (isTesrikGunu(bugunDate)) {
       const vakitler: Array<{ vakit: Vakit; date: Date | null; sonraki: Date | null }> = [
-        { vakit: 'sabah',  date: sabahDate,  sonraki: ogleDate },
-        { vakit: 'ogle',   date: ogleDate,   sonraki: ikindiDate },
+        { vakit: 'sabah', date: sabahDate, sonraki: ogleDate },
+        { vakit: 'ogle', date: ogleDate, sonraki: ikindiDate },
         { vakit: 'ikindi', date: ikindiDate, sonraki: aksamDate },
-        { vakit: 'aksam',  date: aksamDate,  sonraki: yatsiDate },
-        { vakit: 'yatsi',  date: yatsiDate,  sonraki: yarinSabahDate },
+        { vakit: 'aksam', date: aksamDate, sonraki: yatsiDate },
+        { vakit: 'yatsi', date: yatsiDate, sonraki: yarinSabahDate },
       ];
 
       for (const v of vakitler) {
@@ -223,10 +226,15 @@ export function useOzelVakitMesaji(
         if (sonrakiEzan && now >= hazirlikBaslangic && now < sonrakiEzan) {
           const { day: zilhicceGunu } = parseHijriDate(bugunDate);
           const gunAciklama =
-            zilhicceGunu === 9 ? 'Arefe günü' :
-            zilhicceGunu === 10 ? 'Kurban Bayramı 1. gün' :
-            zilhicceGunu === 11 ? 'Kurban Bayramı 2. gün' :
-            zilhicceGunu === 12 ? 'Kurban Bayramı 3. gün' : 'Son teşrik günü';
+            zilhicceGunu === 9
+              ? 'Arefe günü'
+              : zilhicceGunu === 10
+                ? 'Kurban Bayramı 1. gün'
+                : zilhicceGunu === 11
+                  ? 'Kurban Bayramı 2. gün'
+                  : zilhicceGunu === 12
+                    ? 'Kurban Bayramı 3. gün'
+                    : 'Son teşrik günü';
           return {
             tip: 'tesrik',
             baslik: 'Teşrik Tekbirleri',
@@ -250,14 +258,12 @@ export function useOzelVakitMesaji(
     if ((isRBArife || isKBArife) && aksamDate) {
       const bayramTuru = isRBArife ? 'Ramazan' : 'Kurban';
       // Bitiş: Yarın güneş doğuşu (bayram namazı başlamadan önce)
-      const yarinGunesDate = gunesDate
-        ? new Date(gunesDate.getTime() + 24 * 60 * 60 * 1000)
-        : null;
+      const yarinGunesDate = gunesDate ? new Date(gunesDate.getTime() + 24 * 60 * 60 * 1000) : null;
       return {
         tip: 'bayram_arife',
         baslik: `${bayramTuru} Bayramınız Mübarek Olsun`,
         altBaslik: 'YARIN BAYRAM NAMAZI',
-        aciklama: isKBArife 
+        aciklama: isKBArife
           ? 'Yarın bayram namazına hazırlıklı olunuz. Farz namazların ardından Teşrik Tekbiri getirmeyi unutmayınız.'
           : 'Yarın bayram namazına hazırlıklı olunuz. Güneş doğumundan yaklaşık 40 dakika sonra kılınır.',
         bitisZamani: yarinGunesDate ?? undefined,
@@ -297,7 +303,8 @@ export function useOzelVakitMesaji(
         tip: 'bayram_arife',
         baslik: 'Ramazan-ı Şerif Başlıyor',
         altBaslik: 'BU GECE İLK SAHUR & TERAVİH',
-        aciklama: 'Yarın Ramazan-ı Şerif\'in ilk günüdür. Bu akşam yatsı namazıyla birlikte ilk Teravih kılınacak ve gece ilk Sahur\'a kalkılacaktır. Mübarek olsun!',
+        aciklama:
+          "Yarın Ramazan-ı Şerif'in ilk günüdür. Bu akşam yatsı namazıyla birlikte ilk Teravih kılınacak ve gece ilk Sahur'a kalkılacaktır. Mübarek olsun!",
         bitisZamani: yarinSabahDate,
       };
     }
@@ -317,20 +324,25 @@ export function useOzelVakitMesaji(
     // gerekçe: yılda bir kez olan mübarek bir gece.
     // ─────────────────────────────────────────────────────
     const KANDIL_ACIKLAMA: Record<string, string> = {
-      'Regaib Kandili': 'Üç Ayların ve mübarek gecelerin ilkidir. Receb ayının ilk Cuma gecesine denk gelir; dua, tövbe ve ibadetle ihya edilir.',
-      'Miraç Kandili': 'Peygamber Efendimiz (s.a.v)\'in Cenâb-ı Hakk\'ın huzuruna yükseldiği, beş vakit namazın farz kılındığı gecedir.',
+      'Regaib Kandili':
+        'Üç Ayların ve mübarek gecelerin ilkidir. Receb ayının ilk Cuma gecesine denk gelir; dua, tövbe ve ibadetle ihya edilir.',
+      'Miraç Kandili': "Peygamber Efendimiz (s.a.v)'in Cenâb-ı Hakk'ın huzuruna yükseldiği, beş vakit namazın farz kılındığı gecedir.",
       'Berat Kandili': 'Yıllık rızık, ecel ve amellerin yazıldığına inanılan; af ve mağfiret gecesidir.',
       'Kadir Gecesi': 'Kur\'ân-ı Kerîm\'in indirilmeye başlandığı, "bin aydan hayırlı" olduğu bildirilen gecedir.',
-      'Mevlid Kandili': 'Peygamber Efendimiz Hz. Muhammed (s.a.v)\'in dünyayı teşrif ettiği doğum gecesidir.',
+      'Mevlid Kandili': "Peygamber Efendimiz Hz. Muhammed (s.a.v)'in dünyayı teşrif ettiği doğum gecesidir.",
     };
 
-    const kandilAdiGece =
-      isRegaibKandili(yarinDate) ? 'Regaib Kandili' :
-      isMiracKandili(yarinDate) ? 'Miraç Kandili' :
-      isBeratKandili(yarinDate) ? 'Berat Kandili' :
-      isKadirGecesi(yarinDate) ? 'Kadir Gecesi' :
-      isMevlidKandili(yarinDate) ? 'Mevlid Kandili' :
-      null;
+    const kandilAdiGece = isRegaibKandili(yarinDate)
+      ? 'Regaib Kandili'
+      : isMiracKandili(yarinDate)
+        ? 'Miraç Kandili'
+        : isBeratKandili(yarinDate)
+          ? 'Berat Kandili'
+          : isKadirGecesi(yarinDate)
+            ? 'Kadir Gecesi'
+            : isMevlidKandili(yarinDate)
+              ? 'Mevlid Kandili'
+              : null;
 
     // Gece: kandilin kendisi (bugünün akşamından yarının imsakına)
     if (kandilAdiGece && aksamDate && yarinImsakDate && now >= aksamDate && now < yarinImsakDate) {
@@ -343,13 +355,17 @@ export function useOzelVakitMesaji(
       };
     }
 
-    const kandilAdiGunduz =
-      isRegaibKandili(bugunDate) ? 'Regaib Kandili' :
-      isMiracKandili(bugunDate) ? 'Miraç Kandili' :
-      isBeratKandili(bugunDate) ? 'Berat Kandili' :
-      isKadirGecesi(bugunDate) ? 'Kadir Gecesi' :
-      isMevlidKandili(bugunDate) ? 'Mevlid Kandili' :
-      null;
+    const kandilAdiGunduz = isRegaibKandili(bugunDate)
+      ? 'Regaib Kandili'
+      : isMiracKandili(bugunDate)
+        ? 'Miraç Kandili'
+        : isBeratKandili(bugunDate)
+          ? 'Berat Kandili'
+          : isKadirGecesi(bugunDate)
+            ? 'Kadir Gecesi'
+            : isMevlidKandili(bugunDate)
+              ? 'Mevlid Kandili'
+              : null;
 
     // Gündüz: "bu gün kandil günü" (bugünün imsakından akşamına) — dün
     // geceki kandilin ertesi günü. Regaib'in gündüzü TANIM GEREĞİ her zaman
@@ -364,13 +380,15 @@ export function useOzelVakitMesaji(
         altBaslik: 'BU GÜN',
         aciklama: `Bu gün ${kandilAdiGunduz} günü. ${KANDIL_ACIKLAMA[kandilAdiGunduz]}`,
         bitisZamani: aksamDate,
-        ikincilDurum: buGunCuma ? {
-          tip: 'cuma',
-          baslik: 'Hayırlı Cumalar',
-          altBaslik: 'CUMA GÜNÜ',
-          aciklama: 'Bugün Müslümanların haftalık bayramıdır. Günün hayrı, bereketi ve huzuru üzerinize olsun.',
-          bitisZamani: aksamDate,
-        } : undefined,
+        ikincilDurum: buGunCuma
+          ? {
+              tip: 'cuma',
+              baslik: 'Hayırlı Cumalar',
+              altBaslik: 'CUMA GÜNÜ',
+              aciklama: 'Bugün Müslümanların haftalık bayramıdır. Günün hayrı, bereketi ve huzuru üzerinize olsun.',
+              bitisZamani: aksamDate,
+            }
+          : undefined,
       };
     }
 
@@ -379,17 +397,15 @@ export function useOzelVakitMesaji(
     // Kandillerin aksine "gece" değil "gün" olarak anılır — kaydırmasız,
     // o günün imsakından akşamına kadar (cuma bannerıyla aynı desen).
     // ─────────────────────────────────────────────────────
-    const ozelGunAdi =
-      isHicriYilbasi(bugunDate) ? 'Hicri Yılbaşı' :
-      isAsureGunu(bugunDate) ? 'Aşure Günü' :
-      null;
+    const ozelGunAdi = isHicriYilbasi(bugunDate) ? 'Hicri Yılbaşı' : isAsureGunu(bugunDate) ? 'Aşure Günü' : null;
 
     if (ozelGunAdi && imsakDate && aksamDate) {
       if (now >= imsakDate && now < aksamDate) {
-        const tip = ozelGunAdi === 'Hicri Yılbaşı' ? 'hicri_yilbasi' as const : 'asure_gunu' as const;
-        const aciklama = ozelGunAdi === 'Hicri Yılbaşı'
-          ? 'Hicri takvimin yeni yılı başlıyor. Yeni hicri yılınız hayırlara vesile olsun.'
-          : 'Muharrem ayının onuncu günü — oruç tutmanın, sadaka vermenin ve akrabalık bağlarını gözetmenin faziletli olduğu gündür.';
+        const tip = ozelGunAdi === 'Hicri Yılbaşı' ? ('hicri_yilbasi' as const) : ('asure_gunu' as const);
+        const aciklama =
+          ozelGunAdi === 'Hicri Yılbaşı'
+            ? 'Hicri takvimin yeni yılı başlıyor. Yeni hicri yılınız hayırlara vesile olsun.'
+            : 'Muharrem ayının onuncu günü — oruç tutmanın, sadaka vermenin ve akrabalık bağlarını gözetmenin faziletli olduğu gündür.';
         return {
           tip,
           baslik: ozelGunAdi,

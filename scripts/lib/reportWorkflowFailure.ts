@@ -9,7 +9,14 @@ import { getTurkeyDateString } from '../../src/lib/dateUtils.ts';
  * fonksiyonu kullanır — bu yüzden burada export edilir, iki dosyada ayrı
  * ayrı yazılmaz. */
 export function slugify(s: string): string {
-  return s.toLocaleLowerCase('tr-TR').normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/(^-+|-+$)/g, '').slice(0, 80) || 'bilinmeyen';
+  return (
+    s
+      .toLocaleLowerCase('tr-TR')
+      .normalize('NFKD')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-+|-+$)/g, '')
+      .slice(0, 80) || 'bilinmeyen'
+  );
 }
 
 export function otomasyonUyarisiDocId(tip: string, isAdi: string): string {
@@ -40,14 +47,17 @@ export async function raporlaBasarisizlik(isAdi: string, tip = 'otomasyonHatasi'
   // başarısız olduysa bu, belgeyi doğru şekilde tekrar açar.
   const docId = otomasyonUyarisiDocId(tip, isAdi);
 
-  await db.collection('adminUyarilari').doc(docId).set({
-    tip,
-    mesaj: `Otomasyon hatası: "${isAdi}" GitHub Actions işi başarısız oldu. Loglara bakın ve gerekirse elle çalıştırın (workflow_dispatch).`,
-    tarih: getTurkeyDateString(),
-    vakit: null,
-    cozuldu: false,
-    olusturmaTarihi: Timestamp.now()
-  });
+  await db
+    .collection('adminUyarilari')
+    .doc(docId)
+    .set({
+      tip,
+      mesaj: `Otomasyon hatası: "${isAdi}" GitHub Actions işi başarısız oldu. Loglara bakın ve gerekirse elle çalıştırın (workflow_dispatch).`,
+      tarih: getTurkeyDateString(),
+      vakit: null,
+      cozuldu: false,
+      olusturmaTarihi: Timestamp.now(),
+    });
 
   console.log(`Admin uyarısı oluşturuldu: ${isAdi}`);
 }

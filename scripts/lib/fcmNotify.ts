@@ -57,7 +57,7 @@ export class FcmGonderimBasarisizHatasi extends Error {
   constructor(logEtiketi: string, sonuc: FcmGonderimSonucu) {
     super(
       `${logEtiketi}: FCM gönderimi tamamen başarısız oldu — ${sonuc.toplam} mesajın hiçbiri iletilemedi ` +
-      `(${sonuc.beklenmeyenBasarisiz} beklenmeyen hata). Bildirimler "gönderildi" olarak işaretlenmedi.`
+        `(${sonuc.beklenmeyenBasarisiz} beklenmeyen hata). Bildirimler "gönderildi" olarak işaretlenmedi.`
     );
     this.name = 'FcmGonderimBasarisizHatasi';
     this.sonuc = sonuc;
@@ -71,10 +71,7 @@ export class FcmGonderimBasarisizHatasi extends Error {
  * "tamamen başarısız" kararında sayılmaz (tek alıcısı bayat token olan bir
  * duyuru aksi halde yanlışlıkla kritik arıza sayılırdı).
  */
-const BEKLENEN_TOKEN_HATALARI = [
-  'messaging/registration-token-not-registered',
-  'messaging/invalid-registration-token'
-];
+const BEKLENEN_TOKEN_HATALARI = ['messaging/registration-token-not-registered', 'messaging/invalid-registration-token'];
 
 /**
  * Bir `muezzins/{uid}` belgesinden gönderilebilir FCM token listesini
@@ -83,13 +80,10 @@ const BEKLENEN_TOKEN_HATALARI = [
  * `yatsiSonuIslemleri.ts` bu mantığı bağımsız birer kopya olarak taşıyordu
  * (fcmGonderVeTemizle'nin kendisiyle AYNI kök neden) — buraya çıkarıldı.
  */
-export function kullaniciFcmTokenleriniTopla(data: {
-  fcmTokens?: Record<string, unknown>;
-  fcmToken?: string | null;
-}): string[] {
+export function kullaniciFcmTokenleriniTopla(data: { fcmTokens?: Record<string, unknown>; fcmToken?: string | null }): string[] {
   const tokens: string[] = [];
   if (data.fcmTokens && typeof data.fcmTokens === 'object') {
-    Object.keys(data.fcmTokens).forEach(t => {
+    Object.keys(data.fcmTokens).forEach((t) => {
       if (t.trim().length > 0) tokens.push(t);
     });
   }
@@ -171,13 +165,15 @@ export async function fcmGonderVeTemizle(
       }
     });
   }
-  console.log(`${logEtiketi}: gönderim tamamlandı. Başarılı: ${successCount}, Başarısız: ${failureCount} (beklenmeyen: ${beklenmeyenBasarisiz})`);
+  console.log(
+    `${logEtiketi}: gönderim tamamlandı. Başarılı: ${successCount}, Başarısız: ${failureCount} (beklenmeyen: ${beklenmeyenBasarisiz})`
+  );
 
   const sonuc: FcmGonderimSonucu = {
     toplam: messages.length,
     basarili: successCount,
     basarisiz: failureCount,
-    beklenmeyenBasarisiz
+    beklenmeyenBasarisiz,
   };
 
   const uidsToUpdate = Object.keys(tokensToRemove);
@@ -186,14 +182,16 @@ export async function fcmGonderVeTemizle(
     // TAMAMEN fırlatır ve gönderim başarılı olsa bile bayat token temizliği
     // bir daha hiç yapılamaz (bkz. `parcaliBatchUygula` — yukarıdaki
     // SEND_CHUNK_SIZE ile AYNI sınıf sınır, yazma tarafında).
-    await parcaliBatchUygula(uidsToUpdate.map<BatchIslemi>((uid) => (batch) => {
-      const userRef = db.collection('muezzins').doc(uid);
-      const updates: Record<string, FieldValue> = {};
-      tokensToRemove[uid]!.forEach(t => {
-        updates[`fcmTokens.${t}`] = FieldValue.delete();
-      });
-      batch.update(userRef, updates);
-    }));
+    await parcaliBatchUygula(
+      uidsToUpdate.map<BatchIslemi>((uid) => (batch) => {
+        const userRef = db.collection('muezzins').doc(uid);
+        const updates: Record<string, FieldValue> = {};
+        tokensToRemove[uid]!.forEach((t) => {
+          updates[`fcmTokens.${t}`] = FieldValue.delete();
+        });
+        batch.update(userRef, updates);
+      })
+    );
     console.log(`${logEtiketi}: FCM cleanup — ${uidsToUpdate.length} kullanıcıdan geçersiz tokenlar temizlendi.`);
   }
 

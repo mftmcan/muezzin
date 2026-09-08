@@ -60,13 +60,18 @@ async function main() {
     // Gruplanmış verileri Firestore'a yaz
     for (const [ayId, data] of Object.entries(aylar)) {
       const docId = `${ilceId}_${ayId}`;
-      await db.collection('vakitler').doc(docId).set({
-        ...data,
-        guncellenmeTarihi: Timestamp.now()
-      }, { merge: true });
+      await db
+        .collection('vakitler')
+        .doc(docId)
+        .set(
+          {
+            ...data,
+            guncellenmeTarihi: Timestamp.now(),
+          },
+          { merge: true }
+        );
       console.log(`Başarılı: ${docId} (${Object.keys(data.gunler).length} gün güncellendi)`);
     }
-
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
 
@@ -77,11 +82,14 @@ async function main() {
     // not-found) admin panelinde görünmeyen tür olması riski vardı (bkz.
     // kod denetimi). Yalnızca ek yapılandırılmış konsol logu için çağrılır,
     // fırlatması yutulur — admin uyarısı koşulsuz olarak aşağıda yazılır.
-    const isFirestoreHatasi = message.includes('permission') || message.includes('NOT_FOUND') || message.includes('code: 5') || message.includes('code: 7');
+    const isFirestoreHatasi =
+      message.includes('permission') || message.includes('NOT_FOUND') || message.includes('code: 5') || message.includes('code: 7');
     if (isFirestoreHatasi) {
       try {
         handleFirestoreError(err, OperationType.WRITE, `vakitler`);
-      } catch { /* handleFirestoreError zaten fırlatır — yalnızca yapılandırılmış log için çağrıldı */ }
+      } catch {
+        /* handleFirestoreError zaten fırlatır — yalnızca yapılandırılmış log için çağrıldı */
+      }
     }
 
     console.error(`Hata:`, message);
@@ -95,13 +103,13 @@ async function main() {
       tarih: getTurkeyDateString(simdi),
       vakit: null,
       cozuldu: false,
-      olusturmaTarihi: Timestamp.now()
+      olusturmaTarihi: Timestamp.now(),
     });
     process.exitCode = 1;
   }
 }
 
-main().catch(err => {
-  console.error("Kritik hata:", err);
+main().catch((err) => {
+  console.error('Kritik hata:', err);
   process.exit(1);
 });

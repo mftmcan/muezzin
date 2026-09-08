@@ -29,16 +29,16 @@ export interface FirestoreErrorInfo {
 const FRIENDLY_MESSAGES: Record<string, string> = {
   'permission-denied': 'Bu işlem için yetkiniz yok.',
   'not-found': 'Aradığınız kayıt bulunamadı.',
-  'unavailable': 'Sunucuya şu anda ulaşılamıyor. İnternet bağlantınızı kontrol edip tekrar deneyin.',
+  unavailable: 'Sunucuya şu anda ulaşılamıyor. İnternet bağlantınızı kontrol edip tekrar deneyin.',
   'deadline-exceeded': 'İşlem zaman aşımına uğradı. Lütfen tekrar deneyin.',
   'resource-exhausted': 'Dizge şu anda yoğun. Lütfen birkaç dakika sonra tekrar deneyin.',
-  'unauthenticated': 'Oturumunuz sona ermiş. Lütfen tekrar giriş yapın.',
-  'cancelled': 'İşlem iptal edildi.',
+  unauthenticated: 'Oturumunuz sona ermiş. Lütfen tekrar giriş yapın.',
+  cancelled: 'İşlem iptal edildi.',
   'already-exists': 'Bu kayıt zaten mevcut.',
   'failed-precondition': 'Bu işlem şu anda gerçekleştirilemez. Sayfayı yenileyip tekrar deneyin.',
-  'aborted': 'İşlem bir çakışma nedeniyle iptal edildi. Lütfen tekrar deneyin.',
-  'internal': 'Beklenmeyen bir dizge hatası oluştu.',
-  'unknown': 'Beklenmeyen bir hata oluştu.',
+  aborted: 'İşlem bir çakışma nedeniyle iptal edildi. Lütfen tekrar deneyin.',
+  internal: 'Beklenmeyen bir dizge hatası oluştu.',
+  unknown: 'Beklenmeyen bir hata oluştu.',
 };
 const DEFAULT_FRIENDLY_MESSAGE = 'Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.';
 
@@ -85,11 +85,7 @@ function toUserMessage(error: unknown): string {
  * çağırana ise yalnızca kullanıcıya gösterilebilir kısa bir mesaj taşıyan
  * bir Error döner.
  */
-export function handleFirestoreError(
-  error: unknown,
-  operationType: OperationType,
-  path: string | null
-): Error {
+export function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null): Error {
   const errInfo: FirestoreErrorInfo = {
     error: error instanceof Error ? error.message : String(error),
     authInfo: {
@@ -108,15 +104,12 @@ export function handleFirestoreError(
   // Telemetri servisine ilet (statik, döngü riski yok)
   try {
     const wrappedError = error instanceof Error ? error : new Error(String(error));
-    telemetryService.addBreadcrumb(
-      `Firestore [${operationType}] hata: ${path ?? 'bilinmeyen yol'}`,
-      'network',
-      { path, operationType, uid: auth.currentUser?.uid ?? null }
-    );
-    telemetryService.logError(
-      wrappedError,
-      `Firestore ${operationType} @ ${path ?? 'unknown'}`
-    );
+    telemetryService.addBreadcrumb(`Firestore [${operationType}] hata: ${path ?? 'bilinmeyen yol'}`, 'network', {
+      path,
+      operationType,
+      uid: auth.currentUser?.uid ?? null,
+    });
+    telemetryService.logError(wrappedError, `Firestore ${operationType} @ ${path ?? 'unknown'}`);
   } catch {
     /* telemetri servisine ulaşılamazsa sessizce devam et */
   }

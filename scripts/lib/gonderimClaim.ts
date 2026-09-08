@@ -55,11 +55,7 @@ export const GONDERIM_CLAIM_BAYATLAMA_MS = 15 * 60 * 1000;
  * @param simdiMs Karar anı (`Date.now()`).
  * @returns `true` ise kayıt (yeniden) gönderilebilir.
  */
-export function gonderimClaimBayatMi(
-  claim: unknown,
-  simdiMs: number,
-  esikMs: number = GONDERIM_CLAIM_BAYATLAMA_MS
-): boolean {
+export function gonderimClaimBayatMi(claim: unknown, simdiMs: number, esikMs: number = GONDERIM_CLAIM_BAYATLAMA_MS): boolean {
   // Damga hiç yok (normal durum: kayıt henüz hiç işlenmedi) ya da beklenen
   // tipte değil (bozuk/elle yazılmış veri) → işlenebilir.
   if (!claim || typeof (claim as Timestamp).toMillis !== 'function') return true;
@@ -81,13 +77,12 @@ export function gonderimClaimBayatMi(
  * tavanına takılmadan). Damga tek bir `Timestamp` değeriyle yazılır ki bir
  * koşunun tüm kayıtları AYNI anda bayatlasın.
  */
-export async function gonderimClaimYaz(
-  refler: DocumentReference[],
-  damga: Timestamp
-): Promise<void> {
-  await parcaliBatchUygula(refler.map<BatchIslemi>((ref) => (batch) => {
-    batch.update(ref, { [GONDERIM_CLAIM_ALANI]: damga });
-  }));
+export async function gonderimClaimYaz(refler: DocumentReference[], damga: Timestamp): Promise<void> {
+  await parcaliBatchUygula(
+    refler.map<BatchIslemi>((ref) => (batch) => {
+      batch.update(ref, { [GONDERIM_CLAIM_ALANI]: damga });
+    })
+  );
 }
 
 /**
@@ -101,9 +96,11 @@ export async function gonderimClaimYaz(
  */
 export async function gonderimClaimSerbestBirak(refler: DocumentReference[]): Promise<void> {
   try {
-    await parcaliBatchUygula(refler.map<BatchIslemi>((ref) => (batch) => {
-      batch.update(ref, { [GONDERIM_CLAIM_ALANI]: FieldValue.delete() });
-    }));
+    await parcaliBatchUygula(
+      refler.map<BatchIslemi>((ref) => (batch) => {
+        batch.update(ref, { [GONDERIM_CLAIM_ALANI]: FieldValue.delete() });
+      })
+    );
   } catch (temizlikHatasi) {
     console.error('Gönderim damgası geri alınamadı (asıl hata ayrıca fırlatılacak):', temizlikHatasi);
   }
