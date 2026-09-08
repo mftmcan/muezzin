@@ -102,7 +102,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
       {/* PWA Install Banner — sağ-alt köşede, dock'un ve içeriğin üstüne
           binmeyecek şekilde dar (maks. 320px); kapatıldığında 7 gün boyunca
-          tekrar gösterilmez (bkz. usePWAInstall, görsel tasarım denetimi). */}
+          tekrar gösterilmez (bkz. usePWAInstall, görsel tasarım denetimi).
+          Mobil bottom-offset FloatingDock.tsx'in gerçek yüksekliğiyle
+          KASITLI olarak eşleştirilir: dock'un üst kenarı viewport altından
+          `12px (bottom-[0.75rem]) + 64px (h-[64px])` = 76px'de. Eski 84px
+          değeri yalnızca 8px pay bırakıyordu — aura/glow gölgeleri bu payı
+          görsel olarak sıfırlayıp banner'ın dock'a yapışık görünmesine yol
+          açıyordu (bkz. iPhone viewport denetimi). 100px, dock'un üst
+          kenarıyla gerçek (~24px) bir nefes payı bırakır. Dock yüksekliği
+          değişirse (FloatingDock.tsx satır ~309) bu değer de gözden
+          geçirilmeli. */}
       <AnimatePresence>
         {isInstallable && (
           <motion.div
@@ -110,7 +119,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 80 }}
             transition={{ type: 'spring', bounce: 0.3, duration: 0.5 }}
-            className="fixed bottom-[calc(84px+env(safe-area-inset-bottom,0px))] sm:bottom-[110px] right-4 sm:right-6 max-w-[320px] z-[99] pointer-events-auto flex items-center gap-2"
+            className="fixed bottom-[calc(100px+env(safe-area-inset-bottom,0px))] sm:bottom-[110px] right-4 sm:right-6 max-w-[320px] z-[99] pointer-events-auto flex items-center gap-2"
           >
             <button
               onClick={install}
@@ -137,7 +146,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 80 }}
             transition={{ type: 'spring', bounce: 0.3, duration: 0.5 }}
-            className="fixed bottom-[calc(84px+env(safe-area-inset-bottom,0px))] sm:bottom-[110px] left-4 right-4 sm:left-auto sm:right-6 sm:w-[320px] z-[99] pointer-events-auto bg-[var(--app-bg)]/95 backdrop-blur-xl border border-[var(--glass-border)] p-4 rounded-2xl shadow-[var(--spatial-shadow)] flex flex-col gap-3"
+            className="fixed bottom-[calc(100px+env(safe-area-inset-bottom,0px))] sm:bottom-[110px] left-4 right-4 sm:left-auto sm:right-6 sm:w-[320px] z-[99] pointer-events-auto bg-[var(--app-bg)]/95 backdrop-blur-xl border border-[var(--glass-border)] p-4 rounded-2xl shadow-[var(--spatial-shadow)] flex flex-col gap-3"
           >
             <button
               onClick={dismissIosPrompt}
