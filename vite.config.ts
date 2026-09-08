@@ -198,7 +198,15 @@ export default defineConfig(({ mode }) => ({
             return 'vendor-date';
           }
 
-          // 10. Everything else
+          // 10. Zod (form doğrulama) — kendi chunk'ında, çünkü admin
+          // formlarına özgü (muezzin tarafı boot yolunda hiç import etmiyor)
+          // ve yalnızca form ekranı ziyaret edildiğinde parse edilmesi
+          // gerekiyor.
+          if (id.includes('/zod/')) {
+            return 'vendor-zod';
+          }
+
+          // 11. Everything else
           return 'vendor-utils';
         }
       }

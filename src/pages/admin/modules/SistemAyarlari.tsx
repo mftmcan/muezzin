@@ -12,6 +12,7 @@ import { playSuccess, playWarning } from '../../../lib/sounds';
 import { senkronizeGuncelVeGelecekAyCache } from '../../../services/vakitCacheServisi';
 import { useAuthStore } from '../../../store/useAuthStore';
 import { SUPER_ADMIN_GEREKLI_IPUCU } from '../../../lib/rolMetinleri';
+import { sistemAyarlariFormSemasi } from '../../../lib/validation';
 
 type StatusMessage = {
   type: 'success' | 'warning' | 'error';
@@ -119,33 +120,20 @@ export default function SistemAyarlari() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const cleanedIlceId = ilceId.trim();
-    const cleanedIlceAdi = ilceAdi.trim();
-    const normalizedHicriDuzeltme = Number(hicriDuzeltme);
-
-    if (!/^\d+$/.test(cleanedIlceId)) {
-      setStatusMessage({ type: 'error', text: 'Diyanet ilçe kodu yalnızca rakamlardan oluşmalıdır.' });
+    // firestore.rules isValidSystemSettings'in istemci tarafı aynası (bkz.
+    // src/lib/validation) — dört ayrı manuel if-bloğu yerine tek bir şema
+    // parse'ı, aynı Türkçe hata mesajlarını üretir.
+    const sonuc = sistemAyarlariFormSemasi.safeParse({
+      ilceId: ilceId.trim(),
+      ilceAdi: ilceAdi.trim(),
+      hicriDuzeltme: Number(hicriDuzeltme),
+    });
+    if (!sonuc.success) {
+      setStatusMessage({ type: 'error', text: sonuc.error.issues[0].message });
       playWarning();
       return;
     }
-
-    if (cleanedIlceId.length < 3 || cleanedIlceId.length > 8) {
-      setStatusMessage({ type: 'error', text: 'Diyanet ilçe kodu geçerli uzunlukta olmalıdır.' });
-      playWarning();
-      return;
-    }
-
-    if (cleanedIlceAdi.length < 2 || cleanedIlceAdi.length > 80) {
-      setStatusMessage({ type: 'error', text: 'İlçe tanımı 2-80 karakter arasında olmalıdır.' });
-      playWarning();
-      return;
-    }
-
-    if (!Number.isInteger(normalizedHicriDuzeltme) || normalizedHicriDuzeltme < -2 || normalizedHicriDuzeltme > 2) {
-      setStatusMessage({ type: 'error', text: 'Hicri tarih düzeltmesi -2 ile +2 gün arasında olmalıdır.' });
-      playWarning();
-      return;
-    }
+    const { ilceId: cleanedIlceId, ilceAdi: cleanedIlceAdi, hicriDuzeltme: normalizedHicriDuzeltme } = sonuc.data;
 
     const locationChanged = cleanedIlceId !== settings.ilceId || cleanedIlceAdi !== settings.ilceAdi;
     if (locationChanged) {

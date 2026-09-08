@@ -10,6 +10,7 @@ import { LoadingState } from '../../../components/ui/LoadingState';
 import { duyurularAbone, duyuruYayinla, duyuruSil } from '../../../services/duyuruServisi';
 import { toTurkishLowerCase, toJsDate } from '../../../lib/dateUtils';
 import { useNotificationStore } from '../../../store/useNotificationStore';
+import { duyuruFormSemasi } from '../../../lib/validation';
 
 export const DuyuruYonetimi: React.FC = () => {
   const [duyurular, setDuyurular] = useState<Duyuru[]>([]);
@@ -104,6 +105,17 @@ export const DuyuruYonetimi: React.FC = () => {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // firestore.rules isValidDuyuru'nun istemci tarafı aynası (bkz.
+    // src/lib/validation) — HTML5 required/maxLength zaten aynı sınırları
+    // uyguluyor ama trim edilmiş boş metin (yalnızca boşluk) veya tip
+    // seçilmemişse burada erken, Türkçe bir mesajla yakalanır.
+    const sonuc = duyuruFormSemasi.safeParse(formData);
+    if (!sonuc.success) {
+      showNotification('Form Geçersiz', sonuc.error.issues[0].message, 'error');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       await duyuruYayinla(formData);

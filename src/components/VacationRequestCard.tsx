@@ -4,7 +4,6 @@ import { Calendar, AlertCircle, CheckCircle2, Hourglass, Trash2, Send } from 'lu
 import { collection, query, where, onSnapshot, doc, writeBatch, Timestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { User as FirebaseUser } from 'firebase/auth';
-import { getTurkeyDateString, isFriday, izinGunSayisi } from '../lib/dateUtils';
 import { format, parseISO } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { Modal } from './ui/Modal';
@@ -13,6 +12,7 @@ import { useMuezzinStore } from '../store/useMuezzinStore';
 import { useAuthStore } from '../store/useAuthStore';
 import { useNotificationStore } from '../store/useNotificationStore';
 import { GOZLEMCI_SALT_OKUMA_IPUCU } from '../lib/rolMetinleri';
+import { izinFormSemasiOlustur, alanHatalariniCikar } from '../lib/validation';
 
 interface IzinFormAlanHatalari {
   baslangic?: string;
@@ -147,52 +147,17 @@ export default function VacationRequestCard({ user }: VacationRequestCardProps) 
       return;
     }
 
-    // Önceden tüm hatalar tek bir errorMessage'a (sağ üstte banner) yazılıyor,
-    // kullanıcı hangi alanın sorunlu olduğunu kendisi eşleştirmek zorunda
-    // kalıyordu — aria-invalid/aria-describedby de hiç yoktu (bkz. premium
-    // denetim, bölüm 14). Artık her hata ilişkili olduğu alana bağlanıyor.
-    const errors: IzinFormAlanHatalari = {};
-    if (!baslangic) errors.baslangic = 'Başlangıç tarihi zorunludur.';
-    if (!bitis) errors.bitis = 'Bitiş tarihi zorunludur.';
-    if (!sebep.trim()) errors.sebep = 'Gerekçe zorunludur.';
-
-    if (!errors.baslangic && !errors.bitis) {
-      const start = new Date(baslangic);
-      const end = new Date(bitis);
-      const today = new Date(getTurkeyDateString());
-
-      if (start < today) {
-        errors.baslangic = 'Başlangıç tarihi bugünden önce olamaz.';
-      } else if (end < start) {
-        errors.bitis = 'Bitiş tarihi başlangıç tarihinden önce olamaz.';
-      } else if (tip === 'yillik') {
-        // Yıllık izin kotası: erken, kullanıcı dostu uyarı — asıl sert sınır
-        // onay anında sunucu tarafında uygulanır (bkz. useAdminIzinlerStore.ts
-        // izinGuncelle, firestore.rules isValidMuezzin). Bekleyen (henüz
-        // onaylanmamış) diğer yıllık izin talepleri bu hesaba katılmaz —
-        // kota yalnızca ONAYLANMIŞ günler üzerinden işler.
-        const talepGunSayisi = izinGunSayisi(baslangic, bitis);
-        if (talepGunSayisi > yillikKalanKota) {
-          errors.bitis = `Bu talep (${talepGunSayisi} gün) kalan yıllık izin kotanızı (${yillikKalanKota} gün) aşıyor. Bu yıl için ${yillikKullanilan}/${YILLIK_IZIN_KOTASI} gün kullanılmış durumda.`;
-        }
-      }
-
-      if (!errors.bitis) {
-        // Friday exclusion validation
-        let hasFriday = false;
-        for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-          if (isFriday(d)) {
-            hasFriday = true;
-            break;
-          }
-        }
-        if (hasFriday) {
-          errors.bitis = 'Cuma günü, haftalık mihrap koordinasyonunun aksamaması adına izin kapsamına alınamaz.';
-        }
-      }
-    }
-
-    if (Object.keys(errors).length > 0) {
+    // firestore.rules isValidIzin + isValidIzinTarihAraligi'nin istemci
+    // tarafı aynası (bkz. src/lib/validation) — her hata ilişkili olduğu
+    // alana bağlanır (aria-invalid/aria-describedby FormField'da otomatik).
+    // Yıllık izin kotası: erken, kullanıcı dostu bir uyarı — asıl sert sınır
+    // onay anında sunucu tarafında uygulanır (bkz. useAdminIzinlerStore.ts
+    // izinGuncelle, firestore.rules isValidMuezzin). Bekleyen (henüz
+    // onaylanmamış) diğer yıllık izin talepleri bu hesaba katılmaz — kota
+    // yalnızca ONAYLANMIŞ günler üzerinden işler.
+    const sonuc = izinFormSemasiOlustur(yillikKalanKota).safeParse({ baslangic, bitis, tip, sebep });
+    if (!sonuc.success) {
+      const errors: IzinFormAlanHatalari = alanHatalariniCikar(sonuc.error);
       setFieldErrors(errors);
       const firstErrorField = errors.baslangic ? 'izin-baslangic-tarihi' : errors.bitis ? 'izin-bitis-tarihi' : 'izin-gerekce';
       document.getElementById(firstErrorField)?.focus();

@@ -7,6 +7,7 @@ import { Muezzin } from '../../../types';
 import { useMuezzinStore } from '../../../store/useMuezzinStore';
 import { personelKaydet } from '../../../services/muezzinServisi';
 import { useNotificationStore } from '../../../store/useNotificationStore';
+import { personelFormSemasi } from '../../../lib/validation';
 
 interface Props {
   isOpen: boolean;
@@ -48,21 +49,26 @@ export const PersonelFormModal = React.memo(({ isOpen, onClose, editingUser }: P
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Cuma (5) haftalık izin günü olarak seçilemez (bkz. mazeretKurallari.ts
-    // Cuma kısıtlaması) — UI'da buton disabled, ama kural eklenmeden önce
-    // kaydedilmiş bir personelde bu alan hâlâ 5 olabilir. Formdaki DİĞER bir
-    // alanı değiştirip kaydetmeye çalışırsa firestore.rules isValidMuezzin
-    // tüm yazımı opak bir "Kayıt sırasında bir hata oluştu" ile reddediyordu
-    // — burada erken ve net bir mesajla yakalanır.
-    if (formData.haftalikIzinGunu === 5) {
-      showNotification(
-        'Geçersiz İzin Günü',
-        'Bu personelin haftalık izin günü Cuma olarak ayarlı — Cuma artık izin günü olarak seçilemiyor. Devam etmeden önce başka bir gün seçin (ya da İZİNSİZ).',
-        'error'
-      );
+    setEmailError(null);
+
+    // Zod, firestore.rules isValidMuezzin'in istemci tarafı aynası — sunucu
+    // opak bir "Kayıt sırasında bir hata oluştu" ile reddetmeden önce burada
+    // erken ve net bir mesajla yakalar (bkz. src/lib/validation). Cuma (5)
+    // kısıtlaması (UI'da buton disabled, ama kural eklenmeden önce kaydedilmiş
+    // bir personelde bu alan hâlâ 5 olabilir) ve ad+soyad birleşik uzunluk
+    // sınırı burada tek yerde doğrulanıyor.
+    const sonuc = personelFormSemasi.safeParse(formData);
+    if (!sonuc.success) {
+      const ilkHata = sonuc.error.issues[0];
+      if (ilkHata.path[0] === 'email') {
+        setEmailError(ilkHata.message);
+        document.getElementById('personel-email')?.focus();
+      } else {
+        showNotification('Form Geçersiz', ilkHata.message, 'error');
+      }
       return;
     }
-    setEmailError(null);
+
     setIsSubmitting(true);
     try {
       const fullName = `${formatName(formData.ad)} ${formatName(formData.soyad)}`.trim();
