@@ -6,6 +6,13 @@ import { useAktifIzinlerStore } from '../store/useAktifIzinlerStore';
 import { useMuezzinStore } from '../store/useMuezzinStore';
 import { useAuthStore } from '../store/useAuthStore';
 import { selfHealingTetiklenmeliMi } from '../lib/planSelfHealing';
+// Statik import — HaftalikCizelge.tsx, muezzinServisi.ts ve
+// useAdminIzinlerStore.ts zaten planServisi.ts'i statik olarak import
+// ediyor, yani modül her durumda paylaşılan bir chunk'a giriyor; buradaki
+// dinamik import() hiçbir zaman ayrı bir lazy chunk üretemiyordu (bkz.
+// Vite build uyarısı: "dynamic import will not move module into another
+// chunk") — yalnızca gereksiz bir Promise sarmalaması ekliyordu.
+import { haftalikPlanOlustur } from '../services/planServisi';
 import { Bildirim, Vakit } from '../types';
 
 function bildirimZamani(bildirim: Bildirim) {
@@ -72,13 +79,11 @@ export function useBugunPlanDurumu(planDateStr: string, vakitKeyForPlan: Vakit) 
       if (import.meta.env.DEV) {
         console.log(`[Self-Healing] Hafta planı bulunamadı (${haftaId}). Yönetici yetkisiyle otomatik oluşturuluyor...`);
       }
-      import('../services/planServisi').then(({ haftalikPlanOlustur }) => {
-        haftalikPlanOlustur(haftaId).catch((err) => {
-          console.error('[Self-Healing] Otomatik plan oluşturma başarısız:', err);
-          if (selfHealingFiredHaftaIdRef.current === haftaId) {
-            selfHealingFiredHaftaIdRef.current = null;
-          }
-        });
+      haftalikPlanOlustur(haftaId).catch((err) => {
+        console.error('[Self-Healing] Otomatik plan oluşturma başarısız:', err);
+        if (selfHealingFiredHaftaIdRef.current === haftaId) {
+          selfHealingFiredHaftaIdRef.current = null;
+        }
       });
     }
   }, [plan, planLoading, sunucudanDogrulandi, isAdmin, haftaId]);
