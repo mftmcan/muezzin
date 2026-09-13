@@ -557,7 +557,12 @@ export default function SistemAnalitigi() {
               size="md"
             />
           ) : (
-            <div className="overflow-x-auto">
+            // Dar ekranlarda yatay kaydırılabilir hale geliyor — klavye
+            // kullanıcısının fare olmadan kaydırabilmesi için tabIndex+role
+            // gerekiyor (bkz. AnaEkranHero'daki sticky-hero ile aynı gerekçe,
+            // axe-core scrollable-region-focusable).
+            // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+            <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="Kişi bazlı performans özeti tablosu">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="border-b border-[var(--glass-border)]">
