@@ -82,6 +82,20 @@ for (const theme of ['light', 'dark'] as const) {
       // bekleyip kısa bir yerleşme payı vermek daha güvenilir.
       await page.waitForSelector('#main-content');
       await page.waitForTimeout(1500);
+      // OzelVakitBanner (kerahat/teheccüd/bayram) ve RamazanHub, gerçek
+      // saatle karşılaştırılarak KOŞULLU monte ediliyor — `mask` yalnızca
+      // var olan pikselleri kapatabilir, DOM'a hiç girmeyen/çıkan bir
+      // bölümün toplam sayfa YÜKSEKLİĞİNİ değiştirmesini engelleyemez. Baseline
+      // üretimiyle bir sonraki CI çalıştırması arasında bir pencere açılıp
+      // kapanırsa ~800px'lik bir yükseklik farkı oluşup gerçek bir regresyon
+      // olmadan testi kırıyordu (bkz. performans/deploy denetimi). Bu yüzden
+      // ekran görüntüsünden hemen önce bu iki bölge DOM'dan kaldırılmış gibi
+      // (display:none) gizlenir — sıfır-veya-daha-fazla eşleşmede de güvenli.
+      await page.locator('[data-testid="ozel-vakit-banner"], [data-testid="ramazan-hub"]').evaluateAll((els) => {
+        els.forEach((el) => {
+          (el as HTMLElement).style.display = 'none';
+        });
+      });
       await expect(page).toHaveScreenshot(`ana-ekran-${theme}.png`, {
         ...SS_OPTS,
         fullPage: true,

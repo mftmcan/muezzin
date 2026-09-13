@@ -388,7 +388,13 @@ export const OzelVakitBanner = React.memo<OzelVakitBannerProps>(({ durum }) => {
   if (!durum.tip) return null;
 
   return (
-    <div className="flex flex-col gap-3 mt-4">
+    // `data-testid` yalnızca görsel regresyon testi (tests/e2e/visual.spec.ts)
+    // bu bölgeyi ekrandan gizleyebilsin diye var — kerahat/teheccüd/bayram
+    // pencereleri gerçek saatle karşılaştırılarak koşullu monte edildiğinden,
+    // baseline üretimi ile CI çalıştırması arasında bir pencere açılıp
+    // kapanırsa tüm sayfa yüksekliği değişip gerçek bir regresyon olmadan
+    // testi kırıyordu (bkz. performans/deploy denetimi).
+    <div className="flex flex-col gap-3 mt-4" data-testid="ozel-vakit-banner">
       <TekBanner durum={durum} />
       {durum.ikincilDurum && <TekBanner durum={durum.ikincilDurum} />}
     </div>
