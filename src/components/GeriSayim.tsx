@@ -243,7 +243,18 @@ export function GeriSayim({
 
   // ── Render (Google Neural Expressive UI) ──────────────────────────────────
   return (
-    <div className="relative flex flex-col items-center group w-full max-w-[420px] mx-auto select-none" style={{ perspective: 1200 }}>
+    // `data-testid` yalnızca görsel regresyon testi (tests/e2e/visual.spec.ts)
+    // bu bölgeyi maskeleyebilsin diye var — ilerleme halkası, vurgu rengi ve
+    // dönem başlığı sürekli/vakit bazlı değiştiğinden (saniyelik `countdown-timer`
+    // testid'i yalnızca rakamları kapsıyor, halkayı/başlığı kapsamıyor) —
+    // maskelenmezse baseline zamanla bayatlar ve gerçek regresyon olmadan
+    // CI'ı kırar (bkz. performans/deploy denetimi, aynı gerekçe AnaEkranHero
+    // vakit-matrisi maskelemesiyle).
+    <div
+      className="relative flex flex-col items-center group w-full max-w-[420px] mx-auto select-none"
+      style={{ perspective: 1200 }}
+      data-testid="geri-sayim"
+    >
       <motion.div
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}

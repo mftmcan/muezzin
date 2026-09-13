@@ -262,7 +262,12 @@ export const AnaEkranHero = React.memo(({ isLoading, mevcutVakit, sonraki, bugun
               </div>
 
               {/* Vakit Matrix — 6-Column Responsive Grid */}
-              <div className="w-full z-10 relative mt-4">
+              {/* `data-testid` yalnızca görsel regresyon testi (tests/e2e/visual.spec.ts)
+              bu bölgeyi maskeleyebilsin diye var — aktif/sıradaki vakit vurgusu
+              günde ~6 kez değiştiğinden (bkz. `isActive`/`isNext` altta),
+              maskelenmezse baseline birkaç saat içinde bayatlar ve gerçek bir
+              regresyon olmadan CI'ı kırar (bkz. performans/deploy denetimi). */}
+              <div className="w-full z-10 relative mt-4" data-testid="vakit-matrisi">
                 {bugunVakitler && (
                   <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
                     {UI_VAKIT_LISTESI.map(({ key, label }, idx) => {

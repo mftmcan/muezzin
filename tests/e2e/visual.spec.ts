@@ -53,6 +53,16 @@ function saniyeMaskeleri(page: Page) {
   return [page.getByTestId('live-clock'), page.getByTestId('countdown-timer')];
 }
 
+// `saniyeMaskeleri`nin ötesinde, yalnızca "ana ekran"a özgü iki bölge daha
+// vakit bazlı (saniyelik değil ama günde ~6 kez) değişiyor: vakit matrisindeki
+// aktif/sıradaki vurgusu ve geri sayım halkasının rengi/ilerlemesi + dönem
+// başlığı (`geri-sayim`, `countdown-timer`'ı da kapsar). Maskelenmezse
+// baseline yalnızca üretildiği vaktin penceresinde geçerli kalır, bir sonraki
+// vakte geçildiğinde gerçek bir regresyon olmadan CI'ı kırar.
+function anaEkranMaskeleri(page: Page) {
+  return [...saniyeMaskeleri(page), page.getByTestId('vakit-matrisi'), page.getByTestId('geri-sayim')];
+}
+
 const SS_OPTS = { maxDiffPixelRatio: 0.02 } as const;
 
 for (const theme of ['light', 'dark'] as const) {
@@ -75,7 +85,7 @@ for (const theme of ['light', 'dark'] as const) {
       await expect(page).toHaveScreenshot(`ana-ekran-${theme}.png`, {
         ...SS_OPTS,
         fullPage: true,
-        mask: saniyeMaskeleri(page),
+        mask: anaEkranMaskeleri(page),
       });
     });
 
