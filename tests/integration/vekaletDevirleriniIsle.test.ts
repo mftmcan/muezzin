@@ -40,14 +40,21 @@ function yakinCuma(): string {
 }
 const CUMA_TARIHI = yakinCuma();
 
-// Cuma OLMAYAN, gelecekteki (bugünden sonraki) en yakın tarih — "ezan henüz
-// geçmedi" senaryosunu Cuma kısıtlamasıyla karışmadan test edebilmek için.
+// Ne Cuma (5) ne de Pazartesi (1) olan, gelecekteki (bugünden sonraki) en
+// yakın tarih — "ezan henüz geçmedi" senaryosunu Cuma kısıtlamasıyla
+// karışmadan test edebilmek için.
+// Pazartesi de hariç tutulur: bu dosyadaki "alıcı normalde müsait"
+// varsayılan fixture'ı (`aliciHaftalikIzinGunu: 1`) alıcının SABİT haftalık
+// izin gününü Pazartesi yapıyor. GELECEK_GUN tesadüfen bir Pazartesi'ye denk
+// gelirse (ör. test Pazar günü koşarsa) script, alıcıyı o gün için doğru
+// şekilde uygun bulmaz ve "happy path" transfer testleri tarihe bağlı
+// (flaky) olarak kırılır.
 function yakinCumaOlmayanGelecekGun(): string {
   for (let n = 1; n <= 10; n++) {
     const aday = gunOnce(-n); // gunOnce negatif n ile GELECEĞE gider.
-    if (haftaGunuNumarasi(aday) !== 5) return aday;
+    if (haftaGunuNumarasi(aday) !== 5 && haftaGunuNumarasi(aday) !== 1) return aday;
   }
-  throw new Error('Cuma olmayan gelecek bir tarih bulunamadı.');
+  throw new Error('Cuma/Pazartesi olmayan gelecek bir tarih bulunamadı.');
 }
 
 // `seedKabulEdilmisTalep`'in VARSAYILAN tarihi artık GELECEKTE bir gün.
