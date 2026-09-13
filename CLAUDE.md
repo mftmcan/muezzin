@@ -242,6 +242,34 @@ npm run test:all           # typecheck + typecheck:scripts + lint + smoke + unit
 **`npm test` `test:all`'ın takma adı DEĞİL** — sadece `test:smoke`'u çalıştırır.
 Tam doğrulama için `npm run test:all` kullan.
 
+### ⚠️ Emulator güvenliği — port çakışmasında ASLA çalışan instance'a bağlanma
+
+`tests/integration/*.test.ts` dosyalarının çoğu dosya başında doğrudan
+`process.env.FIRESTORE_EMULATOR_HOST = '127.0.0.1:8080'` yazar ve testler
+neredeyse hepsi `clearCollections()` ile `muezzins`, `bildirimler`,
+`vakitler`, `settings`, `haftaPlanlari`, `vekalet_talepleri`, `audit_logs`
+koleksiyonlarını TOPTAN SİLER. Bu dosyaları normalde `firebase
+emulators:exec` çalıştırır — bu her seferinde SIFIRDAN, izole, atılabilir
+bir emulator başlatır. **Ama `emulators:exec` port 8080/9099 zaten
+doluyken başarısız olur** ve bir sonraki içgüdüsel adım ("madem
+başlatamadım, zaten çalışan instance'a bağlanıp testi yine de koşturayım")
+gerçek bir veri kaybı olayına yol açtı (2026-09-13, bkz. bu oturumun
+öncesindeki bir subagent olayı): kullanıcının kendi elle başlattığı,
+manuel test için tuttuğu bir dev emulator'ü bu şekilde tamamen sıfırlandı.
+
+**Kural:** `test:integration`/`test:rules`/`test:e2e` (veya bunların
+sardığı herhangi bir `tsx tests/integration/*.test.ts` çağrısı)
+`emulators:exec`'in "port already in use" gibi bir hatayla başarısız
+olursa, **asla** zaten 8080/9099'da yanıt veren instance'a karşı testi
+tekrar çalıştırma — bu, o instance'ın kim tarafından, ne amaçla
+başlatıldığını bilmediğin, atılabilir olmayan bir ortam olabileceği
+anlamına gelir. Bunun yerine DUR ve kullanıcıya sor: (a) o emulator'ü
+kapatıp tekrar deneyeyim mi, (b) farklı bir portta izole bir instance mı
+başlatayım, yoksa (c) doğrulamayı CI'ya mı bırakayım. `curl -s -o
+/dev/null -w '%{http_code}' http://127.0.0.1:8080` gibi basit bir portu
+"zaten dolu mu" kontrolü, herhangi bir emulator-bağımlı testi
+`emulators:exec` DIŞINDA bir yolla çalıştırmadan önce yapılmalı.
+
 ## Bundle bölme
 
 `vite.config.ts`'teki `manualChunks`, Firebase'i üç ayrı chunk'a böler:
