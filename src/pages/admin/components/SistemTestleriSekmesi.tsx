@@ -310,12 +310,12 @@ export const SistemTestleriSekmesi = React.memo(({ setActiveTab }: { setActiveTa
               )}
             </div>
             {dbTestState === 'error' && (
-              <div className="p-3 bg-rose-500/5 border border-rose-500/10 rounded-xl text-2xs font-mono text-rose-400/90 leading-relaxed overflow-y-auto max-h-16">
+              <div className="p-3 bg-rose-500/5 border border-rose-500/10 rounded-xl text-xs font-mono text-rose-400/90 leading-relaxed overflow-y-auto max-h-16">
                 Hata: {dbError}
               </div>
             )}
             {dbTestState === 'idle' && (
-              <p className="text-2xs text-muted leading-relaxed font-light">
+              <p className="text-xs text-muted leading-relaxed font-light">
                 Veritabanı bağlantı hızını ve canlı veri kanallarındaki toplam listener yükünü anlık denetler.
               </p>
             )}
@@ -360,7 +360,7 @@ export const SistemTestleriSekmesi = React.memo(({ setActiveTab }: { setActiveTa
               </div>
             )}
             {fcmTestState === 'idle' && (
-              <p className="text-2xs text-muted leading-relaxed font-light">
+              <p className="text-xs text-muted leading-relaxed font-light">
                 Tarayıcı anlık bildirim izinlerini sorgular. Görev uyarısı dağıtımları için kritiktir.
               </p>
             )}
@@ -413,7 +413,7 @@ export const SistemTestleriSekmesi = React.memo(({ setActiveTab }: { setActiveTa
               </div>
             )}
             {pwaTestState === 'idle' && (
-              <p className="text-2xs text-muted leading-relaxed font-light">
+              <p className="text-xs text-muted leading-relaxed font-light">
                 Çevrimdışı önbellek durumunu denetler ve arka planda yeni bir güncelleme paketi olup olmadığını sorgular.
               </p>
             )}
@@ -480,7 +480,7 @@ export const SistemTestleriSekmesi = React.memo(({ setActiveTab }: { setActiveTa
               )}
             </div>
             {networkTestState === 'idle' && (
-              <p className="text-2xs text-muted leading-relaxed font-light">
+              <p className="text-xs text-muted leading-relaxed font-light">
                 Cihazın internet gecikmesini test eder ve Firebase'e yazılmış ancak henüz sunucuya ulaşmamış bekleyen çevrimdışı işlemleri
                 doğrular.
               </p>
@@ -567,7 +567,7 @@ export const SistemTestleriSekmesi = React.memo(({ setActiveTab }: { setActiveTa
                   <h6 className="text-xs font-semibold text-rose-400 flex items-center gap-1.5">
                     <ShieldAlert size={13} /> React Error Boundary & Hata Günlüğü Testi
                   </h6>
-                  <p className="text-2xs text-[var(--text-secondary)]/60 leading-relaxed font-light max-w-xl">
+                  <p className="text-xs text-[var(--text-secondary)]/60 leading-relaxed font-light max-w-xl">
                     Bu araç, sistem hata kayıt altyapısını test etmek için yapay bir Javascript hatası fırlatır. Hata fırlatıldığında
                     uygulama hatayı yakalayarak Firestore loglarına yazacak ve sizi hata izleme sekmesine yönlendirecektir.
                   </p>
@@ -577,7 +577,7 @@ export const SistemTestleriSekmesi = React.memo(({ setActiveTab }: { setActiveTa
                   whileHover={{ scale: 1.02, y: -1 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setConfirmSimulateOpen(true)}
-                  className="px-4 py-3.5 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 border border-rose-500/30 rounded-xl text-2xs font-bold uppercase tracking-wider shadow-md flex items-center gap-2 transition-all whitespace-nowrap self-end sm:self-center"
+                  className="px-4 py-3.5 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 border border-rose-500/30 rounded-xl text-2xs font-bold uppercase tracking-wider shadow-elev1 flex items-center gap-2 transition-all whitespace-nowrap self-end sm:self-center"
                 >
                   <Play size={10} /> Hata Simüle Et
                 </motion.button>

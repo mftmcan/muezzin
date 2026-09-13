@@ -57,7 +57,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           programatik taşınması AnimatedRoutes'ta (App.tsx) yapılır. */}
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[10000] focus:px-5 focus:py-3 focus:rounded-2xl focus:bg-[var(--text-primary)] focus:text-[var(--app-bg)] focus:text-2xs focus:font-bold focus:uppercase focus:tracking-wide"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[var(--z-skip-link)] focus:px-5 focus:py-3 focus:rounded-2xl focus:bg-[var(--text-primary)] focus:text-[var(--app-bg)] focus:text-2xs focus:font-bold focus:uppercase focus:tracking-wide"
       >
         İçeriğe atla
       </a>
@@ -67,7 +67,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <motion.div
           className="absolute top-[-10%] right-[-10%] w-[70%] h-[70%] blur-[180px] rounded-full opacity-[0.14] sm:opacity-[0.22] transition-all duration-[3000ms]"
           style={{
-            background: 'radial-gradient(circle, var(--dynamic-aura, var(--aura-amber)) 0%, transparent 70%)',
+            background: 'radial-gradient(circle, var(--dynamic-aura, var(--aura-indigo)) 0%, transparent 70%)',
           }}
         />
         <motion.div

@@ -97,7 +97,7 @@ export default function MazeretGecmisi() {
             whileHover={{ y: -3, scale: 1.02, boxShadow: '0 15px 30px rgba(99,102,241,0.2)' }}
             whileTap={{ scale: 0.98 }}
             onClick={exportCSV}
-            className="flex items-center justify-center gap-3 bg-[var(--dynamic-aura,var(--aura-indigo))]/10 text-[var(--dynamic-aura,var(--aura-indigo))] border border-[var(--dynamic-aura,var(--aura-indigo))]/20 px-6 py-3.5 rounded-2xl text-2xs font-bold uppercase tracking-wide shadow-lg transition-all w-full sm:w-auto cursor-pointer"
+            className="flex items-center justify-center gap-3 bg-[var(--dynamic-aura,var(--aura-indigo))]/10 text-[var(--dynamic-aura,var(--aura-indigo))] border border-[var(--dynamic-aura,var(--aura-indigo))]/20 px-6 py-3.5 rounded-2xl text-2xs font-bold uppercase tracking-wide shadow-elev2 transition-all w-full sm:w-auto cursor-pointer"
           >
             <FileDown size={14} />
             DIŞA AKTAR
@@ -174,7 +174,7 @@ export default function MazeretGecmisi() {
                       </td>
                       <td className="px-6 py-5 spatial-glass-elevated border-x-0">
                         <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 rounded-[14px] bg-[var(--text-primary)]/[0.03] border border-[var(--text-primary)]/5 flex items-center justify-center text-[var(--dynamic-aura,var(--aura-indigo))] font-light text-lg shadow-lg">
+                          <div className="w-10 h-10 rounded-[14px] bg-[var(--text-primary)]/[0.03] border border-[var(--text-primary)]/5 flex items-center justify-center text-[var(--dynamic-aura,var(--aura-indigo))] font-light text-lg shadow-elev2">
                             {getMuezzinName(g.uid).charAt(0)}
                           </div>
                           <span className="text-sm font-light text-[var(--text-primary)] tracking-tight">{getMuezzinName(g.uid)}</span>
@@ -182,7 +182,7 @@ export default function MazeretGecmisi() {
                       </td>
                       <td className="px-6 py-5 spatial-glass-elevated !rounded-r-3xl border-l-0">
                         <div className="flex items-center justify-between gap-4 w-full">
-                          <div className="bg-[var(--dynamic-aura,var(--aura-indigo))]/10 border border-[var(--dynamic-aura,var(--aura-indigo))]/20 px-5 py-2.5 rounded-xl inline-flex items-center gap-3 shadow-sm group-hover:bg-[var(--dynamic-aura,var(--aura-indigo))]/15 transition-all duration-500">
+                          <div className="bg-[var(--dynamic-aura,var(--aura-indigo))]/10 border border-[var(--dynamic-aura,var(--aura-indigo))]/20 px-5 py-2.5 rounded-xl inline-flex items-center gap-3 shadow-elev1 group-hover:bg-[var(--dynamic-aura,var(--aura-indigo))]/15 transition-all duration-500">
                             <div className="w-1 h-1 rounded-full bg-[var(--dynamic-aura,var(--aura-indigo))]" />
                             <span className="text-2xs font-medium text-[var(--dynamic-aura,var(--aura-indigo))] uppercase tracking-wide leading-none">
                               {g.retSebebi || 'SEBEP BELİRTİLMEDİ'}
@@ -255,7 +255,7 @@ export default function MazeretGecmisi() {
                       <Trash2 size={13} />
                     </button>
                   </div>
-                  <p className="text-2xs font-light text-[var(--text-primary)]/80 leading-relaxed italic">
+                  <p className="text-xs font-light text-[var(--text-primary)]/80 leading-relaxed italic">
                     "{g.retSebebi || 'Sebep belirtilmedi.'}"
                   </p>
                 </div>

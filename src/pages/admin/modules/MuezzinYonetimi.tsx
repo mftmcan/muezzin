@@ -203,7 +203,7 @@ export default function MuezzinYonetimi() {
             whileHover={{ y: -3, scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => setShowArchived(!showArchived)}
-            className={`flex-1 sm:flex-initial px-6 py-3 sm:py-4 rounded-xl text-2xs font-bold uppercase tracking-wide border transition-all ${showArchived ? 'bg-[var(--dynamic-aura,var(--aura-indigo))]/10 border-[var(--dynamic-aura,var(--aura-indigo))]/30 text-[var(--dynamic-aura,var(--aura-indigo))] shadow-lg' : 'bg-[var(--text-primary)]/[0.03] border-[var(--text-primary)]/5 text-[var(--text-secondary)]/55 hover:text-[var(--text-primary)]'}`}
+            className={`flex-1 sm:flex-initial px-6 py-3 sm:py-4 rounded-xl text-2xs font-bold uppercase tracking-wide border transition-all ${showArchived ? 'bg-[var(--dynamic-aura,var(--aura-indigo))]/10 border-[var(--dynamic-aura,var(--aura-indigo))]/30 text-[var(--dynamic-aura,var(--aura-indigo))] shadow-elev2' : 'bg-[var(--text-primary)]/[0.03] border-[var(--text-primary)]/5 text-[var(--text-secondary)]/55 hover:text-[var(--text-primary)]'}`}
           >
             {showArchived ? 'KADROYU GÖSTER' : 'ARŞİVİ GÖSTER'}
           </motion.button>
@@ -229,7 +229,7 @@ export default function MuezzinYonetimi() {
           <div className="absolute top-0 right-0 w-32 h-32 bg-rose-500/5 blur-3xl rounded-full -translate-y-1/2 translate-x-1/2" />
 
           <div className="flex items-center gap-4 mb-8">
-            <div className="w-10 h-10 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center shadow-lg border border-rose-500/20">
+            <div className="w-10 h-10 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center shadow-elev2 border border-rose-500/20">
               <AlertCircle size={20} strokeWidth={1.5} />
             </div>
             <div>
@@ -266,7 +266,7 @@ export default function MuezzinYonetimi() {
                       whileTap={{ scale: 0.9 }}
                       onClick={() => handleApprove(m)}
                       aria-label="Personeli onayla"
-                      className="p-3 bg-emerald-500/10 text-emerald-500 rounded-xl border border-emerald-500/20 shadow-sm"
+                      className="p-3 bg-emerald-500/10 text-emerald-500 rounded-xl border border-emerald-500/20 shadow-elev1"
                     >
                       <CheckCircle2 size={16} />
                     </motion.button>
@@ -284,7 +284,7 @@ export default function MuezzinYonetimi() {
                     // ana liste butonundaki AYNI düzeltme) — statik "Sil" etiketi ikinci
                     // durumda yanıltıcıydı.
                     aria-label={m.isInvite ? 'Daveti sil' : 'Personeli arşive al'}
-                    className="p-3 bg-[var(--text-primary)]/5 text-muted rounded-xl border border-[var(--text-primary)]/5 hover:text-rose-500 hover:border-rose-500/20 transition-all shadow-sm"
+                    className="p-3 bg-[var(--text-primary)]/5 text-muted rounded-xl border border-[var(--text-primary)]/5 hover:text-rose-500 hover:border-rose-500/20 transition-all shadow-elev1"
                   >
                     <Trash2 size={16} />
                   </motion.button>
@@ -324,7 +324,7 @@ export default function MuezzinYonetimi() {
                 >
                   {/* Left Status Pillar */}
                   <div
-                    className={`absolute left-0 top-6 bottom-6 w-[4px] rounded-r-full transition-all duration-700 shadow-lg ${
+                    className={`absolute left-0 top-6 bottom-6 w-[4px] rounded-r-full transition-all duration-700 shadow-elev2 ${
                       m.aktif ? 'bg-emerald-500 shadow-emerald-500/40' : 'bg-rose-500 shadow-rose-500/40'
                     }`}
                   />
@@ -342,9 +342,13 @@ export default function MuezzinYonetimi() {
                               <span className="relative z-10">{m.displayName.charAt(0)}</span>
                             )}
                           </div>
+                          {/* Önceden aktif personel için animate-pulse taşıyordu — bu bir liste
+                              (her satırda tekrarlanıyor), 15-20 aktif personelde hepsi aynı anda
+                              titreşiyordu; tek bir dolu/boş renk zaten "aktif/pasif"i net anlatıyor
+                              (bkz. görsel tasarım denetimi V18). */}
                           <div
                             className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-[3px] border-[var(--app-bg)] shadow-[var(--spatial-shadow)] ${
-                              m.aktif ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'
+                              m.aktif ? 'bg-emerald-500' : 'bg-rose-500'
                             }`}
                           />
                         </div>
@@ -397,7 +401,7 @@ export default function MuezzinYonetimi() {
                           </span>
                         )}
                         <span
-                          className={`px-2.5 py-1 rounded-md text-2xs font-bold tracking-wide uppercase border shadow-sm ${
+                          className={`px-2.5 py-1 rounded-md text-2xs font-bold tracking-wide uppercase border shadow-elev1 ${
                             m.role === 'admin'
                               ? 'bg-[var(--dynamic-aura,var(--aura-indigo))]/10 text-[var(--dynamic-aura,var(--aura-indigo))] border-[var(--dynamic-aura,var(--aura-indigo))]/20'
                               : 'bg-[var(--text-primary)]/[0.02] text-muted border-[var(--glass-border)]'
@@ -481,7 +485,7 @@ export default function MuezzinYonetimi() {
                             whileTap={{ scale: 0.9 }}
                             onClick={() => setConfirmAction({ type: 'restore', data: m })}
                             aria-label="Arşivden geri yükle"
-                            className="p-2.5 sm:p-3 bg-[var(--text-primary)]/[0.03] text-emerald-400 hover:text-emerald-500 rounded-xl sm:rounded-2xl border border-[var(--glass-border)] hover:border-emerald-500/30 transition-all shadow-lg cursor-pointer"
+                            className="p-2.5 sm:p-3 bg-[var(--text-primary)]/[0.03] text-emerald-400 hover:text-emerald-500 rounded-xl sm:rounded-2xl border border-[var(--glass-border)] hover:border-emerald-500/30 transition-all shadow-elev2 cursor-pointer"
                           >
                             <RotateCcw className="w-[14px] h-[14px] sm:w-4 sm:h-4" strokeWidth={1.5} />
                           </motion.button>
@@ -492,7 +496,7 @@ export default function MuezzinYonetimi() {
                               whileTap={{ scale: 0.9 }}
                               onClick={() => openEdit(m)}
                               aria-label="Personeli düzenle"
-                              className="p-2.5 sm:p-3 bg-[var(--text-primary)]/[0.03] text-muted hover:text-[var(--text-primary)] rounded-xl sm:rounded-2xl border border-[var(--glass-border)] transition-all shadow-lg cursor-pointer"
+                              className="p-2.5 sm:p-3 bg-[var(--text-primary)]/[0.03] text-muted hover:text-[var(--text-primary)] rounded-xl sm:rounded-2xl border border-[var(--glass-border)] transition-all shadow-elev2 cursor-pointer"
                             >
                               <Edit2 className="w-[14px] h-[14px] sm:w-4 sm:h-4" strokeWidth={1.5} />
                             </motion.button>
@@ -501,7 +505,7 @@ export default function MuezzinYonetimi() {
                               whileTap={{ scale: 0.9 }}
                               onClick={() => setConfirmAction({ type: 'toggle', data: m })}
                               aria-label={m.aktif ? 'Personeli pasife al' : 'Personeli aktife al'}
-                              className={`p-2.5 sm:p-3 bg-[var(--text-primary)]/[0.03] rounded-xl sm:rounded-2xl border border-[var(--glass-border)] transition-all shadow-lg cursor-pointer ${
+                              className={`p-2.5 sm:p-3 bg-[var(--text-primary)]/[0.03] rounded-xl sm:rounded-2xl border border-[var(--glass-border)] transition-all shadow-elev2 cursor-pointer ${
                                 m.aktif ? 'text-rose-400 hover:border-rose-400/30' : 'text-emerald-400 hover:border-emerald-400/30'
                               }`}
                             >
@@ -518,7 +522,7 @@ export default function MuezzinYonetimi() {
                               // başlığı ("ARŞİVE AL") ve metniyle çelişiyordu (bkz. kod denetimi
                               // bulgusu).
                               aria-label="Personeli arşive al"
-                              className="p-2.5 sm:p-3 bg-[var(--text-primary)]/[0.03] text-muted hover:text-rose-500 rounded-xl sm:rounded-2xl border border-[var(--glass-border)] hover:border-rose-500/30 transition-all shadow-lg cursor-pointer"
+                              className="p-2.5 sm:p-3 bg-[var(--text-primary)]/[0.03] text-muted hover:text-rose-500 rounded-xl sm:rounded-2xl border border-[var(--glass-border)] hover:border-rose-500/30 transition-all shadow-elev2 cursor-pointer"
                             >
                               <Trash2 className="w-[14px] h-[14px] sm:w-4 sm:h-4" strokeWidth={1.5} />
                             </motion.button>

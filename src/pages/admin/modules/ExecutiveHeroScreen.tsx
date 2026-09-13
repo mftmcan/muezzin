@@ -198,7 +198,7 @@ export default function ExecutiveHeroScreen({
 
           {/* Header */}
           <div className="relative z-10 flex items-center justify-between mb-6">
-            <div className="w-12 h-12 rounded-2xl bg-[var(--dynamic-aura,var(--aura-indigo))]/10 flex items-center justify-center text-[var(--dynamic-aura,var(--aura-indigo))] border border-[var(--dynamic-aura,var(--aura-indigo))]/20 shadow-lg">
+            <div className="w-12 h-12 rounded-2xl bg-[var(--dynamic-aura,var(--aura-indigo))]/10 flex items-center justify-center text-[var(--dynamic-aura,var(--aura-indigo))] border border-[var(--dynamic-aura,var(--aura-indigo))]/20 shadow-elev2">
               <Activity size={24} strokeWidth={1.5} />
             </div>
             <span className="authority-title !text-2xs opacity-40 font-medium tracking-wide group-hover:font-bold transition-all duration-200">
@@ -325,7 +325,7 @@ export default function ExecutiveHeroScreen({
             >
               <div className="kinetic-sheen" />
               <div className="flex items-center justify-between">
-                <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-500 border border-amber-500/20 shadow-lg flex items-center justify-center">
+                <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-500 border border-amber-500/20 shadow-elev2 flex items-center justify-center">
                   <CalendarClock size={18} strokeWidth={1.5} />
                 </div>
                 <div className="text-right">
@@ -353,7 +353,7 @@ export default function ExecutiveHeroScreen({
             >
               <div className="kinetic-sheen" />
               <div className="flex items-center justify-between">
-                <div className="w-10 h-10 rounded-2xl bg-[var(--dynamic-aura,var(--aura-indigo))]/10 text-[var(--dynamic-aura,var(--aura-indigo))] border border-[var(--dynamic-aura,var(--aura-indigo))]/20 shadow-lg flex items-center justify-center">
+                <div className="w-10 h-10 rounded-2xl bg-[var(--dynamic-aura,var(--aura-indigo))]/10 text-[var(--dynamic-aura,var(--aura-indigo))] border border-[var(--dynamic-aura,var(--aura-indigo))]/20 shadow-elev2 flex items-center justify-center">
                   <ClipboardCheck size={18} strokeWidth={1.5} />
                 </div>
                 <div className="text-right">
@@ -376,7 +376,7 @@ export default function ExecutiveHeroScreen({
       olmadı, hâlâ 3 satırdı). "Görev" kelimesi bağlamdan zaten belli
       (kart başlığı "HAFTALIK PLAN") — kaldırılması anlamı korurken
       metni 2 satıra indiriyor. */}
-                <p className="text-2xs font-bold text-[var(--dynamic-aura,var(--aura-indigo))]/60 uppercase leading-snug">
+                <p className="text-xs font-bold text-[var(--dynamic-aura,var(--aura-indigo))]/60 uppercase leading-snug">
                   {planHazir ? `${bekleyenOnaySayisi}/${haftalikGorevSayisi} onay bekliyor` : 'Planlama ekranına git'}
                 </p>
               </div>
@@ -391,7 +391,7 @@ export default function ExecutiveHeroScreen({
             >
               <div className="kinetic-sheen" />
               <div className="flex items-center justify-between">
-                <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 shadow-lg flex items-center justify-center">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 shadow-elev2 flex items-center justify-center">
                   <Megaphone size={18} strokeWidth={1.5} />
                 </div>
                 <div className="text-right">
@@ -400,7 +400,7 @@ export default function ExecutiveHeroScreen({
                 </div>
               </div>
               <div className="mt-4 pt-4 border-t border-[var(--glass-border)]">
-                <p className="text-2xs font-bold text-emerald-500/60 uppercase leading-snug">Duyuru panelini yönet</p>
+                <p className="text-xs font-bold text-emerald-500/60 uppercase leading-snug">Duyuru panelini yönet</p>
               </div>
             </motion.div>
           </div>
@@ -492,7 +492,7 @@ export default function ExecutiveHeroScreen({
 
                         <div className="flex items-center gap-6">
                           <div
-                            className={`flex items-center gap-3 px-4 py-1.5 rounded-full border shadow-sm transition-all duration-500 ${
+                            className={`flex items-center gap-3 px-4 py-1.5 rounded-full border shadow-elev1 transition-all duration-500 ${
                               record.status === 'active'
                                 ? 'bg-rose-500/10 border-rose-500/20'
                                 : record.status === 'pending'
@@ -579,7 +579,7 @@ export default function ExecutiveHeroScreen({
                                           }
                                           setDecisionConfirm({ open: true, id: record.id, durum: 'onaylandi', title: record.title });
                                         }}
-                                        className="px-6 py-2.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 text-2xs uppercase tracking-wide font-bold flex items-center gap-3 shadow-lg disabled:opacity-40 disabled:cursor-wait"
+                                        className="px-6 py-2.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 text-2xs uppercase tracking-wide font-bold flex items-center gap-3 shadow-elev2 disabled:opacity-40 disabled:cursor-wait"
                                       >
                                         <Check size={14} strokeWidth={3} /> ONAYLA
                                       </motion.button>
@@ -591,7 +591,7 @@ export default function ExecutiveHeroScreen({
                                           e.stopPropagation();
                                           setDecisionConfirm({ open: true, id: record.id, durum: 'reddedildi', title: record.title });
                                         }}
-                                        className="px-6 py-2.5 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-500 text-2xs uppercase tracking-wide font-bold flex items-center gap-3 shadow-lg disabled:opacity-40 disabled:cursor-wait"
+                                        className="px-6 py-2.5 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-500 text-2xs uppercase tracking-wide font-bold flex items-center gap-3 shadow-elev2 disabled:opacity-40 disabled:cursor-wait"
                                       >
                                         <X size={14} strokeWidth={3} /> REDDET
                                       </motion.button>
@@ -608,7 +608,7 @@ export default function ExecutiveHeroScreen({
                                           setActiveTab('ekip', 'mazeretler');
                                         }
                                       }}
-                                      className="px-6 py-2.5 rounded-2xl bg-[var(--text-primary)]/5 border border-[var(--text-primary)]/10 text-[var(--text-primary)] text-2xs uppercase tracking-wide font-bold shadow-lg"
+                                      className="px-6 py-2.5 rounded-2xl bg-[var(--text-primary)]/5 border border-[var(--text-primary)]/10 text-[var(--text-primary)] text-2xs uppercase tracking-wide font-bold shadow-elev2"
                                     >
                                       DETAYLARI İNCELE
                                     </motion.button>

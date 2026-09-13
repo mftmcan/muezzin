@@ -9,6 +9,7 @@ import { useThemeStore } from '../store/useThemeStore';
 import { playClick } from '../lib/sounds';
 import { hapticMedium } from '../lib/haptic';
 import { getAdminNavItems, APP_LINKS, toActiveModule, type ActiveModule } from '../pages/admin/config/navConfig';
+import { SPRING } from '../lib/motion';
 
 // framer-motion'ın FLIP interpolasyonu için `--radius-card`'ın (src/index.css)
 // sabit bir JS sayısı olarak kopyası gerekiyordu (CSS değişkeni doğrudan
@@ -81,8 +82,8 @@ const AppNavItem = memo(({ item, isActive }: { item: (typeof ALL_NAV_ITEMS)[0]; 
               layoutId="activeNavIndicator"
               className="absolute inset-[6px] sm:inset-0 bg-[var(--text-primary)]/[0.06] rounded-card shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] border transition-all duration-1000"
               style={{
-                borderColor: 'color-mix(in srgb, var(--dynamic-aura, var(--text-primary)) 20%, transparent)',
-                boxShadow: '0 0 25px -4px color-mix(in srgb, var(--dynamic-aura, var(--text-primary)) 15%, transparent)',
+                borderColor: 'color-mix(in srgb, var(--dynamic-aura, var(--aura-indigo)) 20%, transparent)',
+                boxShadow: '0 0 25px -4px color-mix(in srgb, var(--dynamic-aura, var(--aura-indigo)) 15%, transparent)',
               }}
               transition={{ type: 'spring', bounce: 0, duration: 0.3 }}
             />
@@ -314,7 +315,7 @@ export function FloatingDock() {
           className="absolute inset-0 opacity-[0.08] pointer-events-none transition-all duration-1000"
           style={{
             background:
-              'radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), var(--dynamic-aura, var(--text-primary)), transparent 50%)',
+              'radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), var(--dynamic-aura, var(--aura-indigo)), transparent 50%)',
           }}
         />
 
@@ -360,12 +361,12 @@ export function FloatingDock() {
                         <motion.div
                           layoutId="active-dock-tab"
                           className="absolute inset-0 bg-[var(--surface-medium)] rounded-card -z-10 border border-[var(--glass-border)]"
-                          transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                          transition={SPRING.snappy}
                         />
                         <motion.div
                           layoutId="active-dock-glow"
                           className="absolute inset-0 bg-[var(--dynamic-aura,var(--aura-indigo))]/10 blur-xl -z-20"
-                          transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                          transition={SPRING.snappy}
                         />
                         <motion.div
                           layoutId="active-admin-dock-indicator"

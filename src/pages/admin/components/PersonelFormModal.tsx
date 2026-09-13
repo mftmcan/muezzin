@@ -206,7 +206,7 @@ export const PersonelFormModal = React.memo(({ isOpen, onClose, editingUser }: P
                   }`}
                 >
                   <span className="text-2xs font-black uppercase tracking-wide">{role.label}</span>
-                  <span className="text-2xs mt-1 opacity-55 block leading-normal">{role.desc}</span>
+                  <span className="text-xs mt-1 opacity-55 block leading-normal">{role.desc}</span>
                 </button>
               ))}
             </div>

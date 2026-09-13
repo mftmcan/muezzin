@@ -156,7 +156,7 @@ export default function NotificationSettings({ userData, user }: NotificationSet
       </div>
 
       {uiMessage && (
-        <div className="mb-4 px-4 py-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-2xs font-medium leading-relaxed flex justify-between items-start gap-3">
+        <div className="mb-4 px-4 py-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-medium leading-relaxed flex justify-between items-start gap-3">
           <span>{uiMessage}</span>
           <button onClick={() => setUiMessage(null)} aria-label="Kapat" className="shrink-0 opacity-50 hover:opacity-100 text-xs">
             ✕
@@ -180,7 +180,7 @@ export default function NotificationSettings({ userData, user }: NotificationSet
         </div>
         <div className="space-y-1">
           <h5 className="text-2xs font-bold uppercase tracking-wider text-[var(--text-primary)]">DİZGE DURUM TANI</h5>
-          <p className="text-2xs text-muted leading-relaxed font-light">
+          <p className="text-xs text-muted leading-relaxed font-light">
             {userData?.fcmToken
               ? 'Anlık bildirim alıcınız başarıyla Google sunucularına bağlandı ve bu cihaz yetkilendirildi.'
               : typeof window !== 'undefined' && !('Notification' in window)
@@ -210,7 +210,7 @@ export default function NotificationSettings({ userData, user }: NotificationSet
           whileTap={{ scale: 0.98 }}
           onClick={handlePrimaryCtaClick}
           disabled={isRequesting}
-          className={`w-full mb-6 py-4 rounded-2xl bg-[var(--dynamic-aura,var(--aura-indigo))] text-[var(--app-bg)] text-2xs font-bold uppercase tracking-wide shadow-lg flex items-center justify-center gap-3 ${isRequesting ? 'opacity-70 cursor-wait' : ''}`}
+          className={`w-full mb-6 py-4 rounded-2xl bg-[var(--dynamic-aura,var(--aura-indigo))] text-[var(--app-bg)] text-2xs font-bold uppercase tracking-wide shadow-elev2 flex items-center justify-center gap-3 ${isRequesting ? 'opacity-70 cursor-wait' : ''}`}
         >
           {isRequesting ? (
             <div className="w-4 h-4 border-2 border-[var(--text-primary)]/30 border-t-white rounded-full animate-spin" />
@@ -281,7 +281,7 @@ export default function NotificationSettings({ userData, user }: NotificationSet
         <div className="flex items-center justify-between gap-6 py-2 border-t border-[var(--glass-border)] pt-5 mt-5">
           <div className="space-y-1">
             <h5 className="text-xs font-semibold text-[var(--text-primary)]">Bildirim Geçmişi</h5>
-            <p className="text-2xs text-[var(--text-secondary)]/75 leading-normal max-w-[280px] font-light">
+            <p className="text-xs text-[var(--text-secondary)]/75 leading-normal max-w-[280px] font-light">
               Kaçırdığınız veya kapanmış bildirimleri (son {NOTIFICATION_HISTORY_LIMIT}) buradan tekrar görüntüleyin.
             </p>
           </div>

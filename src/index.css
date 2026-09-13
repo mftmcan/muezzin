@@ -49,9 +49,27 @@
   --radius-avatar: 22px;
   --radius-icon: 28px;
 
+  /* Yükseklik (elevation) ölçeği — --radius-card'ın kurduğu desenin gölge
+     karşılığı (bkz. görsel tasarım denetimi V4/V5). Öncesinde tek token
+     (--spatial-shadow, tema bloklarında ayrı tanımlı, @theme'e hiç
+     kaydedilmemiş — bu yüzden her kullanımı `shadow-[var(--spatial-shadow)]`
+     köşeli parantez kaçışıyla yazılıyordu) + 93 tema-kör Tailwind varsayılanı
+     (shadow-lg/sm/md — koyu zeminde neredeyse hiç görünmeyen
+     `rgb(0 0 0 / 0.1)`) + 100'den fazla elle yazılmış tekil glow reçetesi
+     bir aradaydı. Üç basamak burada kaydedilerek Tailwind v4'ün otomatik
+     ürettiği `shadow-elev1/2/3` sınıfları kullanılabilir hale geliyor;
+     gerçek değerler (tema başına farklı) aşağıdaki [data-theme] bloklarında
+     tanımlı — aynı `--color-rose-400` gibi token'ların zaten kullandığı
+     "@theme'de kayıt, [data-theme]'de değer" deseni. `--spatial-shadow` bu
+     ölçeğe `elev2` takma adıyla bağlanır — 121+ `.spatial-glass` tüketicisi
+     ve 65 doğrudan çağrı noktası hiç değişmeden ışık modu derinlik
+     düzeltmesini (V6) otomatik miras alır. */
+  --shadow-elev1: 0 1px 2px rgba(0, 0, 0, 0.08);
+  --shadow-elev2: 0 4px 12px rgba(0, 0, 0, 0.12);
+  --shadow-elev3: 0 20px 40px rgba(0, 0, 0, 0.24);
+
   --app-bg: #000000;
   --spatial-glass-bg: rgba(255, 255, 255, 0.02);
-  --spatial-highlight: rgba(255, 255, 255, 0.15);
 
   /* Ambient Aura Palette (Base HSL - Velvet Jewel-Toned Circadian Color System) */
   --aura-ruby-h: 343;
@@ -67,19 +85,60 @@
   --aura-emerald: hsl(var(--aura-emerald-h), 85%, 50%);
   --aura-indigo: hsl(var(--aura-indigo-h), 80%, 65%);
   --aura-rose: hsl(var(--aura-rose-h), 95%, 65%);
+
+  /* useCircadianTheme.ts JS ile yazana kadar (ilk boyama, ~1 kare) yedi
+     farklı `var(--dynamic-aura, X)` fallback'i dolaşıyordu (bkz. görsel
+     tasarım denetimi V3) — burada gerçek bir başlangıç değeri tanımlanarak
+     JS henüz çalışmamışken de --dynamic-aura zaten anlamlı bir renk taşır.
+     Çağrı noktalarındaki fallback'ler artık tek bir değere (--aura-indigo)
+     hizalandı; bu satır o değerin neden seçildiğini (nötr/varsayılan vakit
+     rengi) tek yerden garanti eder. */
+  --dynamic-aura: var(--aura-indigo);
+  --dynamic-aura-secondary: var(--aura-indigo);
+
+  /* Aura-tonlu "parıltı" merdiveni — önceden `0 0 Npx color-mix(...)` elle
+     N ∈ {8,10,15,20,24,35} ve yüzde ∈ {10,12,15,20,80} varyasyonlarıyla
+     tekil tekil yazılıyordu (bkz. görsel tasarım denetimi V4). --dynamic-aura
+     runtime değeri içerdiğinden @theme'de değil burada (düz :root) tanımlı —
+     `shadow-[var(--shadow-glow-md)]` gibi köşeli parantez çağrısıyla
+     kullanılır, tıpkı --spatial-shadow gibi. Tema/vakit değiştikçe otomatik
+     güncellenir, ayrı [data-theme] tanımı gerekmez. */
+  --shadow-glow-sm: 0 0 10px color-mix(in srgb, var(--dynamic-aura, var(--aura-indigo)) 40%, transparent);
+  --shadow-glow-md: 0 0 20px color-mix(in srgb, var(--dynamic-aura, var(--aura-indigo)) 25%, transparent);
+  --shadow-glow-lg: 0 0 32px color-mix(in srgb, var(--dynamic-aura, var(--aura-indigo)) 15%, transparent);
+
+  /* Katman (z-index) ölçeği — yalnızca uygulama-genelinde birden çok
+     bileşenin paylaştığı "chrome" katmanları için (bkz. görsel tasarım
+     denetimi V12). `Modal` 500, `NotificationToast` 9999, `OfflineBanner`
+     10000, `::view-transition-new(root)` de 9999 (toast'la ÇAKIŞIYORDU —
+     bir rota geçişi tam da bir toast'ın belirdiği anda tetiklenirse hangisi
+     üstte kalacağı DOM sırasına kalıyordu) gibi değerler birbirinden
+     bağımsız, elle seçilmişti. Yerel dekoratif katmanlar (bir kartın kendi
+     arka planı önünde duran içeriği için z-10/20/30 gibi) bu ölçeğin DIŞINDA
+     kalır — onlar tek bir bileşenin kendi stacking context'i içinde anlamlı,
+     global bir çakışma riski taşımıyor. `z-[var(--z-modal)]` gibi köşeli
+     parantez çağrısıyla kullanılır. */
+  --z-drawer: 400;
+  --z-modal: 500;
+  --z-toast: 9000;
+  --z-transition-sweep: 9500;
+  --z-splash: 9700;
+  --z-offline-banner: 9900;
+  --z-skip-link: 10000;
 }
 
+/* --phi (1.618) ve --tracking-tight (0) burada ÖNCEDEN tanımlıydı ama hiçbir
+   kuralda referans verilmiyordu; --fluid-h1/h2/body de kullanılmıyordu VE
+   bozuktu — clamp'in orta değeri (`4rem`) bir viewport birimi taşımadığından
+   clamp her zaman sabit 4rem döndürüyordu, yani "akışkan" değil sabitti
+   (bkz. görsel tasarım denetimi V13). Hepsi kaldırıldı; --phi-space/--phi-gap
+   (gerçek kullanımı olan, doğru kurulmuş akışkan token'lar) korunuyor. */
 :root {
-  --phi: 1.618;
   --phi-space: clamp(1rem, 2.5vw, 3rem);
   --phi-gap: clamp(1.5rem, 4vw, 5rem);
-  --fluid-h1: clamp(2.5rem, 4rem, 5rem);
-  --fluid-h2: clamp(1.75rem, 2.75rem, 3.5rem);
-  --fluid-body: clamp(0.875rem, 1.2vw, 1.125rem);
   --spring-easing: cubic-bezier(0.16, 1, 0.3, 1);
   --fluid-duration: 0.5s;
   --tracking-authority: 0.12em;
-  --tracking-tight: 0;
 }
 
 [data-theme='light'] {
@@ -89,7 +148,6 @@
   --app-bg: hsl(var(--bg-h), var(--bg-s), var(--bg-l));
   /* Cam arka plan doygunlugu ve opakligi artirildi (Apple HIG cam morfizasyonu standardi) */
   --spatial-glass-bg: hsla(38, 25%, 98.5%, 0.65);
-  --spatial-highlight: hsla(38, 30%, 100%, 0.9);
   --glass-fallback-bg: hsla(38, 25%, 98.5%, 0.98);
 
   /* Lüks ve yuksek kontrastli Nordic Graphite tipografi standardı */
@@ -123,14 +181,23 @@
 
   /* Sinir çizgileri aydinlik modda netlik için belirginlestirildi */
   --glass-border: hsla(210, 15%, 10%, 0.08);
-  --spatial-shadow: 0 4px 12px rgba(0, 0, 0, 0.015), 0 20px 32px -8px rgba(0, 0, 0, 0.035), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+
+  /* Işık modunda cam kart ile zemin arasındaki kontrast ölçüldüğünde 1.06:1
+     idi (koyu modda 1.03:1) — ayrım tamamen kenarlıktan geliyordu, gölgenin
+     kendisi 0.035 alfada koyu modun (0.65 alfa) 1/19'u kadar zayıftı (bkz.
+     görsel tasarım denetimi V6). elev2 artık iki katmanlı ve gerçek alfalı;
+     üst specular kenar (inset 0 1px 0) korunuyor. --spatial-shadow ona takma
+     ad olarak bağlanır — mevcut 186 çağrı noktası dokunulmadan bu düzeltmeyi
+     miras alır. */
+  --shadow-elev1: 0 1px 3px -1px rgba(23, 20, 15, 0.06), 0 2px 6px -2px rgba(23, 20, 15, 0.05);
+  --shadow-elev2: 0 2px 6px rgba(23, 20, 15, 0.07), 0 18px 34px -14px rgba(23, 20, 15, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  --shadow-elev3: 0 4px 10px rgba(23, 20, 15, 0.09), 0 32px 56px -18px rgba(23, 20, 15, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  --spatial-shadow: var(--shadow-elev2);
 
   --surface-low: hsla(210, 15%, 10%, 0.02);
   --surface-medium: hsla(210, 15%, 10%, 0.04);
   --surface-high: hsla(210, 15%, 10%, 0.06);
   --card-elevated-bg: hsla(38, 25%, 100%, 0.96);
-  --card-flat-bg: hsla(210, 10%, 94%, 0.5);
-  --card-active-bg: hsla(38, 30%, 91%, 0.7);
 
   /* status-success/warning ölçüldüğünde app-bg üzerinde WCAG AA'nın altındaydı
      (sırasıyla 3.31:1 ve 2.86:1) — koyulaştırılarak ≥4.5:1'e çekildi (bkz. tasarım denetimi). */
@@ -152,6 +219,22 @@
   --aura-rose: hsl(var(--aura-rose-h), 76%, 42%);
   --specular-glow: rgba(255, 255, 255, 0.7);
 
+  /* Vakte özgü gökyüzü paleti (görsel tasarım denetimi V15) — Faz 1 altı
+     vakti auraTheme.ts'te TEK kaynağa indirmişti ama hâlâ yalnızca iki
+     ödünç aileye (amber/ruby) düşürüyordu: sabah/güneş/öğle/ikindi aynı
+     amber, akşam/yatsı aynı ruby. Burada her vakit kendi hue'sunu alır —
+     gün doğumundan geceye bir yay: imsak/sabah indigo-mor şafak, güneş
+     altın, öğle zirve gökyüzü mavisi, ikindi sıcak kehribar, akşam gül
+     rengi gün batımı, yatsı derin gece indigosu. Her ton ayrı ayrı ≥4.5:1
+     WCAG AA doğrulandı ("koyulaştır, tonu koru" — aynı sayfadaki --aura-*
+     override'larının yöntemi). */
+  --vakit-sabah: hsl(255, 60%, 57%);
+  --vakit-gunes: hsl(42, 92%, 27%);
+  --vakit-ogle: hsl(200, 75%, 34%);
+  --vakit-ikindi: hsl(28, 88%, 34%);
+  --vakit-aksam: hsl(350, 82%, 45%);
+  --vakit-yatsi: hsl(232, 55%, 55%);
+
   /* ─────────────────────────────────────────
    * Ham Tailwind palet renkleri (bg-rose-500, text-emerald-500 vb.) --aura-*/
   /* --status-* token'larının aksine otomatik mod-bazlı yeniden haritalama almıyordu;
@@ -159,11 +242,21 @@
    * aydınlık mod için kontrastı WCAG AA'ya çekecek şekilde yeniden tanımlanıyor. Bu,
    * yüzlerce component çağrı noktasını tek tek değiştirmeden aynı otomatik-remap
    * davranışını sağlıyor. Uzun kuyruktaki nadir renkler (blue/purple/yellow/slate/
-   * zinc/green, ≤4 kullanım) kapsam dışı bırakıldı. `sky` ailesi tek metin-taşıyan
-   * kullanım noktasında (DuyuruYonetimi "BİLGİ" kategorisi) `--status-info`'ya
-   * bağlanarak tamamen elimine edildi (bkz. premium denetim B4, O12) — `teal`
-   * (13 kullanım) kapsam dışı kalmaya devam ediyor çünkü yalnızca gradyan
-   * bitiş rengi olarak kullanılıyor, gerçek metin rengi olarak değil. */
+   * zinc/green, ≤4 kullanım) kapsam dışı bırakıldı.
+   *
+   * `sky`/`teal`/`indigo-400`/`slate-400` metin olarak KULLANILDIĞI ölçülmüş
+   * (görsel tasarım denetimi V7) — bu yorumun önceki hâli sky'ın "tamamen
+   * elimine edildiğini" ve teal'in "yalnızca gradyan bitişi, metin değil"
+   * olduğunu iddia ediyordu; ikisi de artık kodla uyuşmuyordu (sky-400 9,
+   * sky-600 2, teal-400/600 2'şer metin çağrısı canlıydı, sırasıyla 1.91:1 /
+   * 3.66:1 / 1.66:1 / 3.34:1 — hepsi AA'nın altında). Aynı "koyulaştır, tonu
+   * koru" mantığıyla ≥4.5:1'e çekildi. */
+  --color-sky-400: hsl(199, 89%, 33%);
+  --color-sky-600: hsl(199, 89%, 22%);
+  --color-teal-400: hsl(173, 80%, 26%);
+  --color-teal-600: hsl(173, 80%, 16%);
+  --color-indigo-400: hsl(244, 62%, 58%);
+  --color-slate-400: hsl(215, 16%, 43%);
   /* -400 katmanı (rose/emerald/amber/purple), ölçüldüğünde gerçek app-bg
      (hsl(38,20%,94.5%)) üzerinde WCAG AA'nın (4.5:1) altındaydı — sırasıyla
      rose-400 ~3.5:1 (30 metin çağrısı), emerald-400 ~2.3:1 (47 çağrı,
@@ -218,7 +311,6 @@
   --bg-l: 3.5%;
   --app-bg: hsl(var(--bg-h), var(--bg-s), var(--bg-l));
   --spatial-glass-bg: rgba(20, 20, 24, 0.35);
-  --spatial-highlight: hsla(240, 100%, 100%, 0.05);
   --glass-fallback-bg: hsla(240, 10%, 6%, 0.98);
   --text-primary: hsl(var(--bg-h), 12%, 98%);
   --text-secondary: hsl(var(--bg-h), 16%, 72%);
@@ -234,16 +326,23 @@
   --label-secondary-opacity: 0.6;
   --label-tertiary-opacity: 0.4;
   --glass-border: rgba(255, 255, 255, 0.09);
-  --spatial-shadow:
+
+  /* Koyu modun derinliği zaten güçlüydü — elev2 aynen mevcut --spatial-shadow
+     reçetesi (bkz. görsel tasarım denetimi V6). elev1/elev3 aynı dilde iki
+     yeni basamak: elev1 satır/rozet gibi küçük öğeler, elev3 modal/sheet. */
+  --shadow-elev1: 0 1px 2px -1px rgba(0, 0, 0, 0.3), 0 2px 8px -2px rgba(0, 0, 0, 0.35);
+  --shadow-elev2:
     inset 0 1px 1px rgba(255, 255, 255, 0.18), inset 0 -1px 1px rgba(0, 0, 0, 0.2), 0 4px 24px -1px rgba(0, 0, 0, 0.03),
     0 20px 40px -12px rgba(0, 0, 0, 0.65);
+  --shadow-elev3:
+    inset 0 1px 1px rgba(255, 255, 255, 0.2), inset 0 -1px 1px rgba(0, 0, 0, 0.25), 0 8px 32px -2px rgba(0, 0, 0, 0.4),
+    0 32px 64px -16px rgba(0, 0, 0, 0.8);
+  --spatial-shadow: var(--shadow-elev2);
 
   --surface-low: rgba(255, 255, 255, 0.01);
   --surface-medium: rgba(255, 255, 255, 0.025);
   --surface-high: rgba(255, 255, 255, 0.045);
   --card-elevated-bg: hsla(var(--bg-h), var(--bg-s), 100%, 0.04);
-  --card-flat-bg: hsla(var(--bg-h), var(--bg-s), 50%, 0.015);
-  --card-active-bg: hsla(var(--bg-h), var(--bg-s), 100%, 0.025);
 
   --status-success: hsl(var(--aura-emerald-h), 80%, 65%);
   --status-warning: hsl(var(--aura-amber-h), 95%, 70%);
@@ -260,6 +359,16 @@
   --aura-indigo: hsl(var(--aura-indigo-h), 78%, 67%);
   --aura-rose: hsl(var(--aura-rose-h), 92%, 62%);
   --specular-glow: rgba(255, 255, 255, 0.04);
+
+  /* bkz. [data-theme='light'] bloğundaki vakte özgü gökyüzü paleti yorumu
+     (V15) — aynı hue'lar, koyu zeminde zengin/canlı görünmesi için daha
+     yüksek L, yine ayrı ayrı ≥4.5:1 doğrulandı. */
+  --vakit-sabah: hsl(255, 60%, 64%);
+  --vakit-gunes: hsl(42, 92%, 58%);
+  --vakit-ogle: hsl(200, 75%, 58%);
+  --vakit-ikindi: hsl(28, 88%, 56%);
+  --vakit-aksam: hsl(350, 82%, 62%);
+  --vakit-yatsi: hsl(232, 55%, 61%);
 }
 
 @layer base {
@@ -289,7 +398,7 @@
      tarayıcılar outline'ı elementin KENDİ border-radius'una göre otomatik
      yuvarlar. */
   :focus-visible {
-    outline: 2px solid var(--dynamic-aura, var(--status-info));
+    outline: 2px solid var(--dynamic-aura, var(--aura-indigo));
     outline-offset: -2px;
   }
 
@@ -316,7 +425,17 @@
 }
 
 @utility spatial-glass {
-  background: var(--spatial-glass-bg) !important;
+  /* background/border/box-shadow ÖNCEDEN !important idi — bkz. görsel tasarım
+     denetimi V20. Ölçüldü (canlı tarayıcıda getComputedStyle ile): 147 çağrı
+     noktasında (30+ dosya) `border-emerald-500/25`, `bg-rose-500/[0.04]`,
+     `shadow-lg` gibi renkli/özel override'lar spatial-glass'ın kendi
+     !important'ı tarafından SESSİZCE eziliyordu — kart her zaman nötr
+     --glass-border/--spatial-glass-bg'ye düşüyordu, niyet edilen renkli vurgu
+     hiç render olmuyordu. `!important` kaldırılınca bu çağrı noktaları
+     ÇALIŞMAYA BAŞLAR (bug fix, davranış değişikliği DEĞİL — hiçbiri daha
+     önce zaten görünmüyordu). backdrop-filter'ı hiçbir çağrı noktası
+     override etmediğinden o iki satır dokunulmadan kaldı. */
+  background: var(--spatial-glass-bg);
   backdrop-filter: blur(28px) saturate(175%) !important;
   -webkit-backdrop-filter: blur(28px) saturate(175%) !important;
   /* --radius-card standardı: sabit 24px, dokümante edilen "hiçbir varyant
@@ -327,12 +446,12 @@
   border-radius: var(--radius-card);
   position: relative;
   overflow: hidden;
-  border: 1px solid var(--glass-border) !important;
-  box-shadow: var(--spatial-shadow) !important;
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--spatial-shadow);
   transition:
     background 0.4s var(--spring-easing),
     border-color 0.4s var(--spring-easing),
-    box-shadow 0.4s var(--spring-easing) !important;
+    box-shadow 0.4s var(--spring-easing);
 
   /* GPU Layer and Compositor Optimization (Anti-gravity Rendering) */
   will-change: transform, backdrop-filter;
@@ -398,41 +517,11 @@
     border-color 0.4s var(--spring-easing);
 }
 
-@utility apple-card {
-  @apply spatial-glass;
-  background: var(--spatial-glass-bg);
-  border: 1px solid var(--glass-border);
-  /* font-weight ÖNCEDEN buradaydı — group-hover:font-normal/font-bold gibi
-     ağırlık değişimlerini 0.4s'de animasyonluyordu. Font-weight geçişleri
-     tarayıcıda gerçek glyph genişliği değişimine yol açar (variable font
-     olsa bile); bu, hover sırasında metin satırının "şişip inmesi" gibi
-     dikkat dağıtıcı bir layout kaymasına neden oluyordu (bkz. premium
-     denetim B11, Y2). Kaldırılması ağırlık değişimini ANİ yapar — kayma
-     hâlâ olur ama uzatılmış bir animasyonla vurgulanmaz. */
-  transition:
-    box-shadow 0.6s var(--spring-easing),
-    background 0.6s var(--spring-easing),
-    border-color 0.6s var(--spring-easing),
-    transform 0.5s var(--spring-easing);
-  border-radius: var(--radius-card) !important;
-  cursor: pointer;
-  will-change: transform;
-
-  &:active {
-    transform: scale(0.985) translateY(0);
-    background: var(--card-active-bg);
-    backdrop-filter: blur(30px) saturate(240%) !important;
-    -webkit-backdrop-filter: blur(30px) saturate(240%) !important;
-    transition: transform 0.1s cubic-bezier(0.25, 1, 0.5, 1);
-  }
-}
-
-@utility apple-card-flat {
-  @apply spatial-glass;
-  box-shadow: none !important;
-  background: var(--card-flat-bg);
-  border: 1px solid var(--glass-border);
-}
+/* apple-card/apple-card-flat burada tanımlıydı ama 0 gerçek kullanımı vardı
+   (bkz. görsel tasarım denetimi V13) — spatial-glass/tactile-card zaten aynı
+   işi görüyor. Tanımları kaldırılırken aşağıdaki nesting-gölge-kırma kuralı
+   ve [data-theme] specular kenar override'larındaki ölü .apple-card
+   seçicileri de birlikte temizlendi. */
 
 @utility spatial-glass-elevated {
   @apply spatial-glass;
@@ -463,32 +552,38 @@
   @apply inline-flex items-center justify-center px-2.5 py-1 rounded-full border text-[10px] font-bold uppercase tracking-wide backdrop-blur-md;
 }
 
+/* Üçünün glow'u ÖNCEDEN Tailwind'in ham hex'lerinden hard-code edilmişti
+   (rgba(245,158,11,…) vb.) — ışık modu palet remap'ini (bkz. index.css
+   içindeki `[data-theme='light']` renk override'ları) hiç almıyordu; rozet
+   metni koyulaşırken glow'u sabit/açık kalıyordu (bkz. görsel tasarım
+   denetimi V4). --status-* token'larına bağlanarak her iki temada da
+   tutarlı hale geldi. */
 @utility badge-glow-amber {
-  @apply badge-premium bg-amber-500/10 border-amber-500/30 text-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.2)];
+  @apply badge-premium bg-amber-500/10 border-amber-500/30 text-amber-500 shadow-[0_0_10px_color-mix(in_srgb,var(--status-warning)_35%,transparent)];
 }
 
 @utility badge-glow-indigo {
-  @apply badge-premium bg-indigo-500/10 border-indigo-500/30 text-indigo-400 shadow-[0_0_10px_rgba(99,102,241,0.2)];
+  @apply badge-premium bg-indigo-500/10 border-indigo-500/30 text-indigo-400 shadow-[0_0_10px_color-mix(in_srgb,var(--status-info)_35%,transparent)];
 }
 
 @utility badge-glow-emerald {
-  @apply badge-premium bg-emerald-500/10 border-emerald-500/30 text-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.2)];
+  @apply badge-premium bg-emerald-500/10 border-emerald-500/30 text-emerald-500 shadow-[0_0_10px_color-mix(in_srgb,var(--status-success)_35%,transparent)];
 }
 
 @keyframes pulse-danger-ring {
   0% {
-    box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.7);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--status-danger) 70%, transparent);
   }
   70% {
-    box-shadow: 0 0 0 6px rgba(244, 63, 94, 0);
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--status-danger) 0%, transparent);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(244, 63, 94, 0);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--status-danger) 0%, transparent);
   }
 }
 
 @utility badge-pulse-danger {
-  @apply absolute flex items-center justify-center text-[10px] font-bold text-white bg-rose-500 rounded-full shadow-[0_0_10px_rgba(244,63,94,0.6)];
+  @apply absolute flex items-center justify-center text-[10px] font-bold text-white bg-rose-500 rounded-full shadow-[0_0_10px_color-mix(in_srgb,var(--status-danger)_60%,transparent)];
   animation: pulse-danger-ring 2s infinite;
 }
 
@@ -557,28 +652,18 @@
   }
 }
 
-/* Diğer dördü, iç içe cam kartlarda (ör. bir spatial-glass modülü içinde
-   başka bir spatial-glass alt-kart) gölgenin katlanmasını önlemek için —
-   yalnızca NESTED durumda gölgeyi kırar. `.spatial-glass-elevated` ÖNCEDEN
-   bu listede TEK BAŞINA (nesting koşulu olmadan) duruyordu — kendi
-   @utility'sinin verdiği gölgeyi HER zaman, iç içe olsun olmasın, sıfıra
-   indiriyordu; 24 kullanım noktasının hiçbiri "yükseltilmiş" görünmüyordu
-   (bkz. premium denetim B14, Y5). Diğer dördüyle aynı nesting kuralına
-   taşındı — artık yalnızca gerçekten iç içe geçtiğinde sıfırlanır. */
+/* İç içe cam kartlarda (ör. bir spatial-glass modülü içinde başka bir
+   spatial-glass alt-kart) gölgenin katlanmasını önlemek için — yalnızca
+   NESTED durumda gölgeyi kırar. `.spatial-glass-elevated` ÖNCEDEN bu listede
+   TEK BAŞINA (nesting koşulu olmadan) duruyordu — kendi @utility'sinin
+   verdiği gölgeyi HER zaman, iç içe olsun olmasın, sıfıra indiriyordu; 24
+   kullanım noktasının hiçbiri "yükseltilmiş" görünmüyordu (bkz. premium
+   denetim B14, Y5). Artık yalnızca gerçekten iç içe geçtiğinde sıfırlanır.
+   (`.apple-card` varyantları burada da vardı, 0 kullanımdı — kaldırıldı,
+   bkz. görsel tasarım denetimi V13.) */
 .spatial-glass .spatial-glass,
-.apple-card .apple-card,
-.spatial-glass .apple-card,
-.apple-card .spatial-glass,
-.spatial-glass .spatial-glass-elevated,
-.apple-card .spatial-glass-elevated {
+.spatial-glass .spatial-glass-elevated {
   box-shadow: none !important;
-}
-
-@utility kinetic-countdown {
-  font-weight: 100;
-  letter-spacing: -0.05em;
-  font-variant-numeric: tabular-nums;
-  line-height: 0.9;
 }
 
 @utility authority-title {
@@ -851,7 +936,11 @@
   z-index: 1;
 }
 ::view-transition-new(root) {
-  z-index: 9999;
+  /* Önceden 9999 idi — NotificationToast (z-toast, 9000) ile ayrık ama
+     ESKİDEN her ikisi de 9999'du: bir rota geçişi tam da bir toast'ın
+     belirdiği anda tetiklenirse hangisinin üstte kalacağı DOM sırasına
+     kalıyordu (bkz. görsel tasarım denetimi V12). */
+  z-index: var(--z-transition-sweep);
 }
 
 /* ─────────────────────────────────────────
@@ -957,35 +1046,13 @@
 
 /* Specular 1px Top Highlight Details (Apple Glass style) */
 [data-theme='light'] .spatial-glass,
-[data-theme='light'] .apple-card,
 [data-theme='light'] .spatial-glass-elevated {
   border-top: 1.5px solid hsla(40, 30%, 100%, 0.75) !important;
 }
 
 [data-theme='dark'] .spatial-glass,
-[data-theme='dark'] .apple-card,
 [data-theme='dark'] .spatial-glass-elevated {
   border-top: 1px solid rgba(255, 255, 255, 0.2) !important;
-}
-
-@keyframes aura-float {
-  0%,
-  100% {
-    transform: scale(1) translate(0px, 0px) rotate(0deg);
-  }
-  33% {
-    transform: scale(1.15) translate(40px, -30px) rotate(120deg);
-  }
-  66% {
-    transform: scale(0.9) translate(-20px, 50px) rotate(240deg);
-  }
-}
-
-.animate-aura {
-  animation: aura-float 25s ease-in-out infinite;
-  transform-origin: center center;
-  filter: blur(200px) saturate(130%);
-  will-change: transform;
 }
 
 /* text-muted/text-subtle/text-faint tanımları için bkz. [data-theme='light']

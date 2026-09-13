@@ -135,7 +135,7 @@ const CompactCompassNeedle = React.memo(({ needleRef, qiblaAngle, isAligned }: C
 
         {/* Minimalist Kaaba Medallion */}
         <div
-          className={`w-6 h-6 rounded-full flex items-center justify-center border shadow-sm relative z-30 -top-[48px] transition-all duration-700 ${
+          className={`w-6 h-6 rounded-full flex items-center justify-center border shadow-elev1 relative z-30 -top-[48px] transition-all duration-700 ${
             isAligned
               ? 'bg-[var(--aura-emerald)] border-[var(--aura-emerald)]/60 text-[var(--app-bg)] shadow-[var(--aura-emerald)]/30'
               : 'bg-zinc-900 border-[var(--aura-amber)]/40 text-[var(--aura-amber)]/80 shadow-black/50'
@@ -523,11 +523,11 @@ export const KiblePusulasiModal: React.FC<KiblePusulasiModalProps> = ({ isOpen, 
         </div>
         <div className="mb-5 mt-1.5 min-h-0">
           {!gpsEnabled && coords.kaynak === 'varsayilan' && (
-            <p className="text-2xs text-[var(--aura-amber)] font-medium leading-snug max-w-[220px]">
+            <p className="text-xs text-[var(--aura-amber)] font-medium leading-snug max-w-[220px]">
               İlçeniz için konum bulunamadı, açı varsayılan konuma göre hesaplandı. Kesin sonuç için GPS'i etkinleştirin.
             </p>
           )}
-          {refreshError && <p className="text-2xs text-[var(--aura-ruby)] font-medium leading-snug max-w-[220px]">{refreshError}</p>}
+          {refreshError && <p className="text-xs text-[var(--aura-ruby)] font-medium leading-snug max-w-[220px]">{refreshError}</p>}
         </div>
 
         {/* COMPASS COMPACT SCREEN - 220PX ULTRA-PREMIUM APPLE WIDGET DESIGN */}
@@ -569,7 +569,7 @@ export const KiblePusulasiModal: React.FC<KiblePusulasiModalProps> = ({ isOpen, 
               <ShieldAlert size={16} />
               <span className="text-2xs font-extrabold uppercase tracking-widest leading-none">HAREKET SENSÖRÜ İZNİ</span>
             </div>
-            <p className="text-2xs text-[var(--text-secondary)]/70 font-light leading-normal">
+            <p className="text-xs text-[var(--text-secondary)]/70 font-light leading-normal">
               Safari tarayıcısında pusulanın telefonunuzla birlikte dönmesi için cihaz sensörlerine erişim verilmelidir.
             </p>
             <motion.button
@@ -614,7 +614,7 @@ export const KiblePusulasiModal: React.FC<KiblePusulasiModalProps> = ({ isOpen, 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="text-2xs text-[var(--aura-amber)]/85 bg-[var(--aura-amber)]/5 border border-[var(--aura-amber)]/15 p-4 rounded-2xl flex items-start gap-2.5 text-left leading-normal"
+                className="text-xs text-[var(--aura-amber)]/85 bg-[var(--aura-amber)]/5 border border-[var(--aura-amber)]/15 p-4 rounded-2xl flex items-start gap-2.5 text-left leading-normal"
               >
                 <Info size={16} className="text-[var(--aura-amber)] shrink-0 mt-0.5" />
                 <div>
@@ -652,7 +652,7 @@ export const KiblePusulasiModal: React.FC<KiblePusulasiModalProps> = ({ isOpen, 
             çıkabilir — bu, HİZALANDI eşiğinden (3.5°) büyük olabilir (bkz.
             Kıble Pusulası mimari denetimi). Harici bir jeomanyetik model
             olmadan düzeltilemez; kullanıcıya tolerans bırakması söylenir. */}
-        <p className="text-2xs text-muted font-light text-center max-w-[260px] mt-4 leading-relaxed">
+        <p className="text-xs text-muted font-light text-center max-w-[260px] mt-4 leading-relaxed">
           Manyetik pusulalar birkaç derece sapabilir — kesin yön için ±5° tolerans bırakın ve telefonu metal eşyalardan uzak tutun.
         </p>
 

@@ -75,7 +75,7 @@ export function GpsHelpModal({ isOpen, onClose, onRetry, hataTuru = 'izin_reddi'
                 <span className="text-2xs font-mono opacity-50 truncate">muezzin.pro/anaekran</span>
               </div>
             </div>
-            <ol className="text-2xs sm:text-xs text-[var(--text-secondary)]/85 space-y-2 list-decimal list-inside leading-relaxed">
+            <ol className="text-xs sm:text-xs text-[var(--text-secondary)]/85 space-y-2 list-decimal list-inside leading-relaxed">
               <li>
                 Adres çubuğunun solundaki <strong>kilit 🔒 veya ayar ⚙️</strong> simgesine dokunun.
               </li>
@@ -96,7 +96,7 @@ export function GpsHelpModal({ isOpen, onClose, onRetry, hataTuru = 'izin_reddi'
               hapticMedium();
               onRetry();
             }}
-            className="w-full py-5 rounded-avatar border-none bg-gradient-to-r from-amber-500 to-orange-600 hover:to-orange-500 text-[var(--text-primary)] font-bold tracking-wider cursor-pointer shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2"
+            className="w-full py-5 rounded-avatar border-none bg-gradient-to-r from-amber-500 to-orange-600 hover:to-orange-500 text-[var(--app-bg)] font-bold tracking-wider cursor-pointer shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2"
           >
             <RefreshCw size={15} />
             <span>{butonMetni}</span>

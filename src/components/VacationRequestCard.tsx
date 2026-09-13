@@ -240,7 +240,7 @@ export default function VacationRequestCard({ user }: VacationRequestCardProps) 
     <div className="space-y-8">
       {/* Compact Interactive Station Bento Card */}
       <motion.div
-        whileHover={isReadOnly ? {} : { y: -4, scale: 1.01, boxShadow: '0 20px 40px -15px var(--dynamic-aura, rgba(99, 102, 241, 0.15))' }}
+        whileHover={isReadOnly ? {} : { y: -4, scale: 1.01, boxShadow: '0 20px 40px -15px var(--dynamic-aura, var(--aura-indigo))' }}
         whileTap={isReadOnly ? {} : { scale: 0.99 }}
         onClick={() => {
           if (!isReadOnly) setIsModalOpen(true);
@@ -259,7 +259,7 @@ export default function VacationRequestCard({ user }: VacationRequestCardProps) 
               <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
               <h4 className="premium-label !text-2xs !opacity-70 tracking-wide uppercase">İZİN & MAZERET TALEBİ</h4>
             </div>
-            <p className="text-2xs text-muted leading-relaxed max-w-sm font-light">
+            <p className="text-xs text-muted leading-relaxed max-w-sm font-light">
               {isReadOnly
                 ? GOZLEMCI_SALT_OKUMA_IPUCU
                 : 'Haftalık izin, yıllık izin ve mazeret taleplerinizi yönetici onayına iletmek için dokunun.'}
@@ -270,7 +270,7 @@ export default function VacationRequestCard({ user }: VacationRequestCardProps) 
             type="button"
             disabled={isReadOnly}
             title={isReadOnly ? GOZLEMCI_SALT_OKUMA_IPUCU : undefined}
-            className="px-6 py-5 bg-[var(--dynamic-aura,var(--aura-indigo))] text-[var(--app-bg)] rounded-2xl text-2xs font-bold uppercase tracking-wider flex items-center gap-3 shadow-lg group-hover:scale-105 transition-all duration-300 border-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:group-hover:scale-100"
+            className="px-6 py-5 bg-[var(--dynamic-aura,var(--aura-indigo))] text-[var(--app-bg)] rounded-2xl text-2xs font-bold uppercase tracking-wider flex items-center gap-3 shadow-elev2 group-hover:scale-105 transition-all duration-300 border-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:group-hover:scale-100"
           >
             <Calendar size={13} strokeWidth={2} />
             <span>TALEP OLUŞTUR</span>
@@ -397,7 +397,7 @@ export default function VacationRequestCard({ user }: VacationRequestCardProps) 
                   initial={{ opacity: 0, y: -4 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
-                  className="p-5 rounded-avatar bg-rose-500/10 border border-rose-500/20 text-rose-500 text-2xs leading-relaxed flex items-start gap-3.5"
+                  className="p-5 rounded-avatar bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs leading-relaxed flex items-start gap-3.5"
                 >
                   <AlertCircle size={18} className="shrink-0 mt-0.5" />
                   <span>{errorMessage}</span>
@@ -408,7 +408,7 @@ export default function VacationRequestCard({ user }: VacationRequestCardProps) 
                   initial={{ opacity: 0, y: -4 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
-                  className="p-5 rounded-avatar bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-2xs leading-relaxed flex items-start gap-3.5"
+                  className="p-5 rounded-avatar bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-xs leading-relaxed flex items-start gap-3.5"
                 >
                   <CheckCircle2 size={18} className="shrink-0 mt-0.5" />
                   <span>{successMessage}</span>
@@ -424,7 +424,7 @@ export default function VacationRequestCard({ user }: VacationRequestCardProps) 
                 type="submit"
                 disabled={isSubmitting || isReadOnly}
                 title={isReadOnly ? GOZLEMCI_SALT_OKUMA_IPUCU : undefined}
-                className={`flex-1 py-5 rounded-2xl bg-[var(--dynamic-aura,var(--aura-indigo))] text-[var(--app-bg)] text-2xs font-bold uppercase tracking-wider shadow-lg flex items-center justify-center gap-3 border-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${isSubmitting ? 'opacity-70 cursor-wait' : ''}`}
+                className={`flex-1 py-5 rounded-2xl bg-[var(--dynamic-aura,var(--aura-indigo))] text-[var(--app-bg)] text-2xs font-bold uppercase tracking-wider shadow-elev2 flex items-center justify-center gap-3 border-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${isSubmitting ? 'opacity-70 cursor-wait' : ''}`}
               >
                 {isSubmitting ? (
                   <div className="w-4 h-4 border-2 border-[var(--text-primary)]/30 border-t-white rounded-full animate-spin" />
@@ -515,7 +515,7 @@ export default function VacationRequestCard({ user }: VacationRequestCardProps) 
                           ({startFmt} - {endFmt})
                         </span>
                       </div>
-                      <p className="text-2xs text-muted leading-relaxed font-light italic">
+                      <p className="text-xs text-muted leading-relaxed font-light italic">
                         "{talep.id ? (sebepMap[talep.id] ?? '…') : ''}"
                       </p>
                     </div>
@@ -523,7 +523,7 @@ export default function VacationRequestCard({ user }: VacationRequestCardProps) 
 
                   <div className="flex items-center gap-4 ml-auto sm:ml-0">
                     <span
-                      className={`px-4 py-1.5 rounded-full text-2xs font-bold uppercase tracking-wider border shadow-sm ${
+                      className={`px-4 py-1.5 rounded-full text-2xs font-bold uppercase tracking-wider border shadow-elev1 ${
                         talep.durum === 'onaylandi'
                           ? 'bg-[var(--status-success)]/10 border-[var(--status-success)]/20 text-[var(--status-success)]'
                           : talep.durum === 'reddedildi'

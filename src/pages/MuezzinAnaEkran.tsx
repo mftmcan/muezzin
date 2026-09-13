@@ -30,6 +30,7 @@ import { okudumOnayla } from '../services/okudumServisi';
 import { hapticMedium } from '../lib/haptic';
 import { zamanAsimiIle, IslemZamanAsimi } from '../lib/timeoutUtils';
 import { GOZLEMCI_SALT_OKUMA_IPUCU } from '../lib/rolMetinleri';
+import { EASE } from '../lib/motion';
 
 const VacationRequestCard = lazy(() => import('../components/VacationRequestCard'));
 
@@ -224,7 +225,7 @@ export default function MuezzinAnaEkran() {
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.55, ease: EASE.out }}
             className="lg:col-span-5 flex flex-col gap-4"
           >
             <div className="sticky-hero isolate flex flex-col">
@@ -245,7 +246,7 @@ export default function MuezzinAnaEkran() {
               <motion.button
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.45, delay: 0.12, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ duration: 0.45, delay: 0.12, ease: EASE.out }}
                 onClick={() => document.getElementById('gorev-akisi')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
                 className="w-full spatial-glass p-5 sm:p-6 border border-[var(--dynamic-aura,var(--aura-indigo))]/20 bg-[var(--dynamic-aura,var(--aura-indigo))]/[0.025] flex items-center justify-between gap-4 text-left cursor-pointer hover:bg-[var(--dynamic-aura,var(--aura-indigo))]/[0.045] transition-all"
               >
@@ -283,10 +284,15 @@ export default function MuezzinAnaEkran() {
                   handleGpsToggle();
                 }}
                 disabled={gpsLoading}
-                className="flex items-center justify-center gap-2 py-3 px-4 rounded-2xl border transition-all duration-300 relative group cursor-pointer border-none bg-transparent"
+                className="flex items-center justify-center gap-2 py-3 px-4 rounded-2xl transition-all duration-300 relative group cursor-pointer border-none bg-transparent"
               >
+                {/* Önceden opacity-0 group-hover:opacity-100 idi — dolgu dokunmatik
+                    cihazda hiç görünmüyordu, buton dinlenme halinde ikon+metinden
+                    ibaret kalıyordu (bkz. görsel tasarım denetimi V19). Dolgu artık
+                    her zaman görünür (zaten çok soluk, 4%/10% alfa); hover yalnızca
+                    ikon/metin renk geçişleri gibi ek bir cila katıyor. */}
                 <div
-                  className={`absolute inset-0 rounded-2xl transition-opacity duration-500 opacity-0 group-hover:opacity-100 ${
+                  className={`absolute inset-0 rounded-2xl transition-colors duration-500 ${
                     gpsEnabled ? 'bg-emerald-500/10' : 'bg-[var(--text-primary)]/[0.04]'
                   }`}
                 />
@@ -331,9 +337,9 @@ export default function MuezzinAnaEkran() {
                   hapticMedium();
                   setIsQiblaOpen(true);
                 }}
-                className="flex items-center justify-center gap-2 py-3 px-4 rounded-2xl border transition-all duration-300 relative group cursor-pointer border-none bg-transparent"
+                className="flex items-center justify-center gap-2 py-3 px-4 rounded-2xl transition-all duration-300 relative group cursor-pointer border-none bg-transparent"
               >
-                <div className="absolute inset-0 rounded-2xl transition-opacity duration-500 opacity-0 group-hover:opacity-100 bg-[var(--text-primary)]/[0.04]" />
+                <div className="absolute inset-0 rounded-2xl transition-colors duration-500 bg-[var(--text-primary)]/[0.04]" />
 
                 <div className="p-1.5 rounded-xl border bg-[var(--text-primary)]/[0.03] border-[var(--glass-border)] text-muted group-hover:text-[var(--text-secondary)]/85 group-hover:border-[var(--dynamic-aura,var(--aura-indigo))]/30 transition-all duration-300">
                   <Compass size={15} className="transition-transform duration-500 group-hover:rotate-180" />
@@ -351,14 +357,14 @@ export default function MuezzinAnaEkran() {
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.5, delay: 0.1, ease: EASE.out }}
             className="lg:col-span-7 flex flex-col gap-6 sm:gap-8"
           >
             {role === 'muezzin' && (
               <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.45, delay: 0.14, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ duration: 0.45, delay: 0.14, ease: EASE.out }}
               >
                 <Suspense fallback={<Skeleton className="h-40" rounded="rounded-card" />}>
                   <VacationRequestCard user={currentUser} />
@@ -371,7 +377,7 @@ export default function MuezzinAnaEkran() {
               <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.45, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ duration: 0.45, delay: 0.15, ease: EASE.out }}
                 className="spatial-glass !bg-[var(--status-info)]/[0.03] !border-[var(--status-info)]/15 p-5 sm:p-6 relative overflow-hidden group"
               >
                 <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--status-info)]/[0.015] blur-2xl rounded-full pointer-events-none" />
@@ -473,7 +479,7 @@ export default function MuezzinAnaEkran() {
             <motion.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.45, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.45, delay: 0.2, ease: EASE.out }}
               className="spatial-glass p-4 sm:p-8"
             >
               <Muezzinler
@@ -645,7 +651,7 @@ export default function MuezzinAnaEkran() {
             <motion.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.45, delay: 0.28, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.45, delay: 0.28, ease: EASE.out }}
               id="gorev-akisi"
             >
               <KisiselGorevAkisi
@@ -662,7 +668,7 @@ export default function MuezzinAnaEkran() {
               <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.45, delay: 0.32, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ duration: 0.45, delay: 0.32, ease: EASE.out }}
               >
                 <Link
                   to="/takvim"
@@ -687,7 +693,7 @@ export default function MuezzinAnaEkran() {
               <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.45, delay: 0.38, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ duration: 0.45, delay: 0.38, ease: EASE.out }}
               >
                 <Link
                   to="/profil"

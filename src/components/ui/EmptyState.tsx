@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
+import { Button } from './Button';
 import { toTurkishUpperCase } from '../../lib/dateUtils';
 
 type EmptyStateTone = 'neutral' | 'indigo' | 'emerald' | 'rose' | 'amber';
@@ -59,17 +60,11 @@ export function EmptyState({ icon, title, description, tone = 'neutral', size = 
           dinamik Türkçe hata metni taşıyabiliyor, tarayıcının locale'e duyarsız
           CSS uppercase'i küçük noktalı 'i'yi 'İ' yerine 'I'ya çevirirdi (bkz.
           kod denetimi — ExecutiveHeroScreen.tsx'teki AYNI sınıf düzeltme). */}
-      <p className="authority-title !text-2xs opacity-40 tracking-wide leading-relaxed mb-12 max-w-sm">{toTurkishUpperCase(description)}</p>
+      <p className="authority-title !text-xs opacity-40 tracking-wide leading-relaxed mb-12 max-w-sm">{toTurkishUpperCase(description)}</p>
       {action && (
-        <motion.button
-          whileHover={{ y: -5, scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={action.onClick}
-          disabled={action.disabled}
-          className="bg-[var(--text-primary)] text-[var(--app-bg)] px-12 py-6 rounded-3xl text-2xs font-bold uppercase tracking-wide shadow-[var(--spatial-shadow)] flex items-center gap-6 disabled:opacity-50"
-        >
+        <Button onClick={action.onClick} disabled={action.disabled}>
           {action.label}
-        </motion.button>
+        </Button>
       )}
     </motion.div>
   );

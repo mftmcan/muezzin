@@ -316,7 +316,7 @@ export default function AdminPanel() {
       {createPortal(
         <AnimatePresence>
           {drawerContent && (
-            <div key="admin-drawer" className="fixed inset-0 z-[400] flex justify-end">
+            <div key="admin-drawer" className="fixed inset-0 z-[var(--z-drawer)] flex justify-end">
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}

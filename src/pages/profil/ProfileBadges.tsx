@@ -5,6 +5,11 @@ interface ProfileBadgesProps {
   toplamVakitSayisi: number;
 }
 
+// activeIcon/başlık noktası ÖNCEDEN animate-pulse taşıyordu — rozetler kalıcı
+// (kazanılmış/kazanılmamış) bir durum, "canlı" bir şey değil; 30+ vakit
+// hizmet vermiş bir kullanıcıda üç rozet dairesi de sayfa açık kaldığı
+// sürece sonsuza dek aynı anda titreşiyordu (bkz. görsel tasarım denetimi
+// V18 — 71 sonsuz animasyonun "premium his kısıtlamadan gelir" bulgusu).
 const BADGES = [
   {
     label: 'Mihrap Görevlisi',
@@ -14,7 +19,7 @@ const BADGES = [
     activeCard:
       'spatial-glass-elevated border-[var(--status-success)]/20 bg-gradient-to-b from-[var(--status-success)]/8 to-[var(--status-success)]/3',
     activeIcon:
-      'bg-[var(--status-success)]/15 text-[var(--status-success)] border-[var(--status-success)]/25 shadow-[0_0_12px_color-mix(in_srgb,var(--status-success)_30%,transparent)] animate-pulse',
+      'bg-[var(--status-success)]/15 text-[var(--status-success)] border-[var(--status-success)]/25 shadow-[0_0_12px_color-mix(in_srgb,var(--status-success)_30%,transparent)]',
   },
   {
     label: 'Sadakat Hadimi',
@@ -24,7 +29,7 @@ const BADGES = [
     activeCard:
       'spatial-glass-elevated border-[var(--aura-indigo)]/20 bg-gradient-to-b from-[var(--aura-indigo)]/8 to-[var(--aura-indigo)]/3',
     activeIcon:
-      'bg-[var(--aura-indigo)]/15 text-[var(--aura-indigo)] border-[var(--aura-indigo)]/25 shadow-[0_0_12px_color-mix(in_srgb,var(--aura-indigo)_30%,transparent)] animate-pulse',
+      'bg-[var(--aura-indigo)]/15 text-[var(--aura-indigo)] border-[var(--aura-indigo)]/25 shadow-[0_0_12px_color-mix(in_srgb,var(--aura-indigo)_30%,transparent)]',
   },
   {
     label: 'Vakit Emini',
@@ -34,7 +39,7 @@ const BADGES = [
     activeCard:
       'spatial-glass-elevated border-[var(--status-warning)]/20 bg-gradient-to-b from-[var(--status-warning)]/8 to-[var(--status-warning)]/3',
     activeIcon:
-      'bg-[var(--status-warning)]/15 text-[var(--status-warning)] border-[var(--status-warning)]/25 shadow-[0_0_12px_color-mix(in_srgb,var(--status-warning)_30%,transparent)] animate-pulse',
+      'bg-[var(--status-warning)]/15 text-[var(--status-warning)] border-[var(--status-warning)]/25 shadow-[0_0_12px_color-mix(in_srgb,var(--status-warning)_30%,transparent)]',
   },
 ] as const;
 
@@ -49,7 +54,7 @@ export default function ProfileBadges({ toplamVakitSayisi }: ProfileBadgesProps)
           (bkz. KrizAlarmlari.tsx'teki aynı desen, mobil yerleşim denetimi). */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-6 relative z-10">
         <div className="flex items-center gap-3">
-          <div className="w-1.5 h-1.5 rounded-full bg-[var(--aura-rose)] animate-pulse" />
+          <div className="w-1.5 h-1.5 rounded-full bg-[var(--aura-rose)]" />
           <h4 className="premium-label !text-2xs !opacity-70 tracking-wide uppercase">HİZMET VE SADAKAT ROZETLERİ</h4>
         </div>
         <span className="self-start sm:self-auto text-2xs font-bold text-[var(--aura-rose)] bg-[var(--aura-rose)]/10 px-4 py-1.5 rounded-full uppercase tracking-wide">
@@ -68,7 +73,7 @@ export default function ProfileBadges({ toplamVakitSayisi }: ProfileBadgesProps)
               }`}
             >
               <div
-                className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-md border ${
+                className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-elev1 border ${
                   earned ? badge.activeIcon : 'bg-[var(--text-primary)]/5 text-subtle border-[var(--text-primary)]/5'
                 }`}
               >

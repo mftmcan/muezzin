@@ -331,7 +331,7 @@ export default function SistemAyarlari() {
               Bildirimler, haftalık planlar, izinler, vekalet talepleri gibi operasyonel verileri toplu olarak siler — yeni bir sezona
               sıfırdan başlamak için. Mazeret geçmişi ve denetim kayıtları bu işlemden etkilenmez.
             </p>
-            {!isSuperAdmin && <p className="authority-title !text-2xs opacity-45 leading-relaxed">{SUPER_ADMIN_GEREKLI_IPUCU}</p>}
+            {!isSuperAdmin && <p className="authority-title !text-xs opacity-45 leading-relaxed">{SUPER_ADMIN_GEREKLI_IPUCU}</p>}
           </div>
           <motion.button
             whileHover={isSuperAdmin ? { y: -3, scale: 1.02 } : {}}

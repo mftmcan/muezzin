@@ -10,6 +10,7 @@ import { useAuthStore } from '../store/useAuthStore';
 import { LoginScreen } from './auth/LoginScreen';
 import { AuthErrorScreen } from './auth/AuthErrorScreen';
 import { PendingApprovalScreen } from './auth/PendingApprovalScreen';
+import { EASE } from '../lib/motion';
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const user = useAuthStore((state) => state.user);
@@ -152,15 +153,15 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
             key="splash-overlay"
             initial={{ opacity: 1 }}
             exit={{ opacity: 0, scale: 0.96, filter: 'blur(15px)' }}
-            transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[var(--app-bg)] text-center p-6"
+            transition={{ duration: 0.55, ease: EASE.out }}
+            className="fixed inset-0 z-[var(--z-splash)] flex flex-col items-center justify-center bg-[var(--app-bg)] text-center p-6"
           >
             <SplashLoader />
             {loadingTimeout && (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mt-8 spatial-glass p-6 max-w-sm border-amber-500/20 z-[10000] relative pointer-events-auto"
+                className="mt-8 spatial-glass p-6 max-w-sm border-amber-500/20 z-10 relative pointer-events-auto"
               >
                 {/* isOffline zaten hesaplanıyordu ama hiç render'a
                     bağlanmamıştı — çevrimdışı ve gerçekten yavaş bir sunucu
@@ -201,7 +202,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
           key="auth-content"
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.55, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.55, delay: 0.1, ease: EASE.out }}
           className="w-full min-h-screen"
         >
           {disabledReason ? (

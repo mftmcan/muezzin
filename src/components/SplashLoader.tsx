@@ -15,6 +15,7 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { Logo } from './ui/Logo';
 import { useThemeStore } from '../store/useThemeStore';
+import { EASE } from '../lib/motion';
 
 const MUEZZIN_CHARS = ['M', 'ü', 'e', 'z', 'z', 'i', 'n'];
 
@@ -24,7 +25,7 @@ export const SplashLoader: React.FC = () => {
 
   return (
     <div
-      className="fixed inset-0 z-[9999] flex flex-col items-center justify-center overflow-hidden transition-all duration-700"
+      className="fixed inset-0 z-[var(--z-splash)] flex flex-col items-center justify-center overflow-hidden transition-all duration-700"
       style={{
         background: isDark ? 'rgba(5, 5, 5, 0.45)' : 'rgba(250, 250, 250, 0.45)',
         backdropFilter: 'blur(50px) saturate(180%)',
@@ -35,7 +36,7 @@ export const SplashLoader: React.FC = () => {
       <motion.div
         initial={{ opacity: 0, scale: 0.6 }}
         animate={{ opacity: 1, scale: 1.4 }}
-        transition={{ duration: 3.5, ease: [0.16, 1, 0.3, 1] }}
+        transition={{ duration: 3.5, ease: EASE.out }}
         className="absolute inset-0 flex items-center justify-center pointer-events-none"
       >
         <div
@@ -53,7 +54,7 @@ export const SplashLoader: React.FC = () => {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: isDark ? 0.6 : 0.25 }}
-        transition={{ duration: 2.5, ease: [0.16, 1, 0.3, 1], delay: 0.5 }}
+        transition={{ duration: 2.5, ease: EASE.out, delay: 0.5 }}
         className="absolute inset-0 flex items-center justify-center pointer-events-none"
       >
         <div
@@ -81,7 +82,7 @@ export const SplashLoader: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 1.2, ease: EASE.out }}
           className="relative"
         >
           {/* Dönen conic-gradient halo — tema uyumlu */}
@@ -158,7 +159,7 @@ export const SplashLoader: React.FC = () => {
                   hidden: { opacity: 0, y: 20, filter: 'blur(6px)' },
                   visible: { opacity: 1, y: 0, filter: 'blur(0px)' },
                 }}
-                transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ duration: 0.7, ease: EASE.out }}
                 style={{
                   fontFamily: 'var(--font-serif)',
                   fontStyle: 'italic',

@@ -8,6 +8,7 @@ import {
   isFriday as isFridayTarih,
 } from '../lib/dateUtils';
 import { mevcutVaktiHesapla } from '../services/ezanVaktiServisi';
+import { getActiveAuraColor, getSecondaryAuraColor } from '../lib/auraTheme';
 import { Vakit } from '../types';
 
 export function useCircadianTheme() {
@@ -66,26 +67,36 @@ export function useCircadianTheme() {
       }
 
       // ── 4. Set dynamic variables ──
+      // Kerahat/cuma/teheccüd birer geçici ÖRTÜŞME katmanı — vaktin kendi
+      // renk kimliğini geçici olarak bastırır. Bunların dışında (standard /
+      // aksam_yatsi) renk artık auraTheme.ts'teki VAKIT_KIMLIGI'nin TEK
+      // kaynağından okunuyor (bkz. o dosyanın başındaki yorum, V1) — burada
+      // ayrıca bir amber/ruby ikilemesi tutulmuyor.
       let period = 'standard';
-      let aura = 'var(--aura-amber)';
-      let auraSecondary = 'var(--aura-indigo)';
-
       if (isKerahat) {
         period = 'kerahat';
+      } else if (isCumaVakti) {
+        period = 'cuma';
+      } else if (isTeheccud) {
+        period = 'teheccud';
+      } else if (mevcutVakit === 'aksam' || mevcutVakit === 'yatsi') {
+        period = 'aksam_yatsi';
+      }
+
+      let aura: string;
+      let auraSecondary: string;
+      if (isKerahat) {
         aura = 'var(--aura-ruby)';
         auraSecondary = 'var(--aura-amber)';
       } else if (isCumaVakti) {
-        period = 'cuma';
         aura = 'var(--aura-emerald)';
         auraSecondary = 'var(--aura-indigo)';
       } else if (isTeheccud) {
-        period = 'teheccud';
         aura = 'var(--aura-indigo)';
         auraSecondary = 'var(--aura-rose)';
-      } else if (mevcutVakit === 'aksam' || mevcutVakit === 'yatsi') {
-        period = 'aksam_yatsi';
-        aura = 'var(--aura-ruby)';
-        auraSecondary = 'var(--aura-rose)';
+      } else {
+        aura = getActiveAuraColor(mevcutVakit);
+        auraSecondary = getSecondaryAuraColor(mevcutVakit);
       }
 
       // Write variables to root element

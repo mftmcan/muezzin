@@ -13,6 +13,7 @@ import React, { useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Info, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useNetworkStatus } from '../../hooks/useNetworkStatus';
+import { EASE } from '../../lib/motion';
 
 export type NotificationType = 'info' | 'success' | 'warning' | 'error';
 
@@ -101,7 +102,7 @@ export const NotificationToast: React.FC<NotificationToastProps> = ({
       initial={{ opacity: 0, y: -8, x: 0 }}
       animate={{ opacity: 1, y: 0, x: 0 }}
       exit={{ opacity: 0, x: '110%', transition: { duration: 0.28, ease: [0.4, 0, 1, 1] } }}
-      transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.32, ease: EASE.out }}
       className="pointer-events-auto w-full sm:w-auto sm:min-w-[320px] max-w-full sm:max-w-[400px] spatial-glass !rounded-3xl shadow-[var(--spatial-shadow)]"
       style={{
         borderLeftWidth: '3px',
@@ -117,7 +118,7 @@ export const NotificationToast: React.FC<NotificationToastProps> = ({
         {/* Text */}
         <div className="flex-1 min-w-0">
           <h4 className="text-xs font-medium text-[var(--text-primary)] mb-1 leading-none">{title}</h4>
-          <p className="text-2xs font-light text-[var(--text-secondary)]/60 leading-relaxed">{message}</p>
+          <p className="text-xs font-light text-[var(--text-secondary)]/60 leading-relaxed">{message}</p>
           {action && (
             <button
               onClick={() => {
@@ -155,7 +156,7 @@ export const NotificationContainer: React.FC<{ children: React.ReactNode }> = ({
       aria-live="polite"
       aria-atomic="false"
       aria-label="Bildirimler"
-      className={`fixed ${isOnline ? 'top-4' : 'top-16'} left-4 right-4 sm:top-6 sm:right-6 sm:left-auto z-[9999] flex flex-col gap-3 pointer-events-none items-center sm:items-end transition-[top] duration-300`}
+      className={`fixed ${isOnline ? 'top-4' : 'top-16'} left-4 right-4 sm:top-6 sm:right-6 sm:left-auto z-[var(--z-toast)] flex flex-col gap-3 pointer-events-none items-center sm:items-end transition-[top] duration-300`}
     >
       <AnimatePresence mode="popLayout">{children}</AnimatePresence>
     </div>

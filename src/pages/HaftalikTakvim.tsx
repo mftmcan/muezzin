@@ -11,6 +11,7 @@ import { IslamicGeometricBg } from '../components/ui/IslamicGeometricBg';
 import { useHaftaBildirimleri } from '../hooks/useHaftaBildirimleri';
 import { getHaftaIdFromDate, getTurkeyNow, toTurkishUpperCase } from '../lib/dateUtils';
 import { EmptyState } from '../components/ui/EmptyState';
+import { EASE } from '../lib/motion';
 
 const VAKIT_LISTESI: Vakit[] = ['sabah', 'ogle', 'ikindi', 'aksam', 'yatsi'];
 
@@ -126,7 +127,7 @@ export default function HaftalikTakvim() {
               <motion.h1
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ delay: 0.1, duration: 0.8, ease: EASE.out }}
                 className="text-3xl md:text-4xl font-light text-[var(--text-primary)] tracking-tight leading-none apple-thin"
               >
                 Haftalık Görev Akışı

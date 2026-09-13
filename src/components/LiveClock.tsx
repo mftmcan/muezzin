@@ -13,11 +13,15 @@ export function LiveClock({ compact, className }: LiveClockProps = {}) {
   const formattedTime = getTurkeyTimeFormatted(time);
 
   if (compact || className) {
-    return <span className={className ?? 'font-mono tabular-nums'}>{formattedTime}</span>;
+    return (
+      <span data-testid="live-clock" className={className ?? 'font-mono tabular-nums'}>
+        {formattedTime}
+      </span>
+    );
   }
 
   return (
-    <div className="flex flex-col gap-1 items-end">
+    <div data-testid="live-clock" className="flex flex-col gap-1 items-end">
       <div className="flex justify-end items-center gap-1.5 opacity-80">
         <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
         <span className="text-[var(--text-primary)] font-medium text-2xs uppercase tracking-wide">SAAT</span>

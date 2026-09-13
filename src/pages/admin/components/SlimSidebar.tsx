@@ -5,6 +5,7 @@ import { Logo } from '../../../components/ui/Logo';
 import { getAdminNavItems, APP_LINKS, type ActiveModule } from '../config/navConfig';
 import type { ThemeToggleEvent } from '../../../store/useThemeStore';
 import { toTurkishUpperCase } from '../../../lib/dateUtils';
+import { SPRING } from '../../../lib/motion';
 
 interface SlimSidebarProps {
   activeTab: ActiveModule;
@@ -93,13 +94,13 @@ export const SlimSidebar = React.memo<SlimSidebarProps>(
                   <>
                     <motion.div
                       layoutId="active-slim-pill"
-                      className="absolute inset-0 bg-[var(--text-primary)]/[0.03] border border-[var(--glass-border)] rounded-[20px] -z-10 shadow-lg"
-                      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                      className="absolute inset-0 bg-[var(--text-primary)]/[0.03] border border-[var(--glass-border)] rounded-[20px] -z-10 shadow-elev2"
+                      transition={SPRING.snappy}
                     />
                     <motion.div
                       layoutId="active-glow"
                       className="absolute inset-0 bg-[var(--dynamic-aura,var(--aura-indigo))]/5 blur-xl -z-20"
-                      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                      transition={SPRING.snappy}
                     />
                     <motion.div
                       layoutId="active-line"

@@ -11,6 +11,7 @@ import { exportCsv } from '../../../lib/csvExport';
 import { telemetryService } from '../../../services/telemetryService';
 import { EmptyState } from '../../../components/ui/EmptyState';
 import { Skeleton } from '../../../components/ui/Skeleton';
+import { SPRING, EASE } from '../../../lib/motion';
 
 const PERIOD_OPTIONS = [
   { days: 7, label: '7 Gün' },
@@ -250,7 +251,7 @@ export default function SistemAnalitigi() {
       opacity: 1,
       y: 0,
       scale: 1,
-      transition: { type: 'spring', stiffness: 400, damping: 30 },
+      transition: SPRING.snappy,
     },
   };
 
@@ -289,7 +290,7 @@ export default function SistemAnalitigi() {
               onClick={() => setPeriodDays(opt.days)}
               className={`px-5 py-2.5 rounded-[14px] text-2xs font-bold uppercase tracking-wide transition-all ${
                 periodDays === opt.days
-                  ? 'bg-[var(--surface-medium)] text-[var(--text-primary)] shadow-lg'
+                  ? 'bg-[var(--surface-medium)] text-[var(--text-primary)] shadow-elev2'
                   : 'text-muted hover:text-[var(--text-primary)]/70'
               }`}
             >
@@ -391,7 +392,7 @@ export default function SistemAnalitigi() {
                       <motion.div
                         initial={{ height: 0 }}
                         animate={{ height: `${Math.max(data.value, 4)}%` }}
-                        transition={{ duration: 1.5, delay: idx * 0.1, ease: [0.16, 1, 0.3, 1] }}
+                        transition={{ duration: 1.5, delay: idx * 0.1, ease: EASE.out }}
                         className={`w-full max-w-[56px] rounded-avatar relative overflow-hidden transition-all duration-700 shadow-[var(--spatial-shadow)] ${
                           hoveredIdx === idx ? 'scale-x-110 ' : 'opacity-60 group-hover/col:opacity-100'
                         }`}

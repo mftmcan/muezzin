@@ -354,7 +354,7 @@ export default function HaftalikCizelge() {
                     <div
                       className={`flex flex-col items-center justify-center w-14 h-14 rounded-avatar border ${
                         isToday
-                          ? 'bg-[var(--dynamic-aura,var(--aura-indigo))] text-[var(--app-bg)] border-[var(--dynamic-aura,var(--aura-indigo))] shadow-lg'
+                          ? 'bg-[var(--dynamic-aura,var(--aura-indigo))] text-[var(--app-bg)] border-[var(--dynamic-aura,var(--aura-indigo))] shadow-elev2'
                           : 'bg-[var(--text-primary)]/[0.03] text-[var(--dynamic-aura,var(--aura-indigo))]/60 border-[var(--text-primary)]/5'
                       }`}
                     >
@@ -474,7 +474,7 @@ export default function HaftalikCizelge() {
             whileTap={{ scale: 0.9 }}
             onClick={() => setCurrentDate(subWeeks(currentDate, 1))}
             aria-label="Önceki hafta"
-            className="w-12 h-12 flex items-center justify-center bg-[var(--text-primary)]/[0.03] text-[var(--text-secondary)] rounded-2xl hover:text-[var(--dynamic-aura,var(--aura-indigo))] border border-[var(--text-primary)]/5 transition-all shadow-lg"
+            className="w-12 h-12 flex items-center justify-center bg-[var(--text-primary)]/[0.03] text-[var(--text-secondary)] rounded-2xl hover:text-[var(--dynamic-aura,var(--aura-indigo))] border border-[var(--text-primary)]/5 transition-all shadow-elev2"
           >
             <ChevronLeft size={20} />
           </motion.button>
@@ -491,7 +491,7 @@ export default function HaftalikCizelge() {
             whileTap={{ scale: 0.9 }}
             onClick={() => setCurrentDate(addWeeks(currentDate, 1))}
             aria-label="Sonraki hafta"
-            className="w-12 h-12 flex items-center justify-center bg-[var(--text-primary)]/[0.03] text-[var(--text-secondary)] rounded-2xl hover:text-[var(--dynamic-aura,var(--aura-indigo))] border border-[var(--text-primary)]/5 transition-all shadow-lg"
+            className="w-12 h-12 flex items-center justify-center bg-[var(--text-primary)]/[0.03] text-[var(--text-secondary)] rounded-2xl hover:text-[var(--dynamic-aura,var(--aura-indigo))] border border-[var(--text-primary)]/5 transition-all shadow-elev2"
           >
             <ChevronRight size={20} />
           </motion.button>
@@ -503,7 +503,7 @@ export default function HaftalikCizelge() {
             whileTap={{ scale: 0.98 }}
             onClick={exportWeeklyPlanCSV}
             disabled={!plan || loading}
-            className="bg-[var(--dynamic-aura,var(--aura-indigo))]/10 text-[var(--dynamic-aura,var(--aura-indigo))] border border-[var(--dynamic-aura,var(--aura-indigo))]/20 px-5 sm:px-8 py-3.5 sm:py-4 rounded-2xl text-2xs font-bold uppercase tracking-wide shadow-lg flex items-center justify-center gap-3 sm:gap-4 disabled:opacity-30 group w-full lg:w-auto cursor-pointer"
+            className="bg-[var(--dynamic-aura,var(--aura-indigo))]/10 text-[var(--dynamic-aura,var(--aura-indigo))] border border-[var(--dynamic-aura,var(--aura-indigo))]/20 px-5 sm:px-8 py-3.5 sm:py-4 rounded-2xl text-2xs font-bold uppercase tracking-wide shadow-elev2 flex items-center justify-center gap-3 sm:gap-4 disabled:opacity-30 group w-full lg:w-auto cursor-pointer"
           >
             <Zap size={16} className="group-hover:scale-110 transition-transform duration-500" />
             ÇİZELGEYİ AKTAR
@@ -514,7 +514,7 @@ export default function HaftalikCizelge() {
             whileTap={{ scale: 0.98 }}
             onClick={() => (plan ? setConfirmPlanRefreshOpen(true) : handlePlanOlustur())}
             disabled={generating || loading}
-            className="bg-[var(--dynamic-aura,var(--aura-indigo))] text-[var(--app-bg)] px-5 sm:px-8 py-3.5 sm:py-4 rounded-2xl text-2xs font-bold uppercase tracking-wide shadow-lg flex items-center justify-center gap-3 sm:gap-4 disabled:opacity-50 group w-full lg:w-auto cursor-pointer"
+            className="bg-[var(--dynamic-aura,var(--aura-indigo))] text-[var(--app-bg)] px-5 sm:px-8 py-3.5 sm:py-4 rounded-2xl text-2xs font-bold uppercase tracking-wide shadow-elev2 flex items-center justify-center gap-3 sm:gap-4 disabled:opacity-50 group w-full lg:w-auto cursor-pointer"
           >
             <RotateCcw
               size={16}

@@ -56,7 +56,7 @@ export const KisiselGorevAkisi: React.FC<Props> = ({ loading, gorevler, bugunVak
     <motion.section initial={shouldAnimate ? 'hidden' : false} animate="visible" variants={containerVariants} className="px-0">
       <motion.div variants={itemVariants} className="flex items-center gap-4 sm:gap-8 mb-8 sm:mb-12">
         <div
-          className={`w-12 h-12 sm:w-16 sm:h-16 rounded-3xl bg-[var(--text-primary)]/[0.03] flex items-center justify-center border border-[var(--glass-border)] shadow-sm ${isFriday ? 'text-emerald-400' : 'text-[var(--dynamic-aura,var(--aura-indigo))]'}`}
+          className={`w-12 h-12 sm:w-16 sm:h-16 rounded-3xl bg-[var(--text-primary)]/[0.03] flex items-center justify-center border border-[var(--glass-border)] shadow-elev1 ${isFriday ? 'text-emerald-400' : 'text-[var(--dynamic-aura,var(--aura-indigo))]'}`}
         >
           <Star size={24} className="sm:size-8" strokeWidth={1.2} />
         </div>
@@ -76,7 +76,7 @@ export const KisiselGorevAkisi: React.FC<Props> = ({ loading, gorevler, bugunVak
           <div className="w-10 h-10 rounded-2xl bg-[var(--text-primary)]/[0.04] border border-[var(--glass-border)] text-[var(--text-secondary)]/60 flex items-center justify-center shrink-0">
             <Eye size={17} strokeWidth={1.6} />
           </div>
-          <p className="authority-title !text-2xs opacity-45 leading-relaxed">{GOZLEMCI_SALT_OKUMA_IPUCU}</p>
+          <p className="authority-title !text-xs opacity-45 leading-relaxed">{GOZLEMCI_SALT_OKUMA_IPUCU}</p>
         </motion.div>
       )}
 

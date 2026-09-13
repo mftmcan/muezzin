@@ -2,6 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { WifiOff } from 'lucide-react';
 import { useNetworkStatus } from '../../hooks/useNetworkStatus';
+import { SPRING } from '../../lib/motion';
 
 export function OfflineBanner() {
   // useNetworkStatus() bir { isOnline } nesnesi döndürüyor — burada
@@ -20,8 +21,8 @@ export function OfflineBanner() {
           initial={{ y: -100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: -100, opacity: 0 }}
-          transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-          className="fixed top-[env(safe-area-inset-top,0px)] left-0 right-0 z-[10000] flex justify-center pointer-events-none px-4 pt-4"
+          transition={SPRING.snappy}
+          className="fixed top-[env(safe-area-inset-top,0px)] left-0 right-0 z-[var(--z-offline-banner)] flex justify-center pointer-events-none px-4 pt-4"
         >
           <div
             role="status"

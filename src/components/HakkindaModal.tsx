@@ -5,6 +5,7 @@ import { X, Sparkles, CalendarClock, BellRing, Repeat, MapPinned, WifiOff, Megap
 import { Logo } from './ui/Logo';
 import { playClick } from '../lib/sounds';
 import { format } from 'date-fns';
+import { EASE } from '../lib/motion';
 
 interface HakkindaModalProps {
   isOpen: boolean;
@@ -74,13 +75,13 @@ export const HakkindaModal: React.FC<HakkindaModalProps> = ({ isOpen, onClose })
   return createPortal(
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[500] flex items-center justify-center px-4 sm:px-0">
+        <div className="fixed inset-0 z-[var(--z-modal)] flex items-center justify-center px-4 sm:px-0">
           {/* Deep Backdrop Blur */}
           <motion.div
             initial={{ opacity: 0, backdropFilter: 'blur(0px)' }}
             animate={{ opacity: 1, backdropFilter: 'blur(40px)' }}
             exit={{ opacity: 0, backdropFilter: 'blur(0px)' }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.8, ease: EASE.out }}
             className="absolute inset-0 bg-black/40"
             onClick={handleClose}
           />
@@ -103,8 +104,10 @@ export const HakkindaModal: React.FC<HakkindaModalProps> = ({ isOpen, onClose })
               <X size={16} className="text-[var(--text-primary)]/60 hover:text-[var(--text-primary)]" />
             </button>
 
-            {/* Glowing Aura Background */}
-            <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-[var(--aura-indigo)]/30 blur-[80px] rounded-full pointer-events-none animate-pulse" />
+            {/* Glowing Aura Background — önceden animate-pulse taşıyordu; bu modal
+                okunacak bir metin listesi barındırıyor, arkada sürekli titreşen
+                bir hale dikkat dağıtıyordu (bkz. görsel tasarım denetimi V18). */}
+            <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-[var(--aura-indigo)]/30 blur-[80px] rounded-full pointer-events-none" />
 
             {/* Sabit üst bölüm: logo, isim, sürüm, misyon cümlesi — küçük
                 ekranlarda içerik büyüyünce (bkz. aşağıdaki özellik listesi)
@@ -184,7 +187,7 @@ export const HakkindaModal: React.FC<HakkindaModalProps> = ({ isOpen, onClose })
                     </div>
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-[var(--text-primary)]">{ozellik.title}</p>
-                      <p className="text-2xs text-[var(--text-secondary)]/75 leading-relaxed mt-0.5">{ozellik.desc}</p>
+                      <p className="text-xs text-[var(--text-secondary)]/75 leading-relaxed mt-0.5">{ozellik.desc}</p>
                     </div>
                   </motion.div>
                 ))}

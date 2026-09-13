@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
+import { SPRING } from '../../lib/motion';
 
 export interface SegmentedTabItem {
   id: string;
@@ -86,7 +87,7 @@ export function SegmentedTabs({ items, activeId, onChange, ariaLabel, idPrefix, 
                 <motion.div
                   layoutId={pillLayoutId}
                   className="absolute inset-0 bg-[var(--surface-medium)] border border-[var(--glass-border)] shadow-[var(--spatial-shadow)] z-0"
-                  transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                  transition={SPRING.snappy}
                 />
               )}
               <div className="relative z-10 flex items-center gap-4">
@@ -190,8 +191,8 @@ export function SegmentedTabs({ items, activeId, onChange, ariaLabel, idPrefix, 
             {isActive && (
               <motion.div
                 layoutId={pillLayoutId}
-                className="absolute inset-0 bg-[var(--surface-medium)] border border-[var(--glass-border)] rounded-[20px] -z-0 shadow-lg"
-                transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                className="absolute inset-0 bg-[var(--surface-medium)] border border-[var(--glass-border)] rounded-[20px] -z-0 shadow-elev2"
+                transition={SPRING.snappy}
               />
             )}
             {isActive && (

@@ -2,6 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { AlertTriangle, ServerCrash, CalendarX, RefreshCcw, Gauge, TrendingUp } from 'lucide-react';
 import { AdminUyarisi } from '../types';
+import { EASE } from '../lib/motion';
 
 interface SistemUyarisiBannerProps {
   uyari: (AdminUyarisi & { id: string }) | null;
@@ -51,7 +52,7 @@ export const SistemUyarisiBanner = React.memo<SistemUyarisiBannerProps>(({ uyari
         initial={{ opacity: 0, y: 12, scale: 0.97 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: -8, scale: 0.97 }}
-        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        transition={{ duration: 0.5, ease: EASE.out }}
         className="relative w-full mt-4 spatial-glass !rounded-card border overflow-hidden bg-rose-500/[0.04] dark:bg-rose-500/[0.02] border-rose-500/20 dark:border-rose-400/15 shadow-[var(--spatial-shadow)]"
       >
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-rose-500/10 to-transparent" aria-hidden />
@@ -69,7 +70,7 @@ export const SistemUyarisiBanner = React.memo<SistemUyarisiBannerProps>(({ uyari
                   {BASLIKLAR[uyari.tip] ?? 'DİZGE UYARISI'}
                 </h3>
               </div>
-              <p className="text-2xs sm:text-2xs leading-relaxed mt-2 font-medium text-[var(--text-secondary)]">
+              <p className="text-xs sm:text-xs leading-relaxed mt-2 font-medium text-[var(--text-secondary)]">
                 Yönetim, nöbet çizelgenizi etkileyebilecek bir aksaklığa müdahale ediyor. Ekstra bir işlem yapmanız gerekmiyor.
               </p>
             </div>

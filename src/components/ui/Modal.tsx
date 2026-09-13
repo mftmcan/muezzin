@@ -82,7 +82,7 @@ export function Modal({ isOpen, onClose, title, children, className = '', conten
   return createPortal(
     <AnimatePresence>
       {isOpen && (
-        <div className={`fixed inset-0 z-[500] flex items-center justify-center p-0 sm:p-6 ${className}`}>
+        <div className={`fixed inset-0 z-[var(--z-modal)] flex items-center justify-center p-0 sm:p-6 ${className}`}>
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -92,7 +92,7 @@ export function Modal({ isOpen, onClose, title, children, className = '', conten
           >
             {/* Modal-specific Ambient Aura */}
             <div
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] h-[150%] opacity-8 pointer-events-none transition-all duration-1000"
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] h-[150%] opacity-[0.08] pointer-events-none transition-all duration-1000"
               style={{ background: 'radial-gradient(circle at 50% 50%, var(--dynamic-aura, var(--aura-indigo)), transparent 60%)' }}
             />
           </motion.div>
@@ -133,7 +133,8 @@ export function Modal({ isOpen, onClose, title, children, className = '', conten
 
             <div className="flex justify-between items-start mb-6 sm:mb-10 shrink-0">
               <div>
-                <h2 id={titleId} className="text-2xl sm:text-4xl font-light tracking-tight text-[var(--text-primary)] apple-thin">
+                {/* Serif display katmanı — bkz. görsel tasarım denetimi V16 */}
+                <h2 id={titleId} className="text-2xl sm:text-4xl font-serif font-normal tracking-tight text-[var(--text-primary)]">
                   {title}
                 </h2>
               </div>

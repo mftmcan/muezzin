@@ -44,8 +44,17 @@ export default defineConfig(({ mode }) => ({
         name: "Müezzin - Hizmet Dizgesi",
         short_name: "Müezzin Dizgesi",
         description: "Cami ve Din Görevlileri Hizmet Planlama Sistemi",
-        theme_color: "#F5F5F7",
-        background_color: "#F5F5F7",
+        // index.html'deki FOUC injector'ın varsayılan teması 'dark' (kayıtlı
+        // tercih yoksa ve sistem açık moda ayarlı değilse) — manifest statik
+        // olduğundan (yüklenme/splash anında, JS henüz çalışmadan okunur;
+        // useThemeStore'un runtime --app-bg senkronu buraya ulaşamaz) o
+        // varsayılanla eşleşmeli. Önceden `#F5F5F7` ne açık (`#F4F2EE`) ne
+        // koyu (`#08080A`) temanın gerçek --app-bg'siyle eşleşmiyordu; PWA
+        // yükleme splash'i ve Android görev değiştirici bu üçüncü, hiçbir
+        // temaya ait olmayan renkte görünüyordu (bkz. görsel tasarım
+        // denetimi V11).
+        theme_color: "#08080A",
+        background_color: "#08080A",
         display: "standalone",
         id: "/",
         orientation: "portrait",

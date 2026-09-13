@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Moon, Sun, Star, Bell, Clock, Sparkles, CalendarClock, HeartHandshake } from 'lucide-react';
 import { OzelVakitDurumu, OzelVakitTip, TesrikVakitRenk } from '../hooks/useOzelVakitMesaji';
 import { useTime } from '../hooks/useTime';
+import { EASE } from '../lib/motion';
 
 interface OzelVakitBannerProps {
   durum: OzelVakitDurumu;
@@ -307,7 +308,7 @@ function TekBanner({ durum }: { durum: OzelVakitDurumu }) {
           initial={{ opacity: 0, y: 12, scale: 0.97 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -8, scale: 0.97 }}
-          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.5, ease: EASE.out }}
           className={`
             relative w-full spatial-glass border overflow-hidden
             ${style.bg} ${style.border}
@@ -347,7 +348,7 @@ function TekBanner({ durum }: { durum: OzelVakitDurumu }) {
             </div>
 
             {/* Açıklama */}
-            <p className={`text-2xs sm:text-2xs leading-relaxed mt-2 font-medium ${style.body}`}>{durum.aciklama}</p>
+            <p className={`text-xs sm:text-xs leading-relaxed mt-2 font-medium ${style.body}`}>{durum.aciklama}</p>
 
             {/* Arapça metin (Teşrik için) */}
             {durum.arapca && (

@@ -8,6 +8,7 @@ import { ConfirmModal } from './ui/ConfirmModal';
 import { EmptyState } from './ui/EmptyState';
 import { useNotificationStore } from '../store/useNotificationStore';
 import { TYPE_CONFIG } from './ui/NotificationToast';
+import { EASE } from '../lib/motion';
 
 interface NotificationHistoryPanelProps {
   isOpen: boolean;
@@ -59,7 +60,7 @@ export function NotificationHistoryPanel({ isOpen, onClose }: NotificationHistor
                     initial={{ opacity: 0, y: -8 }}
                     animate={{ opacity: 1, y: 0, transition: { delay: idx * 0.03 } }}
                     exit={{ opacity: 0, x: 40, transition: { duration: 0.2 } }}
-                    transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+                    transition={{ duration: 0.32, ease: EASE.out }}
                     className="flex items-start gap-3 p-4 rounded-2xl border border-[var(--glass-border)] bg-[var(--text-primary)]/[0.02] hover:bg-[var(--text-primary)]/[0.04] transition-colors"
                     style={{ borderLeftWidth: '3px', borderLeftColor: cfg.borderColor }}
                   >
@@ -73,7 +74,7 @@ export function NotificationHistoryPanel({ isOpen, onClose }: NotificationHistor
                           {formatDistanceToNow(entry.timestamp, { addSuffix: true, locale: tr })}
                         </span>
                       </div>
-                      <p className="text-2xs text-[var(--text-secondary)]/60 leading-relaxed mt-1">{entry.message}</p>
+                      <p className="text-xs text-[var(--text-secondary)]/60 leading-relaxed mt-1">{entry.message}</p>
                     </div>
                   </motion.li>
                 );

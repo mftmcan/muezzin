@@ -321,7 +321,7 @@ export const RamazanHub: React.FC = () => {
               ? 'Niyetliyiz, Ruhumuzu ve Bedenimizi Arındırıyoruz'
               : 'İftar Edildi, Şükürler Olsun. Sahur Hazırlığı'}
           </h3>
-          <p className="text-2xs sm:text-2xs text-[var(--text-secondary)]/70 leading-relaxed max-w-[220px]">
+          <p className="text-xs sm:text-xs text-[var(--text-secondary)]/70 leading-relaxed max-w-[220px]">
             {zamanVerileri.mod === 'gunduz'
               ? 'Rabbimiz oruçlarımızı kabul eylesin. Akşam ezanı vakti ile iftar şerefine nail olacağız.'
               : 'Sahura kadar beslenmemize dikkat edip, ibadet ve teheccüd vakitlerini gözleyelim.'}

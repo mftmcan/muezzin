@@ -11,6 +11,7 @@ import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from
 import { Vakit } from '../types';
 import { KerahatIcon } from './ui/KerahatIcon';
 import { useTime } from '../hooks/useTime';
+import { getActiveAuraColor } from '../lib/auraTheme';
 
 const MS_PER_SECOND = 1_000;
 const MS_PER_MINUTE = 60 * MS_PER_SECOND;
@@ -209,22 +210,18 @@ export function GeriSayim({
   // ── Aura color ────────────────────────────────────────────────────────────
   // Kerahat/cuma/teheccüd örtüşmesi bilinçli olarak auraTheme.ts'teki temel
   // eşlemeden AYRI tutuluyor (bkz. auraTheme.ts dosya başı yorumu — canlı/
-  // global durum için daha zengin bir katman). Ama temel "hangi vakit" dalı
-  // (sabah) auraTheme.ts'teki `getActiveAuraColor` ile hizalanmalı — önceden
-  // burada amber'e düşüyordu, orada emerald'dı; hero kartının halesi ile bu
-  // geri sayım halkası sabah vakti iki farklı renk konuşuyordu (bkz. premium
-  // denetim B8, O9).
+  // global durum için daha zengin bir katman). Temel "hangi vakit" dalı
+  // ÖNCEDEN burada dördüncü, bağımsız bir kopyaydı (bkz. görsel tasarım
+  // denetimi V1) — auraTheme.ts/useCircadianTheme.ts hizalandığında bu kopya
+  // güncellenmemiş kalırdı. Artık doğrudan `getActiveAuraColor`'ı çağırıyor;
+  // tek kaynak gerçekten tek.
   const auraColor = isKerahat
     ? 'var(--aura-ruby)'
     : isCumaVakti
       ? 'var(--aura-emerald)'
       : isTeheccud
         ? 'var(--aura-indigo)'
-        : mevcutVakit === 'aksam' || mevcutVakit === 'yatsi'
-          ? 'var(--aura-ruby)'
-          : mevcutVakit === 'sabah'
-            ? 'var(--aura-emerald)'
-            : 'var(--aura-amber)';
+        : getActiveAuraColor(mevcutVakit);
 
   // ── Ezan is now ───────────────────────────────────────────────────────────
   if (farkMs <= 0) {
@@ -287,7 +284,7 @@ export function GeriSayim({
                   initial={{ scale: 0.9, opacity: 0, y: 5 }}
                   animate={{ scale: 1, opacity: 1, y: 0 }}
                   exit={{ scale: 0.9, opacity: 0, y: -5 }}
-                  className="px-5 py-1.5 rounded-full bg-[var(--dynamic-aura,var(--aura-indigo))]/10 border border-[var(--dynamic-aura,var(--aura-indigo))]/20 flex items-center gap-2.5 shadow-lg "
+                  className="px-5 py-1.5 rounded-full bg-[var(--dynamic-aura,var(--aura-indigo))]/10 border border-[var(--dynamic-aura,var(--aura-indigo))]/20 flex items-center gap-2.5 shadow-elev2 "
                 >
                   <span className="authority-title !text-2xs text-[var(--dynamic-aura,var(--aura-indigo))] font-bold tracking-wide">
                     TEHECCÜD VAKTİ
@@ -313,14 +310,20 @@ export function GeriSayim({
             </AnimatePresence>
           </div>
 
+          {/* Uygulamanın tipografik display katmanı — Instrument Serif self-host
+              ediliyordu ama tek kullanım noktası SplashLoader'ın ~800ms görünen
+              açılış ekranıydı (bkz. görsel tasarım denetimi V16). Bu başlık, gün
+              içindeki en çok görülen "an" — burada Inter'in ince ağırlığı yerine
+              serif'in kendi karakteri taşıyor, ALL-CAPS de bırakıldı (serif
+              display yüzleri büyük harfte kendi kimliğini kaybeder). */}
           <h2
-            className="font-extralight tracking-tighter text-4xl sm:text-6xl text-[var(--text-primary)] leading-none transition-all duration-700 vibrant-text"
+            className="font-serif font-normal tracking-tight text-4xl sm:text-6xl text-[var(--text-primary)] leading-none transition-all duration-700 vibrant-text"
             style={{
               textShadow: `0 0 40px ${auraColor}18`,
               backgroundImage: `linear-gradient(135deg, var(--text-primary) 0%, ${auraColor} 50%, var(--text-secondary) 100%)`,
             }}
           >
-            {toTurkishUpperCase(VAKIT_DISPLAY_NAMES[mevcutVakit])}
+            {VAKIT_DISPLAY_NAMES[mevcutVakit]}
           </h2>
         </motion.div>
 
@@ -458,7 +461,7 @@ export function GeriSayim({
             className="absolute inset-0 flex flex-col items-center justify-center text-center z-10"
             style={{ transform: 'translateZ(40px)' }}
           >
-            <div className="flex flex-col items-center gap-1 px-6 py-5 sm:px-8 sm:py-7">
+            <div data-testid="countdown-timer" className="flex flex-col items-center gap-1 px-6 py-5 sm:px-8 sm:py-7">
               <div className="flex items-center gap-2 sm:gap-3">
                 {/* Hours */}
                 <div className="flex flex-col items-center">

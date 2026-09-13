@@ -212,7 +212,7 @@ export function VeriSifirlamaModal({ isOpen, onClose }: Props) {
             autoComplete="off"
           />
           {onayMetni.length > 0 && onayMetni.trim() !== ONAY_METNI && (
-            <p id="onay-metni-error" role="alert" className="text-2xs text-rose-400 font-medium leading-relaxed">
+            <p id="onay-metni-error" role="alert" className="text-xs text-rose-400 font-medium leading-relaxed">
               Girdiğiniz metin eşleşmiyor.
             </p>
           )}

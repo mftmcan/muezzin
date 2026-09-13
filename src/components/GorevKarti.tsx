@@ -255,7 +255,7 @@ export const GorevKarti = React.memo(
     const glowShadow = useMemo(() => {
       if (bildirim.durum === 'onaylandi') return '0 20px 40px -15px rgba(16, 185, 129, 0.2)';
       if (bildirim.durum === 'reddedildi') return '0 20px 40px -15px rgba(244, 63, 94, 0.2)';
-      return '0 20px 40px -15px var(--dynamic-aura, rgba(99, 102, 241, 0.15))';
+      return '0 20px 40px -15px var(--dynamic-aura, var(--aura-indigo))';
     }, [bildirim.durum]);
 
     return (
@@ -297,7 +297,7 @@ export const GorevKarti = React.memo(
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-6 mb-8 sm:mb-10 relative z-10">
             <div className="flex items-center gap-4 sm:gap-7">
               <div
-                className={`w-12 h-12 sm:w-16 sm:h-16 rounded-avatar flex items-center justify-center transition-all duration-200 group-hover:rotate-3 border shadow-lg ${
+                className={`w-12 h-12 sm:w-16 sm:h-16 rounded-avatar flex items-center justify-center transition-all duration-200 group-hover:rotate-3 border shadow-elev2 ${
                   config.color === 'red'
                     ? 'bg-rose-500/10 text-rose-500 border-rose-500/20'
                     : config.color === 'green'
@@ -331,7 +331,7 @@ export const GorevKarti = React.memo(
                   {toTurkishUpperCase(getVakitIsmi(bildirim.vakit))}
                 </h3>
                 <div className="flex items-center gap-2">
-                  <div className="px-4 py-1.5 bg-[var(--text-primary)]/[0.03] rounded-2xl flex items-center gap-2.5 border border-[var(--glass-border)] shadow-sm">
+                  <div className="px-4 py-1.5 bg-[var(--text-primary)]/[0.03] rounded-2xl flex items-center gap-2.5 border border-[var(--glass-border)] shadow-elev1">
                     <Clock size={12} strokeWidth={2} className="text-[var(--dynamic-aura,var(--aura-indigo))]" />
                     <span className="text-sm font-medium tabular-nums text-[var(--text-primary)] opacity-80">{saat}</span>
                   </div>
@@ -340,7 +340,7 @@ export const GorevKarti = React.memo(
             </div>
 
             <div
-              className={`px-4 py-1.5 rounded-xl text-2xs font-bold uppercase tracking-wide border transition-all duration-500 shadow-sm ${
+              className={`px-4 py-1.5 rounded-xl text-2xs font-bold uppercase tracking-wide border transition-all duration-500 shadow-elev1 ${
                 config.color === 'red'
                   ? 'border-rose-500/20 text-rose-500 bg-rose-500/5'
                   : config.color === 'green'
@@ -410,7 +410,7 @@ export const GorevKarti = React.memo(
                 onClick={isAktif && !isReadOnly ? handleOkudum : undefined}
                 disabled={!isAktif || isReadOnly || isOnaylaniyor}
                 title={isReadOnly ? GOZLEMCI_SALT_OKUMA_IPUCU : undefined}
-                className={`w-full py-5 rounded-[18px] font-bold text-2xs tracking-wide uppercase transition-all duration-200 relative overflow-hidden group/btn shadow-lg ${
+                className={`w-full py-5 rounded-[18px] font-bold text-2xs tracking-wide uppercase transition-all duration-200 relative overflow-hidden group/btn shadow-elev2 ${
                   isAktif && !isReadOnly
                     ? 'bg-[var(--dynamic-aura,var(--aura-indigo))] text-[var(--app-bg)] '
                     : 'bg-[var(--text-primary)]/[0.03] text-[var(--text-primary)]/35 cursor-not-allowed border border-[var(--glass-border)]'
@@ -440,7 +440,7 @@ export const GorevKarti = React.memo(
                   onClick={() => setIsMazeretModalOpen(true)}
                   disabled={isReadOnly}
                   title={isReadOnly ? GOZLEMCI_SALT_OKUMA_IPUCU : undefined}
-                  className="flex-1 py-5 rounded-[18px] font-bold text-2xs tracking-wide uppercase transition-all duration-200 text-rose-500 bg-rose-500/[0.03] border border-rose-500/20 shadow-sm cursor-pointer disabled:opacity-35 disabled:cursor-not-allowed"
+                  className="flex-1 py-5 rounded-[18px] font-bold text-2xs tracking-wide uppercase transition-all duration-200 text-rose-500 bg-rose-500/[0.03] border border-rose-500/20 shadow-elev1 cursor-pointer disabled:opacity-35 disabled:cursor-not-allowed"
                 >
                   {GOREV_LABELS.mazeretBildir}
                 </motion.button>
@@ -450,14 +450,12 @@ export const GorevKarti = React.memo(
                   onClick={() => setIsVekaletModalOpen(true)}
                   disabled={isReadOnly}
                   title={isReadOnly ? GOZLEMCI_SALT_OKUMA_IPUCU : undefined}
-                  className="flex-1 py-5 rounded-[18px] font-bold text-2xs tracking-wide uppercase transition-all duration-200 text-[var(--dynamic-aura,var(--aura-indigo))] bg-[var(--dynamic-aura,var(--aura-indigo))]/[0.03] border border-[var(--dynamic-aura,var(--aura-indigo))]/20 shadow-sm cursor-pointer disabled:opacity-35 disabled:cursor-not-allowed"
+                  className="flex-1 py-5 rounded-[18px] font-bold text-2xs tracking-wide uppercase transition-all duration-200 text-[var(--dynamic-aura,var(--aura-indigo))] bg-[var(--dynamic-aura,var(--aura-indigo))]/[0.03] border border-[var(--dynamic-aura,var(--aura-indigo))]/20 shadow-elev1 cursor-pointer disabled:opacity-35 disabled:cursor-not-allowed"
                 >
                   {GOREV_LABELS.goreviDevret}
                 </motion.button>
               </div>
-              {isReadOnly && (
-                <p className="authority-title !text-2xs opacity-40 text-center leading-relaxed">{GOZLEMCI_SALT_OKUMA_IPUCU}</p>
-              )}
+              {isReadOnly && <p className="authority-title !text-xs opacity-40 text-center leading-relaxed">{GOZLEMCI_SALT_OKUMA_IPUCU}</p>}
             </div>
           )}
 
@@ -533,7 +531,7 @@ export const GorevKarti = React.memo(
 
               <div className="mt-6 flex items-start gap-4 px-2">
                 <input type="checkbox" id="onay" checked={onay} onChange={(e) => setOnay(e.target.checked)} className="mt-1" />
-                <label htmlFor="onay" className="text-2xs text-[var(--text-secondary)]/60 leading-relaxed cursor-pointer select-none">
+                <label htmlFor="onay" className="text-xs text-[var(--text-secondary)]/60 leading-relaxed cursor-pointer select-none">
                   {GOREV_LABELS.onayMetni}
                 </label>
               </div>
@@ -544,7 +542,7 @@ export const GorevKarti = React.memo(
                   whileTap={{ scale: 0.98 }}
                   onClick={submitMazeret}
                   disabled={isSubmitting || !mazeretSebebi.trim() || !onay}
-                  className="flex-1 bg-rose-500 text-[var(--app-bg)] text-2xs font-bold uppercase tracking-wide py-5 rounded-2xl shadow-lg transition-all disabled:opacity-20 disabled:cursor-not-allowed border-none cursor-pointer"
+                  className="flex-1 bg-rose-500 text-[var(--app-bg)] text-2xs font-bold uppercase tracking-wide py-5 rounded-2xl shadow-elev2 transition-all disabled:opacity-20 disabled:cursor-not-allowed border-none cursor-pointer"
                 >
                   {isSubmitting ? 'İŞLENİYOR...' : 'KAYDI TAMAMLA'}
                 </motion.button>

@@ -116,7 +116,7 @@ export const VeriSagligiSekmesi = React.memo(() => {
               whileTap={{ scale: 0.98 }}
               onClick={runAudit}
               disabled={loading || repairing}
-              className="px-4 py-2.5 bg-[var(--text-primary)]/5 border border-[var(--glass-border)] text-[var(--text-primary)]/80 hover:bg-[var(--text-primary)]/10 rounded-xl text-2xs font-bold uppercase tracking-wide shadow-lg disabled:opacity-30 flex items-center gap-2"
+              className="px-4 py-2.5 bg-[var(--text-primary)]/5 border border-[var(--glass-border)] text-[var(--text-primary)]/80 hover:bg-[var(--text-primary)]/10 rounded-xl text-2xs font-bold uppercase tracking-wide shadow-elev2 disabled:opacity-30 flex items-center gap-2"
             >
               <RefreshCw size={12} className={loading ? 'animate-spin' : ''} /> YENİDEN TARA
             </motion.button>
@@ -148,10 +148,10 @@ export const VeriSagligiSekmesi = React.memo(() => {
                 <AlertOctagon size={18} />
               </div>
               <h5 className="text-xs font-semibold text-rose-400">Veri Tarama Hatası Oluştu</h5>
-              <pre className="text-2xs font-mono bg-black/40 p-4 rounded-xl text-rose-300 max-h-24 overflow-y-auto border border-rose-500/10 max-w-lg mx-auto text-left leading-relaxed">
+              <pre className="text-xs font-mono bg-black/40 p-4 rounded-xl text-rose-300 max-h-24 overflow-y-auto border border-rose-500/10 max-w-lg mx-auto text-left leading-relaxed">
                 {auditError}
               </pre>
-              <p className="text-2xs text-muted leading-relaxed max-w-sm mx-auto">
+              <p className="text-xs text-muted leading-relaxed max-w-sm mx-auto">
                 Bu hata genellikle yetki sınırlarından (Missing or insufficient permissions) veya internet bağlantı uyuşmazlıklarından
                 kaynaklanır. Firebase Firestore kurallarında bu koleksiyonları listeleme izniniz olduğundan emin olun.
               </p>
@@ -195,7 +195,7 @@ export const VeriSagligiSekmesi = React.memo(() => {
                     <span className="text-2xs font-bold text-muted tracking-wide uppercase">Kategori: {err.category}</span>
                   </div>
                   <h5 className="text-xs font-medium text-[var(--text-primary)] mt-1.5 leading-tight">{err.message}</h5>
-                  <p className="text-2xs text-[var(--text-secondary)]/60 mt-1 font-sans font-light leading-relaxed">{err.details}</p>
+                  <p className="text-xs text-[var(--text-secondary)]/60 mt-1 font-sans font-light leading-relaxed">{err.details}</p>
                 </div>
               </div>
             ))
@@ -223,7 +223,7 @@ export const VeriSagligiSekmesi = React.memo(() => {
                 GİZLE
               </button>
             </div>
-            <pre className="text-2xs font-mono text-emerald-400/90 leading-relaxed overflow-x-auto max-h-48 p-4 rounded-xl bg-black/60 border border-[var(--text-primary)]/5 space-y-1">
+            <pre className="text-xs font-mono text-emerald-400/90 leading-relaxed overflow-x-auto max-h-48 p-4 rounded-xl bg-black/60 border border-[var(--text-primary)]/5 space-y-1">
               {repairLogs.length === 0 ? (
                 <span className="text-[var(--text-secondary)] italic">Onarım başlatılması bekleniyor...</span>
               ) : (

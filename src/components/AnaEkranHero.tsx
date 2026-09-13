@@ -57,80 +57,19 @@ const UI_VAKIT_LISTESI = [
   { key: 'yatsi', label: 'YATSI' },
 ] as const;
 
-// Aktif vakt kartının dark/light stilleri ve gösterge noktasının rengi —
-// vakit başına tek satırlık bir tablo, altı ayrı switch-case dalı yerine.
-interface AktifVakitRenk {
-  cardDark: string;
-  cardLight: string;
-  dotShadow: string;
-  dotBgDark: string;
-  dotBgLight: string;
-}
-
-const AKTIF_VAKIT_RENKLERI: Record<string, AktifVakitRenk> = {
-  sabah: {
-    cardDark:
-      'bg-[var(--dynamic-aura,var(--aura-indigo))]/25 border-[var(--dynamic-aura,var(--aura-indigo))]/65 shadow-[0_0_24px_color-mix(in_srgb,var(--dynamic-aura,var(--aura-indigo))_16%,transparent)] scale-[1.02] z-20',
-    cardLight:
-      'bg-gradient-to-b from-[var(--aura-indigo)] to-violet-700 border-[var(--dynamic-aura,var(--aura-indigo))]/30 shadow-[0_10px_20px_-8px_color-mix(in_srgb,var(--dynamic-aura,var(--aura-indigo))_35%,transparent)] scale-[1.02] z-20',
-    dotShadow: 'shadow-[0_0_10px_color-mix(in_srgb,var(--dynamic-aura,var(--aura-indigo))_80%,transparent)]',
-    dotBgDark: 'bg-[var(--dynamic-aura,var(--aura-indigo))]',
-    dotBgLight: 'bg-white/80',
-  },
-  gunes: {
-    cardDark:
-      'bg-[var(--aura-amber)]/25 border-[var(--aura-amber)]/65 shadow-[0_0_24px_color-mix(in_srgb,var(--aura-amber)_12%,transparent)] scale-[1.02] z-20',
-    cardLight:
-      'bg-gradient-to-b from-[var(--aura-amber)] to-orange-600 border-[var(--aura-amber)]/30 shadow-[0_10px_20px_-8px_color-mix(in_srgb,var(--aura-amber)_35%,transparent)] scale-[1.02] z-20',
-    dotShadow: 'shadow-[0_0_10px_color-mix(in_srgb,var(--aura-amber)_80%,transparent)]',
-    dotBgDark: 'bg-[var(--aura-amber)]',
-    dotBgLight: 'bg-amber-200',
-  },
-  ogle: {
-    cardDark:
-      'bg-[var(--status-success)]/25 border-[var(--status-success)]/65 shadow-[0_0_24px_color-mix(in_srgb,var(--status-success)_12%,transparent)] scale-[1.02] z-20',
-    cardLight:
-      'bg-gradient-to-b from-[var(--status-success)] to-teal-600 border-[var(--status-success)]/30 shadow-[0_10px_20px_-8px_color-mix(in_srgb,var(--status-success)_35%,transparent)] scale-[1.02] z-20',
-    dotShadow: 'shadow-[0_0_10px_color-mix(in_srgb,var(--status-success)_80%,transparent)]',
-    dotBgDark: 'bg-[var(--status-success)]',
-    dotBgLight: 'bg-emerald-200',
-  },
-  ikindi: {
-    cardDark:
-      'bg-[var(--aura-amber)]/25 border-[var(--aura-amber)]/65 shadow-[0_0_24px_color-mix(in_srgb,var(--aura-amber)_12%,transparent)] scale-[1.02] z-20',
-    cardLight:
-      'bg-gradient-to-b from-[var(--aura-amber)] to-amber-600 border-[var(--aura-amber)]/30 shadow-[0_10px_20px_-8px_color-mix(in_srgb,var(--aura-amber)_35%,transparent)] scale-[1.02] z-20',
-    dotShadow: 'shadow-[0_0_10px_color-mix(in_srgb,var(--aura-amber)_80%,transparent)]',
-    dotBgDark: 'bg-[var(--aura-amber)]',
-    dotBgLight: 'bg-amber-300',
-  },
-  aksam: {
-    cardDark:
-      'bg-[var(--status-danger)]/25 border-[var(--status-danger)]/65 shadow-[0_0_24px_color-mix(in_srgb,var(--status-danger)_12%,transparent)] scale-[1.02] z-20',
-    cardLight:
-      'bg-gradient-to-b from-[var(--status-danger)] to-purple-600 border-[var(--status-danger)]/30 shadow-[0_10px_20px_-8px_color-mix(in_srgb,var(--status-danger)_35%,transparent)] scale-[1.02] z-20',
-    dotShadow: 'shadow-[0_0_10px_color-mix(in_srgb,var(--status-danger)_80%,transparent)]',
-    dotBgDark: 'bg-[var(--status-danger)]',
-    dotBgLight: 'bg-rose-200',
-  },
-  yatsi: {
-    cardDark:
-      'bg-[var(--dynamic-aura,var(--aura-indigo))]/30 border-[var(--dynamic-aura,var(--aura-indigo))]/70 shadow-[0_0_24px_color-mix(in_srgb,var(--dynamic-aura,var(--aura-indigo))_12%,transparent)] scale-[1.02] z-20',
-    cardLight:
-      'bg-gradient-to-b from-[var(--aura-indigo)] to-blue-900 border-[var(--dynamic-aura,var(--aura-indigo))]/30 shadow-[0_10px_20px_-8px_color-mix(in_srgb,var(--dynamic-aura,var(--aura-indigo))_35%,transparent)] scale-[1.02] z-20',
-    dotShadow: 'shadow-[0_0_10px_color-mix(in_srgb,var(--dynamic-aura,var(--aura-indigo))_80%,transparent)]',
-    dotBgDark: 'bg-[var(--dynamic-aura,var(--aura-indigo))]',
-    dotBgLight: 'bg-white/80',
-  },
-};
-
-const AKTIF_VAKIT_VARSAYILAN: AktifVakitRenk = {
-  cardDark: 'bg-[var(--dynamic-aura,var(--aura-indigo))]/10 border-[var(--dynamic-aura,var(--aura-indigo))]/30 scale-[1.02] z-20',
-  cardLight: 'bg-[var(--aura-indigo)] border-[var(--dynamic-aura,var(--aura-indigo))]/30 scale-[1.02] z-20',
-  dotShadow: '',
-  dotBgDark: 'bg-[var(--dynamic-aura,var(--aura-indigo))]',
-  dotBgLight: 'bg-white/80',
-};
+// Aktif vakit kartının dark/light stilleri ve gösterge noktasının rengi.
+// Faz 1'de bu, iki ödünç aileye (amber/ruby) düşen bir switch-case'di.
+// Faz 2: her vakit artık kendi --vakit-* token'ına sahip (bkz. index.css,
+// auraTheme.ts, V15) — altı ayrı Tailwind reçetesi yazmak yerine TEK paylaşılan
+// reçete, rengi `--card-accent` yerel CSS değişkeninden okuyor; değişkenin
+// kendisi her hücrede `style` ile o vaktin token'ına bağlanıyor (aşağıda
+// `getActiveAuraColor(key)`). Işık modunda dolgu artık iki vakitte bir
+// tekrar eden bir gradyan değil, doğrudan vaktin kendi tonu.
+const AKTIF_VAKIT_KART_DARK =
+  'bg-[var(--card-accent)]/25 border-[var(--card-accent)]/65 shadow-[0_0_24px_color-mix(in_srgb,var(--card-accent)_12%,transparent)] scale-[1.02] z-20';
+const AKTIF_VAKIT_KART_LIGHT =
+  'bg-[var(--card-accent)] border-[var(--card-accent)]/30 shadow-[0_10px_20px_-8px_color-mix(in_srgb,var(--card-accent)_35%,transparent)] scale-[1.02] z-20';
+const AKTIF_VAKIT_DOT_SHADOW = 'shadow-[0_0_10px_color-mix(in_srgb,var(--card-accent)_80%,transparent)]';
 
 export const AnaEkranHero = React.memo(({ isLoading, mevcutVakit, sonraki, bugunDate, bugunVakitler }: AnaEkranHeroProps) => {
   const now = useTime();
@@ -253,7 +192,11 @@ export const AnaEkranHero = React.memo(({ isLoading, mevcutVakit, sonraki, bugun
                               : 'Müftülük'}
                         </span>
                         <span className="text-2xs font-medium tracking-wide opacity-75 hidden sm:inline">•</span>
-                        <span className="text-2xs font-medium tracking-wide" style={{ color: auraColor }}>
+                        {/* Hicri tarih için serif italik — Gregoryen tarihin (üstte,
+                            sans-serif) yanında ayrı bir "kayıt sistemi" hissi verir;
+                            display katmanının ilk kullanım noktası (bkz. görsel
+                            tasarım denetimi V16). */}
+                        <span className="text-xs font-serif italic tracking-tight" style={{ color: auraColor }}>
                           {hijriDate}
                         </span>
                       </div>
@@ -318,27 +261,32 @@ export const AnaEkranHero = React.memo(({ isLoading, mevcutVakit, sonraki, bugun
 
                       // Compute dynamic premium styles based on state
                       let cardStyle = '';
+                      let cardVars: React.CSSProperties | undefined;
                       let indicatorDot: React.ReactNode = null;
                       let labelColor = '';
                       let timeColor = '';
 
                       if (isActive) {
                         // Koyu modda: saydam glow gradyan (ince, sinema etkisi)
-                        // Acık modda: daha düz, hafif opasiteli kart
-                        // cardLight her zaman doygun/koyu bir gradyan (bkz. AKTIF_VAKIT_RENKLERI) —
-                        // ışık modunda da text-primary (neredeyse siyah) yazılırsa kart okunamaz
-                        // hale geliyordu (bkz. premium denetim B3). dotBgLight zaten aynı kartı
-                        // "koyu" varsayıyordu (beyaz/açık ton); metin de aynı varsayıma uyar.
+                        // Acık modda: daha düz, hafif opasiteli kart — vaktin kendi tonu
+                        // (bkz. index.css --vakit-* token'ları, V15) her zaman yeterince
+                        // koyu/doygun olduğundan ışık modunda da text-primary (neredeyse
+                        // siyah) yazılırsa kart okunamaz hale geliyordu (bkz. premium
+                        // denetim B3); metin bu yüzden text-[var(--app-bg)] kalıyor.
                         labelColor = isDark ? 'text-[var(--text-primary)] font-bold opacity-90' : 'text-[var(--app-bg)] font-bold';
                         timeColor = isDark
                           ? 'text-[var(--text-primary)] font-semibold drop-shadow-[0_0_12px_rgba(255,255,255,0.4)]'
                           : 'text-[var(--app-bg)] font-semibold drop-shadow-[0_2px_8px_rgba(0,0,0,0.35)]';
 
-                        const renk = AKTIF_VAKIT_RENKLERI[key as string] ?? AKTIF_VAKIT_VARSAYILAN;
-                        cardStyle = isDark ? renk.cardDark : renk.cardLight;
-                        const dotBg = isDark ? renk.dotBgDark : renk.dotBgLight;
+                        // Altı vakit artık altı ayrı Tailwind reçetesi yerine TEK paylaşılan
+                        // reçeteyi (yukarıda) `--card-accent` yerel değişkeniyle besliyor.
+                        cardVars = { '--card-accent': getActiveAuraColor(key as Vakit) } as React.CSSProperties;
+                        cardStyle = isDark ? AKTIF_VAKIT_KART_DARK : AKTIF_VAKIT_KART_LIGHT;
+                        const dotBg = isDark ? 'bg-[var(--card-accent)]' : 'bg-white/85';
                         indicatorDot = (
-                          <div className={`absolute top-2 right-2 w-1.5 h-1.5 rounded-full ${renk.dotShadow} animate-pulse ${dotBg}`} />
+                          <div
+                            className={`absolute top-2 right-2 w-1.5 h-1.5 rounded-full ${AKTIF_VAKIT_DOT_SHADOW} animate-pulse ${dotBg}`}
+                          />
                         );
                       } else if (isNext) {
                         cardStyle =
@@ -383,11 +331,14 @@ export const AnaEkranHero = React.memo(({ isLoading, mevcutVakit, sonraki, bugun
                       }
 
                       return (
+                        // Önceden cursor-pointer + whileHover/whileTap taşıyordu ama onClick
+                        // hiç yoktu — dokunan kullanıcı bir tepki görüp hiçbir şeyin
+                        // olmadığını fark ediyordu (bkz. görsel tasarım denetimi V10). Bu
+                        // hücreler yalnızca bilgi amaçlı; sahte afordans kaldırıldı.
                         <motion.div
                           key={key}
-                          whileHover={!isPast ? { y: -2 } : {}}
-                          whileTap={!isPast ? { scale: 0.98 } : {}}
-                          className={`relative flex flex-col items-center justify-center min-h-[72px] sm:min-h-[96px] py-3 sm:py-5 px-2 rounded-xl sm:rounded-2xl border transition-all duration-500 cursor-pointer overflow-visible ${cardStyle}`}
+                          style={cardVars}
+                          className={`relative flex flex-col items-center justify-center min-h-[72px] sm:min-h-[96px] py-3 sm:py-5 px-2 rounded-xl sm:rounded-2xl border transition-all duration-500 overflow-visible ${cardStyle}`}
                         >
                           {indicatorDot}
 

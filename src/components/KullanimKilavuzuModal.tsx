@@ -99,7 +99,7 @@ function KilavuzListesi({ maddeler }: { maddeler: KilavuzMaddesi[] }) {
           </div>
           <div className="min-w-0">
             <p className="text-sm font-medium text-[var(--text-primary)]">{madde.title}</p>
-            <p className="text-2xs text-[var(--text-secondary)]/75 leading-relaxed mt-0.5">{madde.desc}</p>
+            <p className="text-xs text-[var(--text-secondary)]/75 leading-relaxed mt-0.5">{madde.desc}</p>
           </div>
         </div>
       ))}
@@ -154,7 +154,7 @@ export const KullanimKilavuzuModal: React.FC<KullanimKilavuzuModalProps> = ({ is
           <div className="w-9 h-9 shrink-0 rounded-xl bg-[var(--text-primary)]/[0.04] text-[var(--text-secondary)]/60 flex items-center justify-center">
             <Eye size={16} strokeWidth={1.7} />
           </div>
-          <p className="text-2xs text-[var(--text-secondary)]/75 leading-relaxed mt-0.5">{GOZLEMCI_SALT_OKUMA_IPUCU}</p>
+          <p className="text-xs text-[var(--text-secondary)]/75 leading-relaxed mt-0.5">{GOZLEMCI_SALT_OKUMA_IPUCU}</p>
         </div>
       )}
     </Modal>

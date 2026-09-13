@@ -51,12 +51,12 @@ export function FormField({ label, htmlFor, error, hint, required, className = '
       </label>
       {React.cloneElement(children, clonedProps)}
       {hint && !error && (
-        <p id={hintId} className="text-2xs text-[var(--text-secondary)]/60 ml-1 leading-relaxed">
+        <p id={hintId} className="text-xs text-[var(--text-secondary)]/60 ml-1 leading-relaxed">
           {hint}
         </p>
       )}
       {error && (
-        <p id={errorId} role="alert" className="text-2xs text-[var(--status-danger)] ml-1 leading-relaxed font-medium">
+        <p id={errorId} role="alert" className="text-xs text-[var(--status-danger)] ml-1 leading-relaxed font-medium">
           {error}
         </p>
       )}

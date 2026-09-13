@@ -21,6 +21,7 @@ import { EmptyState } from '../../../components/ui/EmptyState';
 import { errorLogsAbone, errorLoglariniTemizle, type EnrichedErrorLog, type Breadcrumb } from '../../../services/telemetryService';
 import { useAuthStore } from '../../../store/useAuthStore';
 import { SUPER_ADMIN_GEREKLI_IPUCU } from '../../../lib/rolMetinleri';
+import { EASE } from '../../../lib/motion';
 
 interface ErrorLog extends Partial<EnrichedErrorLog> {
   id: string;
@@ -230,7 +231,7 @@ export const SistemHatalariSekmesi = React.memo(({ formatDate }: { formatDate: (
           }}
           disabled={errorLogs.length === 0 || !isSuperAdmin}
           title={isSuperAdmin ? undefined : SUPER_ADMIN_GEREKLI_IPUCU}
-          className="px-4 py-2 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 border border-rose-500/20 rounded-xl text-2xs font-bold uppercase tracking-wide shadow-lg disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+          className="px-4 py-2 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 border border-rose-500/20 rounded-xl text-2xs font-bold uppercase tracking-wide shadow-elev2 disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center gap-2"
         >
           <Trash2 size={12} /> TEMİZLE
         </motion.button>
@@ -318,7 +319,7 @@ export const SistemHatalariSekmesi = React.memo(({ formatDate }: { formatDate: (
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: 'auto', opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                      transition={{ duration: 0.3, ease: EASE.out }}
                       className="overflow-hidden mt-6 pt-6 border-t border-[var(--glass-border)]"
                       onClick={(e) => e.stopPropagation()}
                     >
@@ -346,7 +347,7 @@ export const SistemHatalariSekmesi = React.memo(({ formatDate }: { formatDate: (
                             onKeyDown={(e) => handleErrorTabKeyDown(e, key)}
                             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-2xs font-bold uppercase tracking-wide transition-all ${
                               activePanel === key
-                                ? 'bg-[var(--text-primary)]/[0.07] text-[var(--text-primary)] shadow-sm'
+                                ? 'bg-[var(--text-primary)]/[0.07] text-[var(--text-primary)] shadow-elev1'
                                 : 'text-muted hover:text-[var(--text-secondary)]/70'
                             }`}
                           >
@@ -368,14 +369,14 @@ export const SistemHatalariSekmesi = React.memo(({ formatDate }: { formatDate: (
                         >
                           <div>
                             <span className="premium-label !text-2xs !opacity-30 block mb-2">HATA ÇAĞRI YIĞINI (STACK TRACE)</span>
-                            <pre className="text-2xs font-mono p-4 rounded-2xl bg-[var(--text-primary)]/[0.03] text-rose-400/70 overflow-x-auto max-h-48 leading-relaxed">
+                            <pre className="text-xs font-mono p-4 rounded-2xl bg-[var(--text-primary)]/[0.03] text-rose-400/70 overflow-x-auto max-h-48 leading-relaxed">
                               {log.errorStack || 'Stack trace mevcut değil.'}
                             </pre>
                           </div>
                           {log.componentStack && (
                             <div>
                               <span className="premium-label !text-2xs !opacity-30 block mb-2">BİLEŞEN YAPISI (COMPONENT TREE)</span>
-                              <pre className="text-2xs font-mono p-4 rounded-2xl bg-[var(--text-primary)]/[0.03] text-[var(--text-secondary)]/60 overflow-x-auto max-h-48 leading-relaxed">
+                              <pre className="text-xs font-mono p-4 rounded-2xl bg-[var(--text-primary)]/[0.03] text-[var(--text-secondary)]/60 overflow-x-auto max-h-48 leading-relaxed">
                                 {log.componentStack}
                               </pre>
                             </div>

@@ -182,7 +182,7 @@ export default function IzinYonetimi() {
                   {/* Personel Identity */}
                   <div className="flex items-center gap-5 min-w-0 lg:min-w-[240px] w-full lg:w-auto">
                     <div
-                      className={`w-10 h-10 sm:w-14 sm:h-14 rounded-2xl sm:rounded-avatar flex items-center justify-center shadow-lg border transition-all duration-700 ${
+                      className={`w-10 h-10 sm:w-14 sm:h-14 rounded-2xl sm:rounded-avatar flex items-center justify-center shadow-elev2 border transition-all duration-700 ${
                         izin.durum === 'onay_bekliyor'
                           ? 'bg-amber-500/10 text-amber-500 border-amber-500/20'
                           : izin.durum === 'onaylandi'
@@ -290,7 +290,7 @@ export default function IzinYonetimi() {
                     ) : (
                       <div className="flex items-center gap-2">
                         <div
-                          className={`px-4 sm:px-6 py-2 rounded-full text-2xs font-bold uppercase tracking-wide border shadow-sm ${
+                          className={`px-4 sm:px-6 py-2 rounded-full text-2xs font-bold uppercase tracking-wide border shadow-elev1 ${
                             izin.durum === 'onaylandi'
                               ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
                               : 'bg-rose-500/10 text-rose-500 border-rose-500/20'
@@ -305,7 +305,7 @@ export default function IzinYonetimi() {
                           onClick={() => setUndoConfirm({ open: true, id: izin.id! })}
                           aria-label="Kararı geri al"
                           title="Kararı geri al"
-                          className="w-10 h-10 sm:w-12 sm:h-12 bg-[var(--surface-low)] text-muted rounded-xl sm:rounded-2xl flex items-center justify-center border border-[var(--glass-border)] hover:text-[var(--dynamic-aura,var(--aura-indigo))] hover:border-[var(--dynamic-aura,var(--aura-indigo))]/30 transition-all shadow-lg disabled:opacity-40"
+                          className="w-10 h-10 sm:w-12 sm:h-12 bg-[var(--surface-low)] text-muted rounded-xl sm:rounded-2xl flex items-center justify-center border border-[var(--glass-border)] hover:text-[var(--dynamic-aura,var(--aura-indigo))] hover:border-[var(--dynamic-aura,var(--aura-indigo))]/30 transition-all shadow-elev2 disabled:opacity-40"
                         >
                           <Undo2 className="w-4 h-4 sm:w-5 sm:h-5" />
                         </motion.button>
@@ -317,7 +317,7 @@ export default function IzinYonetimi() {
                       whileTap={{ scale: 0.9 }}
                       onClick={() => setDeleteConfirm({ open: true, id: izin.id! })}
                       aria-label="Kaydı sil"
-                      className="w-10 h-10 sm:w-12 sm:h-12 bg-[var(--surface-low)] text-muted rounded-xl sm:rounded-2xl flex items-center justify-center border border-[var(--glass-border)] hover:text-rose-500 hover:border-rose-500/20 transition-all shadow-lg"
+                      className="w-10 h-10 sm:w-12 sm:h-12 bg-[var(--surface-low)] text-muted rounded-xl sm:rounded-2xl flex items-center justify-center border border-[var(--glass-border)] hover:text-rose-500 hover:border-rose-500/20 transition-all shadow-elev2"
                     >
                       <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
                     </motion.button>

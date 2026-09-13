@@ -1,7 +1,7 @@
 import React from 'react';
 import { Modal } from './Modal';
+import { Button } from './Button';
 import { AlertTriangle } from 'lucide-react';
-import { motion } from 'motion/react';
 import { toTurkishUpperCase } from '../../lib/dateUtils';
 
 interface ConfirmModalProps {
@@ -46,26 +46,12 @@ export function ConfirmModal({
         <p className="text-sm text-[var(--text-secondary)] leading-relaxed max-w-sm mb-12 px-4">{message}</p>
 
         <div className="flex items-center gap-4 w-full px-4">
-          <motion.button
-            whileHover={{ scale: 1.02, y: -2 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={onConfirm}
-            className={`flex-1 py-4.5 rounded-[20px] text-2xs font-bold uppercase tracking-wide transition-all border-none cursor-pointer ${
-              isDanger
-                ? 'bg-[var(--status-danger)] text-[var(--app-bg)] shadow-[0_4px_15px_-3px_color-mix(in_srgb,var(--status-danger)_40%,transparent)] hover:shadow-[0_8px_25px_-5px_color-mix(in_srgb,var(--status-danger)_60%,transparent)]'
-                : 'neural-btn'
-            }`}
-          >
+          <Button variant={isDanger ? 'danger' : 'primary'} onClick={onConfirm} className="flex-1">
             {toTurkishUpperCase(confirmText)}
-          </motion.button>
-          <motion.button
-            whileHover={{ y: -1 }}
-            whileTap={{ scale: 0.96 }}
-            onClick={onClose}
-            className="px-8 py-4.5 text-2xs font-bold uppercase tracking-wide text-muted hover:text-[var(--text-primary)] transition-all cursor-pointer bg-transparent border-none"
-          >
+          </Button>
+          <Button variant="ghost" onClick={onClose}>
             {toTurkishUpperCase(cancelText)}
-          </motion.button>
+          </Button>
         </div>
       </div>
     </Modal>

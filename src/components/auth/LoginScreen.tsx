@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { Loader2 } from 'lucide-react';
 import { Logo } from '../ui/Logo';
+import { EASE } from '../../lib/motion';
 
 interface LoginScreenProps {
   login: () => void;
@@ -44,7 +45,7 @@ export function LoginScreen({ login, isLoginInProgress }: LoginScreenProps) {
       <motion.div
         initial={{ opacity: 0, y: 24, scale: 0.98 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        transition={{ duration: 0.8, ease: EASE.out }}
         className="spatial-glass backdrop-blur-3xl p-8 sm:p-10 lg:p-14 rounded-card max-w-lg w-full text-center border border-[var(--glass-border)] relative overflow-hidden group/login"
         style={{ boxShadow: 'var(--spatial-shadow)' }}
       >

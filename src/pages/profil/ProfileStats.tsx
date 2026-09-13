@@ -78,7 +78,9 @@ export default function ProfileStats({ userData }: ProfileStatsProps) {
           {menuItems.map((item, idx) => (
             <div key={idx} className="flex items-center justify-between py-6 first:pt-0 last:pb-0 group transition-all">
               <div className="flex items-center gap-6">
-                <div className={`w-12 h-12 rounded-2xl ${item.bg} ${item.color} flex items-center justify-center transition-all shadow-sm`}>
+                <div
+                  className={`w-12 h-12 rounded-2xl ${item.bg} ${item.color} flex items-center justify-center transition-all shadow-elev1`}
+                >
                   {React.cloneElement(item.icon as React.ReactElement<{ size?: number; strokeWidth?: number }>, {
                     size: 20,
                     strokeWidth: 1.5,

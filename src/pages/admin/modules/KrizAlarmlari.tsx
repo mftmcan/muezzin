@@ -225,7 +225,7 @@ export default function KrizAlarmlari() {
                 x: showResolved ? 22 : 2,
                 backgroundColor: showResolved ? 'var(--app-bg)' : 'var(--text-secondary)',
               }}
-              className="absolute top-1 w-3 h-3 rounded-full shadow-sm"
+              className="absolute top-1 w-3 h-3 rounded-full shadow-elev1"
             />
           </div>
         </motion.button>
@@ -273,7 +273,7 @@ export default function KrizAlarmlari() {
                 <div className="relative z-10 flex flex-col lg:flex-row items-stretch lg:items-center gap-8">
                   {/* Icon Identity */}
                   <div
-                    className={`w-16 h-16 rounded-avatar flex items-center justify-center shrink-0 shadow-lg border ${
+                    className={`w-16 h-16 rounded-avatar flex items-center justify-center shrink-0 shadow-elev2 border ${
                       alarm.cozuldu
                         ? 'bg-[var(--text-primary)]/5 text-[var(--text-secondary)] border-[var(--text-primary)]/5'
                         : `${styles.iconBg} ${styles.iconText} ${styles.iconBorder} ${styles.iconShadow}`
@@ -346,7 +346,7 @@ export default function KrizAlarmlari() {
                           whileTap={{ scale: 0.98 }}
                           disabled={isRetrying === alarm.id}
                           onClick={() => handleRetry(alarm)}
-                          className={`${styles.buttonBg} text-[var(--app-bg)] px-8 py-5 rounded-2xl text-2xs font-bold uppercase tracking-wide shadow-lg flex items-center gap-4 disabled:opacity-50`}
+                          className={`${styles.buttonBg} text-[var(--app-bg)] px-8 py-5 rounded-2xl text-2xs font-bold uppercase tracking-wide shadow-elev2 flex items-center gap-4 disabled:opacity-50`}
                         >
                           <RefreshCcw size={16} className={isRetrying === alarm.id ? 'animate-spin' : ''} />
                           {isRetrying === alarm.id ? 'ONARILIYOR...' : 'DİZGEYİ ONAR'}

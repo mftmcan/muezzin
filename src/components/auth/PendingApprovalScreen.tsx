@@ -15,7 +15,7 @@ export function PendingApprovalScreen({ logout }: PendingApprovalScreenProps) {
         animate={{ opacity: 1, y: 0 }}
         className="spatial-glass backdrop-blur-2xl p-10 rounded-card shadow-[var(--spatial-shadow)] max-w-md w-full text-center border border-[var(--glass-border)]"
       >
-        <div className="w-20 h-20 bg-[var(--text-primary)]/5 rounded-full flex items-center justify-center mx-auto mb-8 shadow-sm ring-1 ring-[var(--glass-border)]">
+        <div className="w-20 h-20 bg-[var(--text-primary)]/5 rounded-full flex items-center justify-center mx-auto mb-8 shadow-elev1 ring-1 ring-[var(--glass-border)]">
           <Logo size={48} variant="gold" />
         </div>
         <h1 className="text-2xl font-semibold mb-3 text-[var(--text-primary)] tracking-tight">Onay Bekleniyor</h1>

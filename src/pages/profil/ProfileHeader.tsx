@@ -143,7 +143,7 @@ export default function ProfileHeader({ userData, user }: ProfileHeaderProps) {
                     whileTap={{ scale: isUpdating ? 1 : 0.95 }}
                     onClick={handleUpdate}
                     disabled={isUpdating}
-                    className={`px-5 py-2.5 bg-[var(--dynamic-aura,var(--aura-indigo))] text-[var(--app-bg)] rounded-xl text-2xs font-extrabold uppercase tracking-wide shadow-lg flex items-center gap-1.5 ${isUpdating ? 'opacity-70 cursor-wait' : ''}`}
+                    className={`px-5 py-2.5 bg-[var(--dynamic-aura,var(--aura-indigo))] text-[var(--app-bg)] rounded-xl text-2xs font-extrabold uppercase tracking-wide shadow-elev2 flex items-center gap-1.5 ${isUpdating ? 'opacity-70 cursor-wait' : ''}`}
                   >
                     {isUpdating ? (
                       <div className="w-3 h-3 border-2 border-[var(--text-primary)]/30 border-t-white rounded-full animate-spin" />
@@ -182,7 +182,7 @@ export default function ProfileHeader({ userData, user }: ProfileHeaderProps) {
                   whileTap={{ scale: 0.9 }}
                   onClick={() => setEditMode(true)}
                   aria-label="İsmi düzenle"
-                  className="w-12 h-12 shrink-0 flex items-center justify-center bg-[var(--text-primary)]/[0.03] border border-[var(--glass-border)] rounded-2xl transition-all shadow-lg"
+                  className="w-12 h-12 shrink-0 flex items-center justify-center bg-[var(--text-primary)]/[0.03] border border-[var(--glass-border)] rounded-2xl transition-all shadow-elev2"
                 >
                   <Edit3 size={18} className="text-muted" />
                 </motion.button>
@@ -215,7 +215,7 @@ export default function ProfileHeader({ userData, user }: ProfileHeaderProps) {
         </div>
 
         <div className="flex flex-wrap items-center justify-center gap-3 mt-2">
-          <div className="px-6 py-2.5 rounded-2xl text-2xs font-bold uppercase tracking-wide bg-[var(--text-primary)]/[0.03] border border-[var(--glass-border)] text-[var(--text-primary)]/60 shadow-lg backdrop-blur-md flex items-center gap-1.5">
+          <div className="px-6 py-2.5 rounded-2xl text-2xs font-bold uppercase tracking-wide bg-[var(--text-primary)]/[0.03] border border-[var(--glass-border)] text-[var(--text-primary)]/60 shadow-elev2 backdrop-blur-md flex items-center gap-1.5">
             {isAdmin ? (
               <Shield size={10} className="text-[var(--aura-indigo)]" />
             ) : isObserver ? (

@@ -174,7 +174,7 @@ export const DuyuruYonetimi: React.FC = () => {
           }}
           whileTap={{ scale: 0.98 }}
           onClick={() => setModalOpen(true)}
-          className="flex items-center justify-center gap-4 bg-[var(--dynamic-aura,var(--aura-indigo))] text-[var(--app-bg)] px-8 py-4 rounded-2xl text-2xs font-bold uppercase tracking-wide shadow-lg group w-full sm:w-auto"
+          className="flex items-center justify-center gap-4 bg-[var(--dynamic-aura,var(--aura-indigo))] text-[var(--app-bg)] px-8 py-4 rounded-2xl text-2xs font-bold uppercase tracking-wide shadow-elev2 group w-full sm:w-auto"
         >
           <Plus size={16} strokeWidth={2.5} className="group-hover:rotate-90 transition-transform duration-500" />
           YENİ DUYURU YAYINLA
@@ -207,7 +207,7 @@ export const DuyuruYonetimi: React.FC = () => {
 
               <div className="flex items-start justify-between mb-6">
                 <div
-                  className={`w-12 h-12 rounded-[18px] flex items-center justify-center shadow-lg border ${
+                  className={`w-12 h-12 rounded-[18px] flex items-center justify-center shadow-elev2 border ${
                     duyuru.tip === 'onemli'
                       ? 'bg-rose-500/10 text-rose-400 border-rose-500/20'
                       : duyuru.tip === 'bilgi'
@@ -252,7 +252,7 @@ export const DuyuruYonetimi: React.FC = () => {
                 </div>
 
                 <div
-                  className={`px-4 py-1.5 rounded-full border text-2xs font-bold uppercase tracking-wide shadow-sm ${
+                  className={`px-4 py-1.5 rounded-full border text-2xs font-bold uppercase tracking-wide shadow-elev1 ${
                     duyuru.tip === 'onemli'
                       ? 'bg-rose-500/10 text-rose-400 border-rose-500/20 shadow-rose-500/5'
                       : duyuru.tip === 'bilgi'
@@ -375,7 +375,7 @@ export const DuyuruYonetimi: React.FC = () => {
                   <button
                     type="button"
                     onClick={handleSuggestTemplate}
-                    className="flex-1 py-3 bg-gradient-to-r from-[var(--dynamic-aura,var(--aura-indigo))] to-purple-500/60 text-[var(--text-primary)] rounded-xl text-2xs font-bold uppercase tracking-wide shadow-lg shadow-[var(--dynamic-aura,var(--aura-indigo))]/10 hover:opacity-90 transition-all flex items-center justify-center gap-2"
+                    className="flex-1 py-3 bg-gradient-to-r from-[var(--dynamic-aura,var(--aura-indigo))] to-purple-500/60 text-[var(--app-bg)] rounded-xl text-2xs font-bold uppercase tracking-wide shadow-lg shadow-[var(--dynamic-aura,var(--aura-indigo))]/10 hover:opacity-90 transition-all flex items-center justify-center gap-2"
                   >
                     <LayoutTemplate size={10} />
                     Uygun Şablonu Öner
@@ -386,7 +386,7 @@ export const DuyuruYonetimi: React.FC = () => {
                   <motion.div
                     initial={{ opacity: 0, y: -6 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-2xs font-semibold leading-relaxed"
+                    className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-semibold leading-relaxed"
                   >
                     {templateError}
                   </motion.div>
@@ -409,7 +409,7 @@ export const DuyuruYonetimi: React.FC = () => {
                       <button
                         type="button"
                         onClick={applyTemplate}
-                        className="flex-1 py-2.5 bg-[var(--dynamic-aura,var(--aura-indigo))] text-[var(--app-bg)] rounded-lg text-2xs font-bold uppercase tracking-wide shadow-md hover:opacity-90 transition-all"
+                        className="flex-1 py-2.5 bg-[var(--dynamic-aura,var(--aura-indigo))] text-[var(--app-bg)] rounded-lg text-2xs font-bold uppercase tracking-wide shadow-elev1 hover:opacity-90 transition-all"
                       >
                         Şablonu Metne Uygula
                       </button>
