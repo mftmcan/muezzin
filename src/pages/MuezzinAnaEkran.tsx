@@ -228,7 +228,17 @@ export default function MuezzinAnaEkran() {
             transition={{ duration: 0.55, ease: EASE.out }}
             className="lg:col-span-5 flex flex-col gap-4"
           >
-            <div className="sticky-hero isolate flex flex-col">
+            {/* `sticky-hero` masaüstünde (≥1024px, bkz. index.css) `overflow-y: auto`
+            ile kaydırılabilir hale geliyor — klavye kullanıcısının bu bölgeyi
+            fare olmadan (Tab + ok tuşları) kaydırabilmesi için `tabIndex={0}`
+            + `role="region"` gerekiyor, aksi halde axe-core'un
+            `scrollable-region-focusable` kuralı ihlal ediyor (bkz. CI a11y
+            testi, tests/e2e/a11y.spec.ts). Bu, WAI-ARIA Authoring Practices'in
+            resmi "kaydırılabilir bölge" deseni — eslint'in
+            no-noninteractive-tabindex kuralı `role="region"`'ı etkileşimli
+            saymadığından burada kasıtlı bir istisna. */}
+            {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
+            <div className="sticky-hero isolate flex flex-col" tabIndex={0} role="region" aria-label="Namaz vakitleri ve geri sayım">
               <AnaEkranHero
                 isLoading={isHeroLoading}
                 mevcutVakit={mevcutVakit}
