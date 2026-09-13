@@ -143,6 +143,18 @@ export default defineConfig(({ mode }) => ({
     sourcemap: 'hidden',
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
+      // zod/v4'ün esbuild için yazdığı `@__PURE__` yorumları (tree-shaking'i
+      // zorlamak amacıyla bilinçli olarak IIFE dışında konumlandırılmış,
+      // bkz. node_modules/zod/v4/core/util.js ve regexes.js) Rollup'ın
+      // beklediği "çağrının hemen önü" konumunda değil. Rollup bunu build'i
+      // bozmadan zararsızca göz ardı ediyor (yorumu silip devam ediyor) —
+      // ama gürültülü bir uyarı basıyor; bu bizim kodumuzda değil zod'un
+      // paket kaynağında olduğundan projeden düzeltilemez, sadece bu tek
+      // uyarı türünü sessize alıyoruz.
+      onwarn(warning, warn) {
+        if (warning.code === 'INVALID_ANNOTATION') return;
+        warn(warning);
+      },
       output: {
         manualChunks(id) {
           if (!id.includes('node_modules')) return;
