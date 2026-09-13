@@ -110,6 +110,31 @@ export default defineConfig(({ mode }) => ({
         // Fonts CDN runtimeCaching kuralları bu nedenle kaldırıldı (artık hiçbir istek
         // fonts.googleapis.com/fonts.gstatic.com'a gitmiyor).
         globPatterns: ['**/*.{js,css,html,png,svg,woff2,woff}'],
+        // Admin paneli chunk'ları (bkz. aşağıdaki chunkFileNames — yalnızca
+        // `src/pages/admin/**`'ten gelen lazy modüller `assets/admin/`
+        // altına yazılır) precache manifest'inden hariç tutuluyor. Bu
+        // chunk'lar zaten AdminPanel.tsx'te `lazy()` ile ayrı ayrı
+        // bölünmüştü — ama vite-plugin-pwa'nın globPatterns'ı runtime'daki
+        // lazy-loading'i bilmiyor, dist'teki HER js dosyasını (rol=muezzin
+        // olup admin paneline hiç girmeyecek çoğunluk kullanıcı dahil)
+        // kurulumdan hemen sonra arka planda indirip önbelleğe alıyordu
+        // (bkz. performans analizi) — code-splitting'in ağ/pil tasarrufu
+        // kazanımını sessizce geri veriyordu. Aşağıdaki runtimeCaching
+        // kuralı, bir admin kullanıcısı panele gerçekten girdiğinde bu
+        // dosyaları normal şekilde (ve bir daha ağa gitmeden) önbelleğe alır
+        // — hash'li dosya adları içerik-adresli/immutable olduğundan
+        // CacheFirst güvenli.
+        globIgnores: ['**/*-cyrillic-*', '**/*-greek-*', '**/*-vietnamese-*', 'assets/admin/**'],
+        runtimeCaching: [
+          {
+            urlPattern: /\/assets\/admin\//,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'admin-chunks',
+              expiration: { maxEntries: 40, maxAgeSeconds: 60 * 24 * 60 * 60 },
+            },
+          },
+        ],
         // @fontsource-variable/inter ve jetbrains-mono paketleri (opsz.css/wght.css)
         // her zaman TÜM script alt kümelerini (latin, latin-ext, cyrillic,
         // cyrillic-ext, greek, greek-ext, vietnamese) ayrı @font-face + unicode-range
@@ -119,10 +144,10 @@ export default defineConfig(({ mode }) => ({
         // körü körüne precache eder. Uygulama yalnızca Türkçe (lang: "tr") olduğundan
         // kiril/yunan/vietnamca alt kümeleri hiçbir zaman render edilmiyor ama yine de
         // her PWA kurulumunda/güncellemesinde indirilip önbelleğe alınıyordu (~330KB,
-        // toplam font payload'ının ~%33'ü — bkz. performans analizi). Bu üç desen
-        // yalnızca precache'i hedefliyor; tarayıcının runtime unicode-range
-        // davranışına dokunmuyor, bu yüzden işlevsel bir risk taşımıyor.
-        globIgnores: ['**/*-cyrillic-*', '**/*-greek-*', '**/*-vietnamese-*'],
+        // toplam font payload'ının ~%33'ü — bkz. performans analizi). Bu üç desen ile
+        // yukarıdaki `assets/admin/**` yalnızca precache'i hedefliyor; tarayıcının
+        // runtime unicode-range davranışına dokunmuyor, bu yüzden işlevsel bir risk
+        // taşımıyor.
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         importScripts: ['/firebase-messaging-sw.js']
       }
@@ -156,6 +181,27 @@ export default defineConfig(({ mode }) => ({
         warn(warning);
       },
       output: {
+        // Yalnızca `src/pages/admin/**`'ten gelen lazy chunk'ları (bkz.
+        // AdminPanel.tsx'teki `lazy()` çağrıları) ayrı bir alt dizine
+        // yazıyoruz ki workbox'ın globIgnores'ı (yukarıda `assets/admin/**`)
+        // bunları hash bazlı bir desenle değil, dizin bazlı — build'den
+        // build'e kırılmayan — sağlam bir kuralla precache'ten hariç
+        // tutabilsin (bkz. performans analizi). `facadeModuleId`, bir
+        // dinamik import()'un doğrudan hedef modülüdür; vendor chunk'ları
+        // (manualChunks'tan gelen, facade'ı olmayan paylaşılan chunk'lar)
+        // ve admin/muezzin arası PAYLAŞILAN alt chunk'lar (ör. ConfirmModal,
+        // FormField — birden çok yerden erişilebildiği için facade'sız
+        // ortak chunk'a düşerler) bu kontrolden etkilenmez, eski davranışta
+        // kalıp normal şekilde precache edilir — bu kasıtlı: yalnızca admin
+        // rotasına ÖZEL modüller taşınıyor, paylaşılan kod yanlışlıkla
+        // dışlanmıyor.
+        chunkFileNames(chunkInfo) {
+          const facadeId = chunkInfo.facadeModuleId ?? '';
+          if (facadeId.includes('/src/pages/admin/')) {
+            return 'assets/admin/[name]-[hash].js';
+          }
+          return 'assets/[name]-[hash].js';
+        },
         manualChunks(id) {
           if (!id.includes('node_modules')) return;
 

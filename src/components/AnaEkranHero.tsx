@@ -5,9 +5,9 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Logo } from './ui/Logo';
 import { LiveClock } from './LiveClock';
 import { GeriSayim } from './GeriSayim';
-import { parseVakitToDate, getHijriDate, getMinutesDiff } from '../lib/dateUtils';
+import { parseVakitToDate, getHijriDate, getMinutesDiff, getTurkeyNow } from '../lib/dateUtils';
 import { GunlukVakit, Vakit } from '../types';
-import { useTime } from '../hooks/useTime';
+import { useMinuteTick } from '../hooks/useTime';
 import { useGpsVakitStore } from '../store/useGpsVakitStore';
 import { useSystemSettingsStore } from '../store/useSystemSettingsStore';
 import { useEzanVakitleri } from '../hooks/useEzanVakitleri';
@@ -72,7 +72,22 @@ const AKTIF_VAKIT_KART_LIGHT =
 const AKTIF_VAKIT_DOT_SHADOW = 'shadow-[0_0_10px_color-mix(in_srgb,var(--card-accent)_80%,transparent)]';
 
 export const AnaEkranHero = React.memo(({ isLoading, mevcutVakit, sonraki, bugunDate, bugunVakitler }: AnaEkranHeroProps) => {
-  const now = useTime();
+  // Hero'nun kendisi (GeriSayim/KalanSure'nin aksine) saniyelik hassasiyete
+  // ihtiyaç duymuyor — hem sabah→güneş geçiş kontrolü hem de
+  // useOzelVakitMesaji zaten dakika hassasiyetinde çalışıyor (vakit
+  // verileri "HH:MM" olarak yalnızca dakika hassasiyetinde geliyor). Önceden
+  // buradaki `useTime()` tüm Hero'yu (header + 6 vakit kartlı grid + aura
+  // gradyanı) saniyede bir yeniden render ediyordu — geri sayımın kendisi
+  // zaten kendi izole `useTime()`'ına sahip (bkz. GeriSayim.tsx), bu yüzden
+  // Hero'nun her saniye tekrar render olması gereksiz CPU/pil maliyetiydi
+  // (bkz. performans analizi). `useMinuteTick` ile bu render sıklığı 60'ta
+  // 1'e iner, görsel/mantıksal doğruluk değişmez.
+  const minuteTick = useMinuteTick();
+  // `minuteTick` yalnızca "dakika değişti, yeniden oku" tetikleyicisi —
+  // `getTurkeyNow()` onu argüman olarak almıyor, eslint statik olarak
+  // kullanımı göremiyor (bkz. yukarıdaki `hicriDuzeltme` ile aynı desen).
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const now = useMemo(() => getTurkeyNow(), [minuteTick]);
   const { gpsEnabled, gpsCoords, gpsKonumAdi } = useGpsVakitStore();
   const { settings } = useSystemSettingsStore();
   // NOT: useEzanVakitleri()'nin `bugunVakitler`'ı GPS açıkken zaten GPS
