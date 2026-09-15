@@ -20,6 +20,17 @@ jobs:
     name: Run Test Suite
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    # Yalnızca bu TEST job'unu kapsar — `build_and_deploy`'un kendi
+    # `deploy-production` grubu (cancel-in-progress:false) ayrı ve
+    # dokunulmadı. Aynı ref'e art arda push'landığında (ör. bir düzeltme
+    # commit'i hemen ardından gelir) önceki, artık geçersiz commit'in test
+    # koşusu ~10-15 dk boyunca gereksiz yere sonuna kadar çalışıyordu — bir
+    # oturumda birkaç kez gözlemlendi (bkz. 2026-09-15 CI koşu geçmişi).
+    # İptal edilen bir test job'u `needs: test`'i sağlamadığından o commit'in
+    # deploy'u da başlamaz; zaten sonraki push onu geçersiz kılmıştı.
+    concurrency:
+      group: test-${{ github.ref }}
+      cancel-in-progress: true
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v7
