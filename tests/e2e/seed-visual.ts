@@ -5,15 +5,12 @@
  * kabuk değil GERÇEK içerikle render olur (görsel regresyonun tespit edeceği
  * yüzey alanı arttırılır).
  *
- * Saat KASITLI OLARAK sabitlenmiyor: `page.clock.pauseAt` denendi ama
- * setInterval/setTimeout'u TAMAMEN durdurduğundan Firebase SDK'sının kendi
- * bağlantı/retry zamanlayıcıları da donuyor, sayfa #main-content'e hiç
- * ulaşmıyordu (bkz. görsel tasarım denetimi V14 notu). Bunun yerine gerçek
- * "bugün" seed edilir, `visual.spec.ts` yalnızca LiveClock/geri sayım gibi
- * saniyede bir değişen bölgeleri maskeler. Sonuç: hangi vaktin "aktif"
- * göründüğü (ve dolayısıyla vakit renginin) test SAATİNE göre değişir —
- * bilinen bir sınır, temel (baseline) görüntüler zaman zaman elle
- * yenilenmeli (`npm run test:visual -- --update-snapshots`).
+ * SABIT_TARIH GERÇEK "bugün"e (Node'un çalıştığı günün tarihine) yazılır —
+ * `visual.spec.ts`'teki `saatiSabitle()` de SAATİ (Türkiye saatiyle 11:00)
+ * dondururken TARİHİ aynı gerçek "bugün"e sabitler, ikisi birbirine bağımlı.
+ * Saat artık `page.clock.setFixedTime` ile deterministik (bkz. visual.spec.ts
+ * dosya başı yorumu — `pauseAt` denenip Firebase'in zamanlayıcılarını
+ * kırdığı için terk edilmişti, `setFixedTime` yalnızca Date'i sabitler).
  * Diğer e2e testlerinden İZOLE: kendi `_e2e_visual_` uid önekini ve kendi
  * hafta/gün verisini kullanır, paylaşılan koleksiyonlara sadece kendi
  * doc id'leriyle yazar (bkz. playwright.config.ts'teki paylaşılan emülatör
