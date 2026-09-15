@@ -297,9 +297,13 @@ kök `CLAUDE.md` → Model Seçimi, 2026-09-03 ölçümü). **Opus'a geç**
   `src/lib/planlamaCekirdegi.ts`/`tieBreaker.ts` (haftalık nöbet atamasının
   tek kaynağı, hem cron hem istemci bunu çağırır), `scripts/*.ts` altındaki zamanlanmış
   cron script'leri ve bunları tetikleyen `.github/workflows/*.yml` (haftalik-plan,
-  gunluk-yatsi-sonu, mazeret-devirleri, aylik-ezan-takvimi, gunluk-log-temizligi,
-  deploy.yml — public repo'da canlıya kendi başına deploy/yazan tetikleyiciler,
-  bkz. kök otomasyon ayarlarındaki soft-deny listesi).
+  gunluk-yatsi-sonu, mazeret-devirleri, aylik-ezan-takvimi, gunluk-log-temizligi ve
+  `test.yml` içindeki `build_and_deploy` job'ı — ayrı bir deploy.yml YOK; bu job
+  önizleme kanalı → sağlık kontrolü → canlıya terfi → sağlık kontrolü → otomatik
+  hosting geri alma zincirini ve rules/indexes deploy'unu yürütür, sağlık kontrolünün
+  tek kaynağı `scripts/lib/hostingSaglik.ts`'tir; public repo'da canlıya kendi
+  başına deploy/yazan tetikleyiciler, bkz. kök otomasyon ayarlarındaki soft-deny
+  listesi).
 - **Planlama**: `mazeretKurallari.ts`/vekalet zincirindeki üç uygulama noktasından birini
   değiştirirken (diğer ikisini birlikte tasarlamak gerekir), ya da yeni bir zamanlanmış
   script/GitHub Actions workflow eklerken.

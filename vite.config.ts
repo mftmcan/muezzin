@@ -1,8 +1,33 @@
 import { VitePWA } from 'vite-plugin-pwa';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
-import { defineConfig } from 'vite';
+import { defineConfig, type Plugin } from 'vite';
 import pkg from './package.json' with { type: 'json' };
+
+const buildTimestamp = new Date().toISOString();
+
+// dist/version.json — CI'daki deploy sonrası sağlık kontrolünün
+// (scripts/hostingSaglikKontrolu.ts) canlının GERÇEKTEN bu build'i sunduğunu
+// commit SHA'sıyla doğrulamasını sağlar. Workbox globPatterns'ı json içermez,
+// dolayısıyla service worker bunu precache etmez; firebase.json'da no-cache
+// başlığı taşır. Yerel build'de GITHUB_SHA yoktur, "local" yazılır.
+function versionJson(): Plugin {
+  return {
+    name: 'version-json',
+    apply: 'build',
+    generateBundle() {
+      this.emitFile({
+        type: 'asset',
+        fileName: 'version.json',
+        source: JSON.stringify({
+          sha: process.env.GITHUB_SHA ?? 'local',
+          version: pkg.version,
+          builtAt: buildTimestamp,
+        }),
+      });
+    },
+  };
+}
 
 export default defineConfig(({ mode }) => ({
   server: {
@@ -20,11 +45,12 @@ export default defineConfig(({ mode }) => ({
     // değil derleme anının bilgisini taşısın diye derleme zamanında gömülür
     // (bkz. src/services/telemetryService.ts).
     __APP_VERSION__: JSON.stringify(pkg.version),
-    __BUILD_TIMESTAMP__: JSON.stringify(new Date().toISOString()),
+    __BUILD_TIMESTAMP__: JSON.stringify(buildTimestamp),
   },
   plugins: [
     react(),
     tailwindcss(),
+    versionJson(),
     VitePWA({
       manifestFilename: 'manifest.json',
       // 'autoUpdate' + boş onNeedRefresh, yeni sürüm geldiğinde sayfayı

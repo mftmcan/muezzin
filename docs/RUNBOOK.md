@@ -6,24 +6,58 @@ izlenecek adımları tarif eder. Hedef kitle: bu depoya erişimi olan
 
 Genel bağlam: `main`'e her push, testler geçtiyse production'a deploy edilir
 (`.github/workflows/test.yml` → `build_and_deploy` job'ı) — bir **onay
-kapısı** arkasında (bkz. §6). Ayrı bir staging/preview ortamı hâlâ yoktur
-(Firebase Hosting preview channel aynı production Firestore/Auth'a bağlanır,
-gerçek bir staging sağlamaz — bilinçli olarak eklenmedi). Bu yüzden geri alma
+kapısı** arkasında (bkz. §6). Ayrı bir staging ortamı yoktur (Firebase
+Hosting preview channel aynı production Firestore/Auth'a bağlanır, gerçek bir
+staging sağlamaz). CI, build'i canlıya almadan önce yalnızca **HTTP düzeyinde**
+doğrulamak için 1 saat ömürlü geçici bir preview channel kullanır (§1) — bu
+bir staging değildir, uygulama mantığı orada test edilmez. Bu yüzden geri alma
 (rollback) prosedürleri özellikle önemlidir.
 
 ## 1. Hosting'i geri alma (statik dosyalar — JS/CSS/manifest)
 
-Firebase Hosting, son birkaç deploy'u saklar ve tek komutla geri almayı
-destekler:
+### Otomatik (CI) — normal yol
+
+`build_and_deploy` job'ı canlıya "kör" deploy etmez:
+
+1. Build, `ci-<sha>` adlı geçici bir preview channel'a yüklenir; orada
+   `scripts/hostingSaglikKontrolu.ts` çalışır — `dist/version.json`'daki
+   commit SHA'sı (`vite.config.ts` üretir) beklenen commit ile eşleşmeli, ana
+   JS chunk / `manifest.json` / `sw.js` doğru content-type ile gelmeli.
+   `firebase.json`'daki `** → /index.html` rewrite'ı eksik dosyalar için de
+   200 + HTML döndürdüğünden salt HTTP durum kodu güvenilir değildir — SHA
+   karşılaştırması bu yüzden şart.
+2. Geçerse canlının o anki hosting sürüm ID'si kaydedilir, rules + indexes
+   deploy edilir, preview sürümü `hosting:clone` ile canlıya terfi eder.
+3. Canlıda aynı kontrol daha uzun deneme/bekleme ile tekrarlanır. Geçmezse
+   (ya da terfi komutu düşerse) hosting **otomatik** olarak 2'de kaydedilen
+   sürüme geri alınır, geri almanın uygulandığı `hosting:channel:list` ile
+   teyit edilir, job kırmızı biter ve `release-*` tag'i ATILMAZ. Job
+   özetinde ("Summary") geri alınan/önceki sürüm ID'si yazar.
+
+Otomatik geri alma yalnızca hosting'i kapsar — HTTP sağlık kontrolü bir
+rules sorununu zaten tespit edemez; `firestore.rules` yeni sürümde kalır
+(§2).
+
+### Elle
+
+`firebase hosting:rollback` diye bir CLI komutu **yoktur** (firebase-tools
+15.x; eski runbook sürümü bunu yanlış belgeliyordu). Elle geri alma:
 
 ```bash
-firebase hosting:rollback --project muezzin-c8485
+# Canlının şu anki sürümünü ve mevcut kanalları gör (live satırı):
+firebase hosting:channel:list --site muezzin-c8485 --project muezzin-c8485 --json \
+  | jq -r '.result.channels[] | select(.name | endswith("/channels/live")) | .release.version.name'
+
+# Geri dönülecek sürüm ID'sini bul: Firebase Console → Hosting → Release
+# history (ya da son başarılı deploy'un GitHub Actions job özetindeki
+# "Önceki hosting sürümü" satırı), sonra:
+firebase hosting:clone muezzin-c8485@<VERSION_ID> muezzin-c8485:live --project muezzin-c8485
 ```
 
 Alternatif (Firebase Console): **Hosting → Release history** → geri
 dönülecek sürümün yanındaki **⋮ → Rollback**.
 
-Bu komut yalnızca hosting'i (statik dosyaları) etkiler — `firestore.rules`
+Her iki yol da yalnızca hosting'i (statik dosyaları) etkiler — `firestore.rules`
 ve `firestore.indexes.json` deploy'unu GERİ ALMAZ (aşağıya bakın).
 
 ## 2. `firestore.rules`'u geri alma

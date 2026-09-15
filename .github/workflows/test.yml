@@ -100,10 +100,15 @@ jobs:
     environment: production
     if: github.ref == 'refs/heads/main' && github.event_name == 'push' && needs.test.result == 'success'
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     concurrency:
       group: deploy-production
       cancel-in-progress: false
+    env:
+      FIREBASE_PROJECT: muezzin-c8485
+      # .firebaserc'de `hosting.site` yok → varsayılan site = proje ID'si.
+      HOSTING_SITE: muezzin-c8485
+      HOSTING_URL: https://muezzin-c8485.web.app
     # Yalnızca "Deploy'u etiketle" adımının git tag push edebilmesi için —
     # varsayılan GITHUB_TOKEN izinleri repo ayarına göre salt-okuma olabilir
     # (bkz. docs/RUNBOOK.md, rollback prosedürü bu tag'lere bağlı).
@@ -180,8 +185,13 @@ jobs:
       # Anahtar ASLA log'a yazılmaz: `printf` çıktısı hep bir dosyaya/boruya
       # gider, doğrulama hatasının stderr'i bastırılır (JSON.parse hata mesajı
       # anahtarın bir parçasını log'a düşürebilir — bkz. firebaseAdminInit.ts
-      # içindeki aynı gerekçe), dosya `mktemp` ile 0600 izniyle açılır ve
-      # adım biterken `trap ... EXIT` ile silinir.
+      # içindeki aynı gerekçe), dosya `mktemp` ile 0600 izniyle açılır.
+      # Deploy artık tek bir `firebase deploy` değil, aşağıdaki çok adımlı
+      # zincir olduğundan (önizleme → doğrula → terfi → doğrula → gerekirse
+      # geri al) anahtar dosyası bu adımda `trap EXIT` ile silinmez; yolu
+      # `GITHUB_ENV` üzerinden sonraki adımlara geçer ve job'un sonundaki
+      # `if: always()` "Servis hesabı anahtarını sil" adımı onu kaldırır
+      # (RUNNER_TEMP job bitince zaten atılır — bu ek bir güvence).
       #
       # YEREL ÇALIŞTIRMA KORUMASI (bu bloğun İLK satırları, her şeyden önce).
       # Gerekçe: bu adımın gövdesi düz bir bash script'i olduğu için bir
@@ -199,7 +209,7 @@ jobs:
       # yolunda bu kontrol tam bir no-op'tur; yalnızca Actions dışında
       # çalıştırıldığında ateşler. FAIL-CLOSED: değişken tanımsızsa
       # (`:-` ile boş dizgeye düşer) "true" olmadığı için reddedilir.
-      - name: Deploy to Firebase (hosting + firestore rules + indexes)
+      - name: Servis hesabı anahtarını hazırla
         env:
           GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_MUEZZIN_C8485 }}
         run: |
@@ -213,27 +223,158 @@ jobs:
           fi
           CRED_FILE="$(mktemp "${RUNNER_TEMP}/gcp-sa-key-XXXXXXXXXX.json")"
           chmod 600 "$CRED_FILE"
-          trap 'rm -f "$CRED_FILE"' EXIT
           case "$GCP_SA_KEY" in
             \{*) printf '%s' "$GCP_SA_KEY" > "$CRED_FILE" ;;
             *)   printf '%s' "$GCP_SA_KEY" | base64 -d > "$CRED_FILE" ;;
           esac
           node -e 'JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"))' "$CRED_FILE" 2>/dev/null || {
+            rm -f "$CRED_FILE"
             echo "::error::Servis hesabi anahtari gecerli JSON olarak cozulemedi (ayrinti, sir sizintisini onlemek icin bilincli olarak loglanmiyor)."
             exit 1
           }
-          export GOOGLE_APPLICATION_CREDENTIALS="$CRED_FILE"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$CRED_FILE" >> "$GITHUB_ENV"
+          echo "ONIZLEME_KANALI=ci-${GITHUB_SHA:0:12}" >> "$GITHUB_ENV"
+
+      # DEPLOY ZİNCİRİ: önizleme → doğrula → terfi → doğrula → (gerekirse)
+      # geri al. Eskiden tek `firebase deploy --only hosting,...` canlıyı
+      # doğrudan değiştiriyordu ve "komut sıfır döndü" tek başarı ölçütüydü —
+      # bozuk bir build (eksik asset, yanlış header, CDN'in eski sürümü
+      # sunması) fark edilmeden canlıda kalıyordu.
+      #
+      # 1) Build önce kısa ömürlü bir ÖNİZLEME kanalına yüklenir (canlı
+      #    dokunulmaz). `--no-authorized-domains`: CLI varsayılan olarak her
+      #    önizleme URL'sini Firebase Auth "authorized domains" listesine
+      #    EKLER — her deploy'da production Auth yapılandırmasına kalıcı bir
+      #    domain girmesin diye kapalı (bu URL'de giriş zaten gerekmiyor,
+      #    sağlık kontrolü yalnızca HTTP düzeyinde).
+      # 2) Önizleme URL'sinde scripts/hostingSaglikKontrolu.ts: build'e gömülü
+      #    commit SHA'sı (dist/version.json, bkz. vite.config.ts) + ana JS
+      #    chunk + manifest + sw gerçekten servis ediliyor mu. Geçmezse canlı
+      #    hiç değişmeden job biter.
+      # 3) Canlının MEVCUT hosting sürüm ID'si kaydedilir (rollback hedefi) —
+      #    bulunamazsa geri alma yolu olmayacağı için FAIL-CLOSED durulur.
+      # 4) firestore rules + indexes deploy edilir (hosting terfisinden hemen
+      #    önce ki istemci ile kurallar mümkün olduğunca aynı anda değişsin).
+      # 5) Önizleme sürümü `hosting:clone` ile canlıya terfi eder (aynı
+      #    dosyalar yeniden yüklenmez, yalnızca yeni bir release oluşur).
+      # 6) Canlıda aynı sağlık kontrolü, CDN yayılımı için daha uzun
+      #    deneme/bekleme ile.
+      # 7) 5 ya da 6 başarısızsa canlı, 3'te kaydedilen sürüme geri alınır ve
+      #    geri almanın gerçekten uygulandığı `hosting:channel:list` ile API
+      #    düzeyinde teyit edilir. YALNIZCA hosting geri alınır — HTTP sağlık
+      #    kontrolü bir rules sorununu zaten tespit edemez, rules geri alma
+      #    docs/RUNBOOK.md §2'deki gibi elle/git tag üzerinden yapılır.
+      - name: Önizleme kanalına deploy
+        id: onizleme
+        run: |
+          # --json: stdout'a yalnızca {status,result|error} yazılır, konsol
+          # logger'ı kapanır (firebase-tools bin/cli.js) — hata mesajı bu
+          # yüzden dosyadan basılıyor, yoksa yalnızca "exit code 1" görünürdü.
+          if ! ./node_modules/.bin/firebase hosting:channel:deploy "$ONIZLEME_KANALI" \
+              --expires 1h --no-authorized-domains \
+              --project "$FIREBASE_PROJECT" --json > "$RUNNER_TEMP/onizleme.json"; then
+            echo "::error::Onizleme kanalina deploy basarisiz: $(jq -r '.error // "bilinmeyen hata"' "$RUNNER_TEMP/onizleme.json" 2>/dev/null)"
+            exit 1
+          fi
+          URL="$(jq -r '.result | to_entries[0].value.url // empty' "$RUNNER_TEMP/onizleme.json")"
+          if [ -z "$URL" ]; then
+            echo "::error::Onizleme kanali URL'si CLI ciktisindan okunamadi."
+            exit 1
+          fi
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          echo "Önizleme: $URL"
+
+      - name: Önizlemede sağlık kontrolü
+        env:
+          ONIZLEME_URL: ${{ steps.onizleme.outputs.url }}
+          SAGLIK_DENEME: '6'
+          SAGLIK_BEKLEME_MS: '5000'
+        run: npx tsx scripts/hostingSaglikKontrolu.ts "$ONIZLEME_URL" "$GITHUB_SHA"
+
+      - name: Canlı sürümü kaydet (rollback hedefi)
+        id: onceki
+        run: |
+          if ! ./node_modules/.bin/firebase hosting:channel:list \
+              --site "$HOSTING_SITE" --project "$FIREBASE_PROJECT" --json > "$RUNNER_TEMP/kanallar.json"; then
+            echo "::error::Kanal listesi alinamadi: $(jq -r '.error // "bilinmeyen hata"' "$RUNNER_TEMP/kanallar.json" 2>/dev/null)"
+            exit 1
+          fi
+          SURUM="$(jq -r '.result.channels[] | select(.name | endswith("/channels/live")) | .release.version.name // empty | split("/") | last' "$RUNNER_TEMP/kanallar.json")"
+          if [ -z "$SURUM" ]; then
+            echo "::error::Canlinin mevcut hosting surumu bulunamadi - geri alma hedefi olmadan terfi edilmez."
+            exit 1
+          fi
+          echo "surum=$SURUM" >> "$GITHUB_OUTPUT"
+          echo "Rollback hedefi: $HOSTING_SITE@$SURUM"
+
+      - name: Firestore rules + indexes deploy
+        run: |
           ./node_modules/.bin/firebase deploy \
-            --only hosting,firestore:rules,firestore:indexes \
-            --project muezzin-c8485
-      # Deploy BAŞARILI olduktan SONRA (bu adımdan önceki adım başarısız
-      # olursa buraya hiç gelinmez) — her production deploy'unun hangi
-      # commit'e karşılık geldiğini işaretler. Rollback prosedürü
-      # (docs/RUNBOOK.md § 2) "son bilinen iyi" firestore.rules sürümünü
-      # bulmak için bu tag'lere bakar. Ayrı bir GitHub Release AÇILMAZ —
-      # yalnızca hafif bir git tag, gürültü/bildirim üretmez.
+            --only firestore:rules,firestore:indexes \
+            --project "$FIREBASE_PROJECT"
+
+      - name: Canlıya terfi ettir
+        id: terfi
+        run: |
+          ./node_modules/.bin/firebase hosting:clone \
+            "$HOSTING_SITE:$ONIZLEME_KANALI" "$HOSTING_SITE:live" \
+            --project "$FIREBASE_PROJECT"
+
+      - name: Canlıda sağlık kontrolü
+        id: canli_saglik
+        env:
+          SAGLIK_DENEME: '12'
+          SAGLIK_BEKLEME_MS: '5000'
+        run: npx tsx scripts/hostingSaglikKontrolu.ts "$HOSTING_URL" "$GITHUB_SHA"
+
+      - name: Otomatik geri alma (hosting)
+        if: failure() && (steps.terfi.outcome == 'failure' || steps.canli_saglik.outcome == 'failure')
+        env:
+          ONCEKI_SURUM: ${{ steps.onceki.outputs.surum }}
+        run: |
+          echo "::warning::Canli dogrulanamadi; hosting $HOSTING_SITE@$ONCEKI_SURUM surumune geri aliniyor."
+          ./node_modules/.bin/firebase hosting:clone \
+            "$HOSTING_SITE@$ONCEKI_SURUM" "$HOSTING_SITE:live" \
+            --project "$FIREBASE_PROJECT"
+          ./node_modules/.bin/firebase hosting:channel:list \
+            --site "$HOSTING_SITE" --project "$FIREBASE_PROJECT" --json > "$RUNNER_TEMP/kanallar-sonra.json"
+          CANLI="$(jq -r '.result.channels[] | select(.name | endswith("/channels/live")) | .release.version.name // empty | split("/") | last' "$RUNNER_TEMP/kanallar-sonra.json")"
+          if [ "$CANLI" != "$ONCEKI_SURUM" ]; then
+            echo "::error::GERI ALMA DOGRULANAMADI - canli su an '$CANLI' surumunde, beklenen '$ONCEKI_SURUM'. Elle mudahale gerekli (docs/RUNBOOK.md §1)."
+            exit 1
+          fi
+          {
+            echo "## Deploy geri alındı"
+            echo "- Commit \`$GITHUB_SHA\` canlıda doğrulanamadı; hosting \`$ONCEKI_SURUM\` sürümüne geri alındı ve teyit edildi."
+            echo "- firestore.rules/indexes YENİ sürümde kaldı — gerekiyorsa docs/RUNBOOK.md §2."
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "::error::Deploy basarisiz: canli onceki surume geri alindi (hosting). Ayrintilar icin yukaridaki saglik kontrolu adimina bakin."
+
+      - name: Önizleme kanalını sil
+        if: always() && env.ONIZLEME_KANALI != ''
+        continue-on-error: true
+        run: |
+          ./node_modules/.bin/firebase hosting:channel:delete "$ONIZLEME_KANALI" \
+            --site "$HOSTING_SITE" --force --project "$FIREBASE_PROJECT"
+
+      - name: Servis hesabı anahtarını sil
+        if: always() && env.GOOGLE_APPLICATION_CREDENTIALS != ''
+        run: rm -f "$GOOGLE_APPLICATION_CREDENTIALS"
+
+      # Deploy BAŞARILI olduktan SONRA (önceki adımlardan biri başarısız
+      # olursa buraya hiç gelinmez — geri alma yolu dahil) — her production
+      # deploy'unun hangi commit'e karşılık geldiğini işaretler. Rollback
+      # prosedürü (docs/RUNBOOK.md § 2) "son bilinen iyi" firestore.rules
+      # sürümünü bulmak için bu tag'lere bakar. Ayrı bir GitHub Release
+      # AÇILMAZ — yalnızca hafif bir git tag, gürültü/bildirim üretmez.
       - name: Deploy'u etiketle
         run: |
           TAG="release-$(date -u +%Y%m%d-%H%M%S)"
           git tag "$TAG"
           git push origin "$TAG"
+          {
+            echo "## Deploy tamamlandı"
+            echo "- Commit \`$GITHUB_SHA\` → $HOSTING_URL (sağlık kontrolü geçti)"
+            echo "- Git tag: \`$TAG\`"
+            echo "- Önceki hosting sürümü (elle geri alma için): \`${{ steps.onceki.outputs.surum }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
