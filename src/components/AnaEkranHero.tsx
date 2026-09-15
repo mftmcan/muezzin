@@ -210,8 +210,21 @@ export const AnaEkranHero = React.memo(({ isLoading, mevcutVakit, sonraki, bugun
                         {/* Hicri tarih için serif italik — Gregoryen tarihin (üstte,
                             sans-serif) yanında ayrı bir "kayıt sistemi" hissi verir;
                             display katmanının ilk kullanım noktası (bkz. görsel
-                            tasarım denetimi V16). */}
-                        <span className="text-xs font-serif italic tracking-tight" style={{ color: auraColor }}>
+                            tasarım denetimi V16). Okunabilirlik: `tracking-tight`
+                            italik bir serif'te harfleri birbirine yaklaştırıp
+                            (zaten eğik olan) karakterleri ayırt etmeyi zorlaştırıyordu
+                            — `tracking-normal`'a alındı, boyut bir kademe büyütüldü
+                            (text-xs→13px). Renk artık çıplak `auraColor` değil:
+                            `color-mix` ile %30 `--text-primary`'ye çapalanıyor —
+                            beş aura tonunun (ruby/amber/emerald/indigo/rose) hepsi
+                            aynı doygunlukta değil, çıplak haliyle açık modda bazı
+                            tonlarda kontrast WCAG eşiğine yaklaşabiliyordu (bkz.
+                            index.css'teki aynı gerekçeyle kurulmuş text-secondary/
+                            doygun-dolgu kontrast düzeltmeleri). */}
+                        <span
+                          className="text-[13px] font-serif italic tracking-normal"
+                          style={{ color: `color-mix(in srgb, ${auraColor} 70%, var(--text-primary) 30%)` }}
+                        >
                           {hijriDate}
                         </span>
                       </div>
