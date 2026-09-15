@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import {
   VAKIT_GORA_ISIMLERI,
   toTurkishUpperCase,
@@ -7,7 +7,7 @@ import {
   calculateKerahatTimes,
   isFriday as isFridayTarih,
 } from '../lib/dateUtils';
-import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { Vakit } from '../types';
 import { KerahatIcon } from './ui/KerahatIcon';
 import { useTime } from '../hooks/useTime';
@@ -97,30 +97,6 @@ export function GeriSayim({
   aksamSaati,
 }: GeriSayimProps) {
   const now = useTime();
-
-  // ── Google Neural Expressive: Tactile 3D Parallax Tilt ──
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-
-  const springConfig = { damping: 28, stiffness: 140 };
-  const rotateX = useSpring(useTransform(y, [-200, 200], [10, -10]), springConfig);
-  const rotateY = useSpring(useTransform(x, [-200, 200], [-10, 10]), springConfig);
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const el = e.currentTarget;
-    const rect = el.getBoundingClientRect();
-    const width = rect.width;
-    const height = rect.height;
-    const mouseX = e.clientX - rect.left - width / 2;
-    const mouseY = e.clientY - rect.top - height / 2;
-    x.set(mouseX);
-    y.set(mouseY);
-  };
-
-  const handleMouseLeave = () => {
-    x.set(0);
-    y.set(0);
-  };
 
   // ── Decision: what are we counting down to? ──────────────────────────────
   // During the sabah period the card progresses through two sub-targets:
@@ -255,12 +231,8 @@ export function GeriSayim({
       style={{ perspective: 1200 }}
       data-testid="geri-sayim"
     >
-      <motion.div
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
+      <div
         style={{
-          rotateX,
-          rotateY,
           transformStyle: 'preserve-3d',
           width: '100%',
           display: 'flex',
@@ -557,7 +529,7 @@ export function GeriSayim({
             </div>
           </div>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }
