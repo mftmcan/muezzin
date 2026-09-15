@@ -144,7 +144,7 @@ export const AnaEkranHero = React.memo(({ isLoading, mevcutVakit, sonraki, bugun
   const ozelVakitDurumu = useOzelVakitMesaji(bugunVakitler, bugunDate, now);
 
   return (
-    <div className="w-full flex flex-col items-center justify-center min-h-0 sm:min-h-[640px] lg:h-[calc(100dvh-128px)] lg:min-h-[680px] lg:max-h-[860px] h-auto mt-2">
+    <div className="w-full flex flex-col items-center justify-center min-h-0 sm:min-h-[640px] lg:h-[calc(100dvh-128px)] lg:min-h-[680px] lg:max-h-[860px] h-auto mt-0 sm:mt-2">
       <AnimatePresence mode="popLayout">
         {isLoading ? (
           <motion.div
@@ -152,7 +152,7 @@ export const AnaEkranHero = React.memo(({ isLoading, mevcutVakit, sonraki, bugun
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="w-full flex-1 min-h-[520px] sm:min-h-[600px] lg:min-h-0 flex items-center justify-center bg-[var(--surface-medium)] rounded-card border border-[var(--glass-border)]"
+            className="w-full flex-1 min-h-[380px] sm:min-h-[600px] lg:min-h-0 flex items-center justify-center bg-[var(--surface-medium)] rounded-card border border-[var(--glass-border)]"
           >
             <div className="w-12 h-12 rounded-full border-2 border-[var(--dynamic-aura,var(--aura-indigo))]/20 border-t-[var(--dynamic-aura,var(--aura-indigo))] animate-spin" />
           </motion.div>
@@ -173,7 +173,7 @@ export const AnaEkranHero = React.memo(({ isLoading, mevcutVakit, sonraki, bugun
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="w-full flex-1 flex flex-col justify-between min-h-[520px] sm:min-h-[600px] lg:min-h-0 p-4 sm:p-6 xl:p-8 bg-[var(--spatial-glass-bg)] backdrop-blur-xl rounded-card border border-[var(--glass-border)] relative overflow-hidden shadow-[var(--spatial-shadow)]"
+              className="w-full flex-1 flex flex-col justify-between min-h-0 sm:min-h-[600px] lg:min-h-0 p-3.5 sm:p-6 xl:p-8 bg-[var(--spatial-glass-bg)] backdrop-blur-xl rounded-card border border-[var(--glass-border)] relative overflow-hidden shadow-[var(--spatial-shadow)]"
             >
               {/* Top specular highlight */}
               <div className="absolute inset-0 bg-gradient-to-b from-[var(--specular-glow)] via-transparent to-transparent pointer-events-none z-0 rounded-card" />
@@ -238,7 +238,7 @@ export const AnaEkranHero = React.memo(({ isLoading, mevcutVakit, sonraki, bugun
               </div>
 
               {/* Countdown / Chronograph */}
-              <div className="flex-1 flex items-center justify-center z-10 relative py-4 sm:py-6 lg:py-8">
+              <div className="flex-1 flex items-center justify-center z-10 relative py-1 sm:py-6 lg:py-8">
                 {sonraki && currentStatus ? (
                   <GeriSayim
                     ezanSaati={sonraki.ezanSaati}

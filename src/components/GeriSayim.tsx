@@ -273,7 +273,7 @@ export function GeriSayim({
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col items-center mb-6 sm:mb-8 text-center relative z-20"
+          className="flex flex-col items-center mb-3 sm:mb-8 text-center relative z-20"
           style={{ transform: 'translateZ(30px)' }}
         >
           <div className="h-10 flex items-center justify-center mb-2 sm:mb-3">
@@ -321,20 +321,22 @@ export function GeriSayim({
             </AnimatePresence>
           </div>
 
-          {/* Uygulamanın tipografik display katmanı — Instrument Serif self-host
-              ediliyordu ama tek kullanım noktası SplashLoader'ın ~800ms görünen
-              açılış ekranıydı (bkz. görsel tasarım denetimi V16). Bu başlık, gün
-              içindeki en çok görülen "an" — burada Inter'in ince ağırlığı yerine
-              serif'in kendi karakteri taşıyor, ALL-CAPS de bırakıldı (serif
-              display yüzleri büyük harfte kendi kimliğini kaybeder). */}
+          {/* Vakit adı: ince (font-light) + büyük harf + geniş izleme (tracking) —
+              premium/editoryal his. Serif'ten sans'a (font-sans) bilerek geçildi:
+              serif display yüzleri büyük harfte kimliğini kaybediyor (bkz. eski
+              yorum, görsel tasarım denetimi V16), o karakter artık yalnızca
+              üstteki Hicri tarihte (font-serif italic) kalıyor. Büyük harf CSS
+              `uppercase` yerine `toTurkishUpperCase()` ile JS'te uygulanıyor —
+              CSS text-transform Türkçe İ/i çiftini locale'siz yanlış eşleyebilir;
+              bu dosyadaki SÜRÜYOR rozetinde de aynı desen kullanılıyor. */}
           <h2
-            className="font-serif font-normal tracking-tight text-4xl sm:text-6xl text-[var(--text-primary)] leading-none transition-all duration-700 vibrant-text"
+            className="font-sans font-light tracking-[0.06em] sm:tracking-[0.08em] text-4xl sm:text-6xl text-[var(--text-primary)] leading-none transition-all duration-700 vibrant-text"
             style={{
               textShadow: `0 0 40px ${auraColor}18`,
               backgroundImage: `linear-gradient(135deg, var(--text-primary) 0%, ${auraColor} 50%, var(--text-secondary) 100%)`,
             }}
           >
-            {VAKIT_DISPLAY_NAMES[mevcutVakit]}
+            {toTurkishUpperCase(VAKIT_DISPLAY_NAMES[mevcutVakit])}
           </h2>
         </motion.div>
 
@@ -384,7 +386,7 @@ export function GeriSayim({
             />
           </div>
 
-          <svg viewBox="0 0 440 440" className="w-full h-auto max-w-[260px] sm:max-w-[420px] relative z-10 overflow-visible">
+          <svg viewBox="0 0 440 440" className="w-full h-auto max-w-[300px] sm:max-w-[420px] relative z-10 overflow-visible">
             {/* Track */}
             <circle
               cx="220"
@@ -472,7 +474,7 @@ export function GeriSayim({
             className="absolute inset-0 flex flex-col items-center justify-center text-center z-10"
             style={{ transform: 'translateZ(40px)' }}
           >
-            <div data-testid="countdown-timer" className="flex flex-col items-center gap-1 px-6 py-5 sm:px-8 sm:py-7">
+            <div data-testid="countdown-timer" className="flex flex-col items-center gap-1 px-4 py-3 sm:px-8 sm:py-7">
               <div className="flex items-center gap-2 sm:gap-3">
                 {/* Hours */}
                 <div className="flex flex-col items-center">
@@ -529,7 +531,7 @@ export function GeriSayim({
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
-                className="mt-4 sm:mt-5 flex flex-col items-center"
+                className="mt-2 sm:mt-5 flex flex-col items-center"
               >
                 <div
                   className={`px-4 py-1.5 rounded-full border transition-all duration-700 ${

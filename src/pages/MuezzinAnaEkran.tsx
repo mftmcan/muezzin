@@ -214,7 +214,7 @@ export default function MuezzinAnaEkran() {
       eklemek toplamda 220px+ boş kaydırma alanına (mobil ekranın ~%30'u) yol
       açıyordu (bkz. mobil yerleşim denetimi). Kalan pb-8/10 sadece son karta
       görsel nefes payı için. */}
-      <div className="fluid-wrapper pt-6 sm:pt-8 pb-8 sm:pb-10 relative z-10">
+      <div className="fluid-wrapper max-sm:!px-3 pt-3 sm:pt-8 pb-6 sm:pb-10 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-8 lg:gap-12 relative z-10">
           {/* Hero Section — `sticky-hero` sadece AnaEkranHero'yu sarmalıyor (aşağıda),
       dış kapsayıcının kendisi artık sticky/overflow-constrained DEĞİL. Önceden
