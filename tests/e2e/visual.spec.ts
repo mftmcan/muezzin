@@ -109,9 +109,14 @@ for (const theme of ['light', 'dark'] as const) {
       await girisYap(page, seed.tokenMuezzin);
       // 'networkidle' Firestore'un kalıcı WebChannel bağlantısı yüzünden hiç
       // tetiklenmiyor (bkz. a11y.spec.ts'teki aynı not) — #main-content'i
-      // bekleyip kısa bir yerleşme payı vermek daha güvenilir.
+      // bekleyip kısa bir yerleşme payı vermek daha güvenilir. Pay 1500ms'den
+      // 3000ms'e çıkarıldı: CI'da emülatörün ilk Firestore verisini
+      // teslim etme süresi değişken — 1500ms bazen yetmeyip sayfayı yükleniyor
+      // durumundayken yakalıyordu (ör. admin-paneli-dark 1217px yerine 2728px,
+      // haftalik-takvim-light 1306px yerine 2394px — her ikisi de gerçek bir
+      // regresyon değil, bu yarış koşuluydu, bkz. 2026-09-15 CI koşu geçmişi).
       await page.waitForSelector('#main-content');
-      await page.waitForTimeout(1500);
+      await page.waitForTimeout(3000);
       // OzelVakitBanner (kerahat/teheccüd/bayram) ve RamazanHub, gerçek
       // saatle karşılaştırılarak KOŞULLU monte ediliyor — `mask` yalnızca
       // var olan pikselleri kapatabilir, DOM'a hiç girmeyen/çıkan bir
@@ -139,7 +144,7 @@ for (const theme of ['light', 'dark'] as const) {
       await girisYap(page, seed.tokenMuezzin);
       await page.goto('/takvim');
       await page.waitForSelector('#main-content');
-      await page.waitForTimeout(1500);
+      await page.waitForTimeout(3000);
       await expect(page).toHaveScreenshot(`haftalik-takvim-${theme}.png`, { ...SS_OPTS, fullPage: true });
     });
 
@@ -149,7 +154,7 @@ for (const theme of ['light', 'dark'] as const) {
       await girisYap(page, seed.tokenMuezzin);
       await page.goto('/profil');
       await page.waitForSelector('#main-content');
-      await page.waitForTimeout(1500);
+      await page.waitForTimeout(3000);
       await expect(page).toHaveScreenshot(`profil-${theme}.png`, { ...SS_OPTS, fullPage: true });
     });
 
@@ -159,7 +164,7 @@ for (const theme of ['light', 'dark'] as const) {
       await girisYap(page, seed.tokenAdmin);
       await page.goto('/admin');
       await page.waitForSelector('#main-content');
-      await page.waitForTimeout(1500);
+      await page.waitForTimeout(3000);
       await expect(page).toHaveScreenshot(`admin-paneli-${theme}.png`, {
         ...SS_OPTS,
         fullPage: true,
