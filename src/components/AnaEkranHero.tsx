@@ -173,7 +173,7 @@ export const AnaEkranHero = React.memo(({ isLoading, mevcutVakit, sonraki, bugun
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="w-full flex-1 flex flex-col justify-between min-h-0 sm:min-h-[600px] lg:min-h-0 p-3.5 sm:p-6 xl:p-8 bg-[var(--spatial-glass-bg)] backdrop-blur-xl rounded-card border border-[var(--glass-border)] relative overflow-hidden shadow-[var(--spatial-shadow)]"
+              className="w-full flex-1 flex flex-col justify-between min-h-0 sm:min-h-[600px] lg:min-h-0 p-3 sm:p-6 xl:p-8 bg-[var(--spatial-glass-bg)] backdrop-blur-xl rounded-card border border-[var(--glass-border)] relative overflow-hidden shadow-[var(--spatial-shadow)]"
             >
               {/* Top specular highlight */}
               <div className="absolute inset-0 bg-gradient-to-b from-[var(--specular-glow)] via-transparent to-transparent pointer-events-none z-0 rounded-card" />

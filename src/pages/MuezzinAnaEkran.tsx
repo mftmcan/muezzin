@@ -213,8 +213,20 @@ export default function MuezzinAnaEkran() {
       dinamik pb (mobilde 96px+safe-area, md:144px) ayırıyor — burada AYRICA pb-32
       eklemek toplamda 220px+ boş kaydırma alanına (mobil ekranın ~%30'u) yol
       açıyordu (bkz. mobil yerleşim denetimi). Kalan pb-8/10 sadece son karta
-      görsel nefes payı için. */}
-      <div className="fluid-wrapper max-sm:!px-3 pt-3 sm:pt-8 pb-6 sm:pb-10 relative z-10">
+      görsel nefes payı için.
+
+      DİKKAT: `pt-*`/`pb-*` BİLEREK `fluid-wrapper`'ın kendi className'inde
+      DEĞİL, ayrı bir iç div'de. `fluid-wrapper` (index.css) `padding-top:
+      env(safe-area-inset-top)` taşıyor — aynı elementte `pt-3` gibi tek
+      özellikli bir Tailwind utility'siyle birlikte kullanılırsa, Tailwind
+      v4'ün katman sıralamasında tek özellikli utility her zaman kazanıyor,
+      yani safe-area-inset TAMAMEN devre dışı kalıyordu (çentikli/Dynamic
+      Island'lı iPhone'da başlık durum çubuğunun ALTINDA kırpılıyordu, bkz.
+      mobil yerleşim denetimi — bu regresyon `pt-6`den `pt-3`e düşürülünce
+      görünür hale geldi, ama kök neden önceden de vardı). İki farklı
+      element olduğunda iki padding-top artık ÇAKIŞMAZ, üst üste TOPLANIR. */}
+      <div className="fluid-wrapper max-sm:!px-2.5 relative z-10">
+        <div className="pt-3 sm:pt-8 pb-6 sm:pb-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-8 lg:gap-12 relative z-10">
           {/* Hero Section — `sticky-hero` sadece AnaEkranHero'yu sarmalıyor (aşağıda),
       dış kapsayıcının kendisi artık sticky/overflow-constrained DEĞİL. Önceden
@@ -782,6 +794,7 @@ export default function MuezzinAnaEkran() {
             setIsGpsConsentOpen(true);
           }}
         />
+        </div>
       </div>
     </div>
   );

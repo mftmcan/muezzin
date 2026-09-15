@@ -386,7 +386,12 @@ export function GeriSayim({
             />
           </div>
 
-          <svg viewBox="0 0 440 440" className="w-full h-auto max-w-[300px] sm:max-w-[420px] relative z-10 overflow-visible">
+          {/* Mobilde artık kendi max-w kısıtlaması YOK — genişlik yalnızca kartın
+              kendi iç dolgusuyla (AnaEkranHero p-3) belirleniyor; önceden burada
+              AYRICA max-w-[300px] gibi ikinci bir kısıtlama vardı, bu da kart
+              kenar boşluğunun üstüne ikinci bir boşluk katmanı bindiriyordu
+              (bkz. mobil yerleşim denetimi — "çift kenar boşluğu" sorunu). */}
+          <svg viewBox="0 0 440 440" className="w-full h-auto max-w-none sm:max-w-[420px] relative z-10 overflow-visible">
             {/* Track */}
             <circle
               cx="220"
