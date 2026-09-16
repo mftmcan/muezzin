@@ -5,12 +5,15 @@
  * kabuk değil GERÇEK içerikle render olur (görsel regresyonun tespit edeceği
  * yüzey alanı arttırılır).
  *
- * SABIT_TARIH GERÇEK "bugün"e (Node'un çalıştığı günün tarihine) yazılır —
- * `visual.spec.ts`'teki `saatiSabitle()` de SAATİ (Türkiye saatiyle 11:00)
- * dondururken TARİHİ aynı gerçek "bugün"e sabitler, ikisi birbirine bağımlı.
- * Saat artık `page.clock.setFixedTime` ile deterministik (bkz. visual.spec.ts
- * dosya başı yorumu — `pauseAt` denenip Firebase'in zamanlayıcılarını
- * kırdığı için terk edilmişti, `setFixedTime` yalnızca Date'i sabitler).
+ * SABIT_TARIH `gorselSabitTarih.ts`'teki TEK, gerçek-olmayan sabit güne
+ * yazılır — `visual.spec.ts`'teki `saatiSabitle()` de SAATİ (Türkiye
+ * saatiyle 11:00) dondururken AYNI sabit günü kullanır, ikisi birbirine
+ * bağımlı (bkz. o dosyanın gerekçesi — önceden ikisi de GERÇEK "bugün"e
+ * bağlıydı, bu yüzden baseline her gerçek takvim günü ilerledikçe
+ * bayatlıyordu). Saat `page.clock.setFixedTime` ile deterministik (bkz.
+ * visual.spec.ts dosya başı yorumu — `pauseAt` denenip Firebase'in
+ * zamanlayıcılarını kırdığı için terk edilmişti, `setFixedTime` yalnızca
+ * Date'i sabitler).
  * Diğer e2e testlerinden İZOLE: kendi `_e2e_visual_` uid önekini ve kendi
  * hafta/gün verisini kullanır, paylaşılan koleksiyonlara sadece kendi
  * doc id'leriyle yazar (bkz. playwright.config.ts'teki paylaşılan emülatör
@@ -21,6 +24,7 @@ import { getFirestore, Timestamp } from 'firebase-admin/firestore';
 import { getAuth } from 'firebase-admin/auth';
 import { startOfWeek, format } from 'date-fns';
 import firebaseConfig from '../../firebase-applet-config.json' with { type: 'json' };
+import { GORSEL_SABIT_TARIH } from './gorselSabitTarih.ts';
 
 process.env.FIRESTORE_EMULATOR_HOST = process.env.FIRESTORE_EMULATOR_HOST || '127.0.0.1:8080';
 process.env.FIREBASE_AUTH_EMULATOR_HOST = process.env.FIREBASE_AUTH_EMULATOR_HOST || '127.0.0.1:9099';
@@ -29,7 +33,7 @@ const app = getApps().length ? getApps()[0]! : initializeApp({ projectId: fireba
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-export const SABIT_TARIH = format(new Date(), 'yyyy-MM-dd');
+export const SABIT_TARIH = GORSEL_SABIT_TARIH;
 
 const ADMIN_UID = 'muezzin_e2e_visual_admin';
 const MUEZZIN_UID = 'muezzin_e2e_visual_muezzin';

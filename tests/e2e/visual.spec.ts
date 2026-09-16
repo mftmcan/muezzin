@@ -2,6 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 import { execFileSync } from 'child_process';
 import { fileURLToPath } from 'url';
 import path from 'path';
+import { GORSEL_SABIT_TARIH } from './gorselSabitTarih.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -28,16 +29,19 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
  * değiştirip sayfa YÜKSEKLİĞİNİ kaydırması ve baseline'ı defalarca kırması
  * üzerine eklendi (kök neden analizi: bu dosyanın PR'ı).
  *
- * `saatiSabitle`, TARİHİ değiştirmez — SABIT_TARIH (seed-visual.ts) hâlâ
- * gerçek "bugün"e yazılıyor, yalnızca SAAT'i (Türkiye saatiyle 11:00,
+ * `saatiSabitle` artık TARİHİ de sabitler — `gorselSabitTarih.ts`'teki TEK
+ * gerçek-olmayan günü (Çarşamba) SAAT ile (Türkiye saatiyle 11:00,
  * güneş[06:30]-öğle[13:02] arası, her iki kerahat penceresinden de uzak)
- * sabitliyoruz — tarih ile saat uyuşmazsa uygulama "bugünün vakit tablosu
- * yok" durumuna düşer. Bilinen KALAN sınır: gerçek "bugün" bir bayram/kandil
- * gününe denk gelirse (tarihe bağlı, saate bağlı değil) özel banner'lar yine
- * tetiklenebilir — bunun için `display:none` zorlaması (aşağıda) hâlâ
- * duruyor. Gerçek "bugün" Cuma'ya denk gelirse Cuma'ya özgü vurgular da
- * (tarihe bağlı, saate bağlı değil) etkilenebilir — bu, saat dondurmanın
- * kapsamı dışında, önceden de var olan bilinen bir sınır.
+ * birlikte dondurur, SABIT_TARIH (seed-visual.ts) AYNI günü kullanır —
+ * ikisi birbirine bağımlı, tarih ile saat uyuşmazsa uygulama "bugünün
+ * vakit tablosu yok" durumuna düşer. Önceden yalnızca SAAT donduruluyor,
+ * TARİH gerçek "bugün"e bağlı kalıyordu — bu yüzden "Kişisel Görevlerim"
+ * (ana ekran) ve gün numarası/"BUGÜN" rozeti (haftalık takvim) her gerçek
+ * takvim günü ilerledikçe baseline'dan kaçınılmaz olarak sapıp CI'ı
+ * kırıyordu (bkz. gorselSabitTarih.ts — 2026-09-16 CI kök neden analizi).
+ * Tarih artık sabit olduğundan bayram/kandil ve Cuma'ya özgü kenar durumları
+ * da kalıcı olarak devre dışı (seçilen gün bilerek Çarşamba) — `display:none`
+ * zorlaması (aşağıda) yine de savunma amaçlı duruyor.
  *
  * LiveClock/geri sayım rakamları saat donduğundan artık pratikte hiç
  * TİKLEMİYOR (her okuma aynı sabit anı döndürüyor) — ama maskeler
@@ -63,11 +67,11 @@ async function temaAyarla(page: Page, theme: 'light' | 'dark') {
 
 // Türkiye UTC+3 sabit (DST yok) — "11:00 Türkiye" = "08:00 UTC". Runner'ın
 // yerel saat dilimine bağlı kalmamak için doğrudan Date.UTC ile inşa edilir.
-// Tarih kısmı `new Date()`'in UTC bileşenlerinden alınır — SABIT_TARIH
-// (seed-visual.ts) ile aynı "bugün"e denk gelmesi ZORUNLU.
+// Tarih kısmı GORSEL_SABIT_TARIH'ten gelir — SABIT_TARIH (seed-visual.ts)
+// ile AYNI (gerçek-olmayan) güne denk gelmesi ZORUNLU.
 async function saatiSabitle(page: Page) {
-  const simdi = new Date();
-  const donmusAn = new Date(Date.UTC(simdi.getUTCFullYear(), simdi.getUTCMonth(), simdi.getUTCDate(), 8, 0, 0));
+  const [yil, ay, gun] = GORSEL_SABIT_TARIH.split('-').map(Number);
+  const donmusAn = new Date(Date.UTC(yil, ay - 1, gun, 8, 0, 0));
   await page.clock.setFixedTime(donmusAn);
 }
 
