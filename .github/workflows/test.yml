@@ -73,7 +73,7 @@ jobs:
         run: npm run test:all
 
       - name: Run Playwright E2E tests (against Firestore + Auth emulators)
-        run: firebase emulators:exec --only firestore,auth --project muezzin-c8485 "npx playwright test"
+        run: firebase emulators:exec --only firestore,auth --project ezanmerkezi "npx playwright test"
 
       # E2E başarısız olduğunda trace.zip/error-context.md indirilemiyordu —
       # kök nedeni yalnızca CI loglarındaki metinden tahmin etmek gerekiyordu
@@ -105,10 +105,10 @@ jobs:
       group: deploy-production
       cancel-in-progress: false
     env:
-      FIREBASE_PROJECT: muezzin-c8485
+      FIREBASE_PROJECT: ezanmerkezi
       # .firebaserc'de `hosting.site` yok → varsayılan site = proje ID'si.
-      HOSTING_SITE: muezzin-c8485
-      HOSTING_URL: https://muezzin-c8485.web.app
+      HOSTING_SITE: ezanmerkezi
+      HOSTING_URL: https://ezanmerkezi.web.app
     # Yalnızca "Deploy'u etiketle" adımının git tag push edebilmesi için —
     # varsayılan GITHUB_TOKEN izinleri repo ayarına göre salt-okuma olabilir
     # (bkz. docs/RUNBOOK.md, rollback prosedürü bu tag'lere bağlı).
@@ -177,7 +177,7 @@ jobs:
       #     CLI kimliği ADC üzerinden alır — burada da aynısı.
       #   - `PROJECT_ID` orada `firebase use --add` ile ayarlanıyordu; burada
       #     `--project` bayrağı kullanılıyor (aynı etki, `.firebaserc`'i
-      #     değiştirmediği için daha temiz — zaten default: muezzin-c8485).
+      #     değiştirmediği için daha temiz — zaten default: ezanmerkezi).
       #   - entrypoint `set -e` ile başlıyordu; burada Actions'ın `run:` için
       #     varsayılan `bash -eo pipefail`'i aynı işi görüyor: `firebase
       #     deploy` sıfırdan farklı dönerse adım ve job BAŞARISIZ olur
@@ -198,7 +198,7 @@ jobs:
       # insan ya da bir ajan "değişikliğimi doğrulayayım" diye onu kopyalayıp
       # yerel kabukta çalıştırabiliyor. Bir kez gerçekten oldu: `firebase
       # deploy` satırını stub'lamaya çalışan regex eşleşmedi ve GERÇEK
-      # `firebase deploy --project muezzin-c8485` komutu yerelde, sahte bir
+      # `firebase deploy --project ezanmerkezi` komutu yerelde, sahte bir
       # servis hesabı anahtarıyla PRODUCTION projesine karşı çalıştı
       # (kimlik bilgisi çöp olduğu için proje-erişim ön koşulunda düştü,
       # hiçbir şey yazılmadı — ama komut gerçekten canlı projeye ulaştı).
@@ -211,14 +211,14 @@ jobs:
       # (`:-` ile boş dizgeye düşer) "true" olmadığı için reddedilir.
       - name: Servis hesabı anahtarını hazırla
         env:
-          GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_MUEZZIN_C8485 }}
+          GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_EZANMERKEZI }}
         run: |
           if [ "${GITHUB_ACTIONS:-}" != "true" ] || [ "${CI:-}" != "true" ]; then
             echo "::error::Bu script sadece gercek GitHub Actions calistiricisinda calismalidir. Yerel/manuel calistirma REDDEDILDI (guvenlik: production deploy korumasi)."
             exit 1
           fi
           if [ -z "$GCP_SA_KEY" ]; then
-            echo "::error::FIREBASE_SERVICE_ACCOUNT_MUEZZIN_C8485 secret'i bos veya tanimsiz - deploy edilemez."
+            echo "::error::FIREBASE_SERVICE_ACCOUNT_EZANMERKEZI secret'i bos veya tanimsiz - deploy edilemez."
             exit 1
           fi
           CRED_FILE="$(mktemp "${RUNNER_TEMP}/gcp-sa-key-XXXXXXXXXX.json")"

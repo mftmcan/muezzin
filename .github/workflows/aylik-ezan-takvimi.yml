@@ -26,7 +26,7 @@ jobs:
         run: npm ci
       - name: Takvimi güncelle
         env:
-          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_MUEZZIN_C8485 }}
+          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_EZANMERKEZI }}
           # Resmi Diyanet API'si (bkz. scripts/lib/diyanetResmiApi.ts) —
           # tanımlı değilse mevcut public zincire (emushaf/Aladhan) sessizce
           # düşülür, iş başarısız olmaz.
@@ -40,12 +40,12 @@ jobs:
       - name: Başarıyı admin paneline bildir (önceki uyarıyı otomatik çöz)
         if: success()
         env:
-          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_MUEZZIN_C8485 }}
+          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_EZANMERKEZI }}
         run: npx tsx scripts/lib/reportWorkflowSuccess.ts "Aylık Ezan Takvimi Güncelleme"
       - name: Başarısızlığı admin paneline bildir
         if: failure()
         env:
-          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_MUEZZIN_C8485 }}
+          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_EZANMERKEZI }}
         run: npx tsx scripts/lib/reportWorkflowFailure.ts "Aylık Ezan Takvimi Güncelleme"
       # UYARI_WEBHOOK_URL tanımlı değilse script sessizce atlar (bkz.
       # scripts/lib/disKanalUyari.ts) — Firestore'un kendisi arızalıysa

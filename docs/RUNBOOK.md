@@ -1,6 +1,6 @@
 # Operasyonel Runbook — Müezzin Hizmet Dizgesi
 
-Bu doküman, production'da (`muezzin-c8485`) bir şeyler ters gittiğinde
+Bu doküman, production'da (`ezanmerkezi`) bir şeyler ters gittiğinde
 izlenecek adımları tarif eder. Hedef kitle: bu depoya erişimi olan
 (Firebase Console + GitHub Actions secrets) bir yönetici/geliştirici.
 
@@ -45,13 +45,13 @@ rules sorununu zaten tespit edemez; `firestore.rules` yeni sürümde kalır
 
 ```bash
 # Canlının şu anki sürümünü ve mevcut kanalları gör (live satırı):
-firebase hosting:channel:list --site muezzin-c8485 --project muezzin-c8485 --json \
+firebase hosting:channel:list --site ezanmerkezi --project ezanmerkezi --json \
   | jq -r '.result.channels[] | select(.name | endswith("/channels/live")) | .release.version.name'
 
 # Geri dönülecek sürüm ID'sini bul: Firebase Console → Hosting → Release
 # history (ya da son başarılı deploy'un GitHub Actions job özetindeki
 # "Önceki hosting sürümü" satırı), sonra:
-firebase hosting:clone muezzin-c8485@<VERSION_ID> muezzin-c8485:live --project muezzin-c8485
+firebase hosting:clone ezanmerkezi@<VERSION_ID> ezanmerkezi:live --project ezanmerkezi
 ```
 
 Alternatif (Firebase Console): **Hosting → Release history** → geri
@@ -79,7 +79,7 @@ GEÇERLİ sürümü yeniden deploy etmektir:
 3. Yalnızca rules'u (hosting'e veya indexes'e dokunmadan) yeniden deploy et:
    ```bash
    cp /tmp/firestore.rules.rollback firestore.rules
-   firebase deploy --only firestore:rules --project muezzin-c8485
+   firebase deploy --only firestore:rules --project ezanmerkezi
    git checkout -- firestore.rules   # yerel çalışma kopyasını temizle
    ```
 4. Kalıcı düzeltme için: `main`'de düzeltmeyi içeren yeni bir commit/PR aç
@@ -158,7 +158,7 @@ kabul edilebilir ama unutulursa deploy'lar birikir; Actions sekmesinde
 **Acil durum**: Onay adımını atlamanın CLI'dan bir yolu yoktur (bilerek —
 amaç budur). Gerçekten acil bir düzeltme gerekiyorsa (örn. §2'deki rules
 rollback'i) doğrudan `firebase deploy --only firestore:rules --project
-muezzin-c8485` ile yerel makineden elle deploy edilebilir; bu, onay kapısını
+ezanmerkezi` ile yerel makineden elle deploy edilebilir; bu, onay kapısını
 atlamaz çünkü zaten GitHub Actions akışının dışındadır.
 
 Bu onay kapısı **rules'un kendisini test etmez** — o güvenlik ağı hâlâ
@@ -255,11 +255,11 @@ FIREBASE_SERVICE_ACCOUNT_KEY=... npm run yedek:geri-yukle -- --in=firestore-yede
 
 # 3. Yalnızca çıktı beklentiyle eşleşiyorsa GERÇEK yazım — proje ID'sini
 #    doğru teyit etmek ZORUNLUDUR (yanlış proje reddedilir):
-FIREBASE_SERVICE_ACCOUNT_KEY=... npm run yedek:geri-yukle -- --in=firestore-yedek.ndjson --onayla --proje=muezzin-c8485
+FIREBASE_SERVICE_ACCOUNT_KEY=... npm run yedek:geri-yukle -- --in=firestore-yedek.ndjson --onayla --proje=ezanmerkezi
 
 # Yalnızca tek bir koleksiyonu geri yüklemek için (tam felaket nadir,
 # tipik senaryo tek koleksiyonun bozulmasıdır):
-FIREBASE_SERVICE_ACCOUNT_KEY=... npm run yedek:geri-yukle -- --in=firestore-yedek.ndjson --onayla --proje=muezzin-c8485 --koleksiyon=izinler
+FIREBASE_SERVICE_ACCOUNT_KEY=... npm run yedek:geri-yukle -- --in=firestore-yedek.ndjson --onayla --proje=ezanmerkezi --koleksiyon=izinler
 ```
 
 **Önemli**: geri yükleme `set()` ile TAM ÜZERİNE YAZAR (merge değil) —

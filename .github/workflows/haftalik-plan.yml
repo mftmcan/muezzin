@@ -28,7 +28,7 @@ jobs:
         run: npm ci
       - name: Planı oluştur
         env:
-          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_MUEZZIN_C8485 }}
+          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_EZANMERKEZI }}
         run: npx tsx scripts/haftalikPlanOlustur.ts
       # Bu iş daha önce başarısız olup admin paneline "otomasyonHatasi"
       # uyarısı bırakmışsa, şimdi başarılıysa o uyarıyı otomatik çözer
@@ -37,12 +37,12 @@ jobs:
       - name: Başarıyı admin paneline bildir (önceki uyarıyı otomatik çöz)
         if: success()
         env:
-          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_MUEZZIN_C8485 }}
+          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_EZANMERKEZI }}
         run: npx tsx scripts/lib/reportWorkflowSuccess.ts "Haftalık Plan Oluştur"
       - name: Başarısızlığı admin paneline bildir
         if: failure()
         env:
-          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_MUEZZIN_C8485 }}
+          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_EZANMERKEZI }}
         run: npx tsx scripts/lib/reportWorkflowFailure.ts "Haftalık Plan Oluştur"
       # UYARI_WEBHOOK_URL tanımlı değilse script sessizce atlar (bkz.
       # scripts/lib/disKanalUyari.ts) — Firestore'un kendisi arızalıysa

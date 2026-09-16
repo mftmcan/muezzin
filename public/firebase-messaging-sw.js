@@ -2,13 +2,13 @@ importScripts('https://www.gstatic.com/firebasejs/12.12.0/firebase-app-compat.js
 importScripts('https://www.gstatic.com/firebasejs/12.12.0/firebase-messaging-compat.js');
 
 firebase.initializeApp({
-  "apiKey": "AIzaSyBkddJLg_H9Y0MzH5nMkwIKmgx8hm1fyQk",
-  "authDomain": "muezzin-c8485.firebaseapp.com",
-  "databaseURL": "https://muezzin-c8485-default-rtdb.europe-west1.firebasedatabase.app",
-  "projectId": "muezzin-c8485",
-  "storageBucket": "muezzin-c8485.firebasestorage.app",
-  "messagingSenderId": "863069336186",
-  "appId": "1:863069336186:web:d2a06d0b35c03bd79281c3"
+  "apiKey": "AIzaSyBLuax0dOUhoRi3b8YKKpTNydFaJMq_aPc",
+  "authDomain": "ezanmerkezi.firebaseapp.com",
+  "databaseURL": "https://ezanmerkezi-default-rtdb.europe-west1.firebasedatabase.app",
+  "projectId": "ezanmerkezi",
+  "storageBucket": "ezanmerkezi.firebasestorage.app",
+  "messagingSenderId": "905285951417",
+  "appId": "1:905285951417:web:7649fc246f5c8c92402068"
 });
 
 const messaging = firebase.messaging();

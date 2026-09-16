@@ -31,7 +31,7 @@ jobs:
         run: npm ci
       - name: Vakit verisi sağlığını kontrol et
         env:
-          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_MUEZZIN_C8485 }}
+          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_EZANMERKEZI }}
         # NOT: DIYANET_API_EMAIL/PASSWORD burada BİLİNÇLİ OLARAK geçirilmiyor —
         # bu script günlük çalışıyor, resmi API'yi kullansaydı bir kesinti
         # sırasında aylık kotayı hızla tüketirdi (bkz.
@@ -46,12 +46,12 @@ jobs:
       - name: Başarıyı admin paneline bildir (önceki uyarıyı otomatik çöz)
         if: success()
         env:
-          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_MUEZZIN_C8485 }}
+          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_EZANMERKEZI }}
         run: npx tsx scripts/lib/reportWorkflowSuccess.ts "Vakit Veri Sağlığı Kontrolü"
       - name: Başarısızlığı admin paneline bildir
         if: failure()
         env:
-          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_MUEZZIN_C8485 }}
+          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_EZANMERKEZI }}
         run: npx tsx scripts/lib/reportWorkflowFailure.ts "Vakit Veri Sağlığı Kontrolü"
       # UYARI_WEBHOOK_URL tanımlı değilse script sessizce atlar (bkz.
       # scripts/lib/disKanalUyari.ts) — Firestore'un kendisi arızalıysa
