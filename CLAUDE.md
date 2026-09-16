@@ -275,6 +275,26 @@ boyunca deploy'u bloklayan tek sebep oldu.
   paylaşıp kendi seed'lerini yazdığından birbirini bozabilir. CI davranışını
   taklit etmek için yerelde `--workers=1` ekle.
 
+### E2E'de saat dondurma — RTDB senkronu kaynağında kapalı
+
+`src/lib/timeSync.ts` → `initTimeSync()` (App.tsx'te her sayfa yüklemesinde)
+Firebase RTDB'nin `.info/serverTimeOffset`'ini dinleyip `globalThis.__timeOffset`'i
+yazar, `getTurkeyNow()` (dateUtils.ts) bunu HER okumada ekler. RTDB'nin
+emülatörü hiç başlatılmıyor (yalnızca firestore+auth), yani emülatör modunda
+bile bu GERÇEK production RTDB'sine bağlanıyordu ve `page.clock.setFixedTime`
+ile dondurulmuş saati/tarihi sessizce geçersiz kılıyordu.
+
+`initTimeSync()` artık `VITE_USE_EMULATOR === '1'` iken **hiç bağlanmadan
+dönüyor**; `__timeOffset` hiç yazılmadığından `dateUtils.ts` onu 0 kabul
+eder. **Production davranışı değişmez** (`VITE_USE_EMULATOR` yalnızca
+`playwright.config.ts` → `webServer.env` ile set edilir, bkz. `.env.example`).
+
+Bu kök neden daha önce test tarafında İKİ ayrı bantajla örtülmüştü
+(`visual.spec.ts`'te `__timeOffset`'i salt-okunur 0'a sabitleme,
+`mazeret-flow.spec.ts`'te RTDB host'una giden istek/WebSocket'i abort etme).
+İkisi de KALDIRILDI. **Saat-bağımlı yeni bir e2e testi yazarken bu bantajları
+yeniden icat etme** — `page.clock.setFixedTime` tek başına yeterli.
+
 ### ⚠️ Emulator güvenliği — port çakışmasında ASLA çalışan instance'a bağlanma
 
 `tests/integration/*.test.ts` dosyalarının çoğu dosya başında doğrudan

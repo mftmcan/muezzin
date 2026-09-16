@@ -48,11 +48,17 @@ function turkeyIsFridayNow(): boolean {
  * ÇALIŞMIYOR (yalnızca firestore+auth emüle ediliyor — bkz. test.yml), yani
  * bu senkron GERÇEK production RTDB'ye bağlanıp donmuş saatimizi anında
  * gerçek saate geri düzeltiyordu (CI logundaki başarısız koşuda sayfa hâlâ
- * gerçek "20:50" gösteriyordu, dondurma hiç işe yaramamıştı). Kalıcı çözüm:
- * dondurmayı işe yaramaz kılan bu senkronu, RTDB'ye giden isteği/WebSocket
- * bağlantısını engelleyerek devre dışı bırakmak — `__timeOffset` hiç
- * atanmadığı için `dateUtils.ts`'teki `!== undefined` kontrolü sayesinde 0
- * kabul ediliyor ve dondurduğumuz saat artık gerçekten kalıcı oluyor.
+ * gerçek "20:50" gösteriyordu, dondurma hiç işe yaramamıştı).
+ *
+ * Bu test önce bunu KENDİ İÇİNDE, RTDB host'una giden istek/WebSocket'i
+ * `page.route`/`page.routeWebSocket` ile abort ederek çözüyordu; visual.spec.ts
+ * ise AYNI kök nedeni BAŞKA bir bantajla (`__timeOffset`'i salt-okunur 0'a
+ * sabitleme) örtüyordu — yani her yeni saat-bağımlı test aynı tuzağa yeniden
+ * düşüyordu. Artık kök nedende çözüldü: `initTimeSync()`,
+ * `VITE_USE_EMULATOR === '1'` iken RTDB'ye HİÇ bağlanmıyor (bkz.
+ * src/lib/timeSync.ts), `__timeOffset` hiç atanmadığı için `dateUtils.ts`'teki
+ * `!== undefined` kontrolü sayesinde 0 kabul ediliyor ve dondurduğumuz saat
+ * kalıcı oluyor. İki bantaj da kaldırıldı.
  */
 function turkeyFixedMorning(): Date {
   const turkeyMs = Date.now() + 3 * 60 * 60 * 1000; // seed-mazeret.ts turkeyTodayStr ile aynı "bugün"
@@ -60,9 +66,6 @@ function turkeyFixedMorning(): Date {
   // 10:00 Türkiye saati (UTC+3) == 07:00 UTC, aynı Türkiye takvim günü içinde.
   return new Date(Date.UTC(turkey.getUTCFullYear(), turkey.getUTCMonth(), turkey.getUTCDate(), 7, 0, 0));
 }
-
-/** src/lib/timeSync.ts'in bağlandığı gerçek RTDB host'u (bkz. firebase-applet-config.json databaseURL). */
-const RTDB_HOST_PATTERN = /firebasedatabase\.app|firebaseio\.com/;
 
 test.describe('Mazeret Akışı E2E', () => {
   test.skip(
@@ -87,16 +90,8 @@ test.describe('Mazeret Akışı E2E', () => {
     // Sayfa yüklenmeden ÖNCE dondurulmalı — uygulamanın ilk render'ından
     // itibaren tüm `getTurkeyNow()` çağrıları bu sabit saati görmeli.
     await page.clock.setFixedTime(turkeyFixedMorning());
-    // initTimeSync()'in gerçek RTDB sunucu saatiyle bu dondurmayı geri
-    // düzeltmesini engelle (bkz. yukarıdaki yorum).
-    await page.route(
-      (url) => RTDB_HOST_PATTERN.test(url.hostname),
-      (route) => route.abort()
-    );
-    await page.routeWebSocket(
-      (url) => RTDB_HOST_PATTERN.test(url.hostname),
-      () => {}
-    );
+    // RTDB host'unu abort eden bantaj artık gerekmiyor — initTimeSync()
+    // emülatör modunda hiç bağlanmıyor (bkz. yukarıdaki dosya başı yorumu).
 
     await page.goto('/');
 

@@ -73,23 +73,23 @@ async function saatiSabitle(page: Page) {
   const [yil, ay, gun] = GORSEL_SABIT_TARIH.split('-').map(Number);
   const donmusAn = new Date(Date.UTC(yil, ay - 1, gun, 8, 0, 0));
   await page.clock.setFixedTime(donmusAn);
-  // src/lib/timeSync.ts (initTimeSync, App.tsx'te her sayfa yüklemesinde
-  // çalışır) gerçek Firebase RTDB sunucusuna bağlanıp cihaz saati ile sunucu
-  // saati arasındaki GERÇEK farkı `globalThis.__timeOffset`'e yazar —
-  // getTurkeyNow() bu offset'i mocklanmış Date'e EKLER. RTDB emülatörü
-  // koşmadığından (yalnızca firestore+auth) bu gerçek prod RTDB'ye bağlanır;
-  // bizim sahte tarihimiz (GORSEL_SABIT_TARIH) gerçek "bugün"den aylarca uzak
-  // olduğundan, offset gelir gelmez mock'u sessizce iptal edip sayfayı GERÇEK
-  // tarihe geri döndürüyordu (bkz. 2026-09-16 CI: ana-ekran başlığı "16 Eylül
-  // 2026" gösterip vakit verisi bulunamadığından sonsuz "güncelleniyor"
-  // spinner'ına düşüyordu — kök neden bu, haftalık takvim gibi "bugün"ü tek
-  // seferlik `useState` ile donduran sayfalar bu yarışı kaçırdığı için
-  // etkilenmiyordu). `__timeOffset`'i salt-okunur 0'a sabitleyip bu RTDB
-  // senkronunu zararsız hale getiriyoruz — production kodunda hiçbir
-  // değişiklik gerekmiyor.
-  await page.addInitScript(() => {
-    Object.defineProperty(globalThis, '__timeOffset', { get: () => 0, set: () => {}, configurable: false });
-  });
+  // Burada AYRICA `globalThis.__timeOffset`'i salt-okunur 0'a sabitleyen bir
+  // `addInitScript` bantajı vardı. Gerekçesi: `src/lib/timeSync.ts`
+  // (initTimeSync, App.tsx'te her sayfa yüklemesinde çalışır) gerçek Firebase
+  // RTDB sunucusuna bağlanıp GERÇEK saat farkını `__timeOffset`'e yazıyor,
+  // `getTurkeyNow()` de bunu mocklanmış Date'e EKLİYORDU — sahte tarihimiz
+  // (GORSEL_SABIT_TARIH) gerçek "bugün"den aylarca uzak olduğu için offset
+  // gelir gelmez dondurmayı sessizce iptal edip sayfayı GERÇEK tarihe geri
+  // döndürüyordu (bkz. 2026-09-16 CI: ana-ekran başlığı "16 Eylül 2026"
+  // gösterip vakit verisi bulunamadığından sonsuz "güncelleniyor"
+  // spinner'ına düşüyordu).
+  //
+  // Bantaj KALDIRILDI çünkü kök neden kaynağında çözüldü: `initTimeSync()`
+  // artık `VITE_USE_EMULATOR === '1'` iken RTDB'ye HİÇ bağlanmıyor, yani
+  // emülatör modunda `__timeOffset` hiç yazılmıyor ve `dateUtils.ts` onu
+  // kalıcı olarak 0 kabul ediyor. Aynı kök neden mazeret-flow.spec.ts'te de
+  // ayrı bir bantajla (RTDB host'una giden istek/WebSocket'i abort etme)
+  // örtülmüştü, o da kaldırıldı.
 }
 
 async function girisYap(page: Page, token: string) {
@@ -258,10 +258,27 @@ for (const theme of ['light', 'dark'] as const) {
       await saatiSabitle(page);
       await girisYap(page, seed.tokenAdmin);
       await page.goto('/admin');
+      // "GERÇEKTEN admin panelindeyiz" kapısı — `ekranHazirBekle`'DEN ÖNCE VE
+      // SONRA. Gerekçe (yerelde gözlemlendi, bu testin geçmişteki
+      // açıklanamayan kırılmalarının da muhtemel sebebi): AdminPanel,
+      // `!authLoading && isAdmin === false` iken kendini `/`'a yönlendiriyor
+      // (AdminPanel.tsx). Tam sayfa yeniden yüklemede rol Firestore'dan
+      // gelene kadar `isAdmin` false; normalde `authLoading` true olduğu için
+      // yönlendirme tetiklenmiyor, AMA useAuthStore'un 6 sn'lik "snapshot
+      // failsafe"i devreye girerse `loading` rol ÇÖZÜLMEDEN false'a düşüyor
+      // ve panel gerçekten ana ekrana geri atıyor. O durumda test sessizce
+      // YANLIŞ sayfayı (müezzin ana ekranı) bekliyor/çekiyordu — hata
+      // "toHaveCount(0) başarısız" gibi tamamen alakasız görünüyordu.
+      // `document.title` yalnızca /admin rotasında bu değeri alıyor (App.tsx
+      // ROUTE_TITLES), viewport'tan bağımsız ve yönlendirmede hemen geri
+      // dönüyor — yani bu iki satır hatayı gerçek sebebiyle raporlar.
+      // NOT: bu, uygulamadaki yarışı ÇÖZMEZ, yalnızca görünür kılar.
+      await expect(page).toHaveTitle(/Yönetim Paneli/, { timeout: 15_000 });
       // Ana ekrandaki ile aynı gerekçe (bkz. yukarıdaki not) — admin panelinin
       // `data-ekran-hazir` bayrağı müezzin/alarm/izin store'larının ilk
       // snapshot'ını ve `useTransition` sekme geçişini de kapsıyor.
       await ekranHazirBekle(page);
+      await expect(page).toHaveTitle(/Yönetim Paneli/);
       await expect(page).toHaveScreenshot(`admin-paneli-${theme}.png`, {
         ...SS_OPTS,
         fullPage: true,
