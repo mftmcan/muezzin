@@ -93,6 +93,18 @@ function anaEkranMaskeleri(page: Page) {
 
 const SS_OPTS = { maxDiffPixelRatio: 0.02 } as const;
 
+// App.tsx'teki `<MotionConfig reducedMotion="user">` tüm motion/react
+// animasyonlarını `prefers-reduced-motion` tercihine bağlıyor — burada
+// context'i 'reduce' olarak emüle etmek giriş/stagger animasyonlarını
+// (ör. HaftalikTakvim.tsx'teki her gün kartının `delay: idx*0.05` ile
+// kayarak belirmesi) neredeyse anlık hale getirir. Playwright'ın
+// `toHaveScreenshot` varsayılan `animations:'disabled'`'ı yalnızca CSS
+// animasyon/geçişlerini ve Web Animations API'yi durdurur, motion/react'in
+// kendi rAF/WAAPI sürüşünü KAPSAMAZ — bu yüzden onsuz haftalık takvim gibi
+// stagger'lı sayfalarda ekran görüntüsü animasyon yarı yoldayken
+// yakalanabiliyordu (bkz. 2026-09-16 CI koşusu köküneden analizi).
+test.use({ contextOptions: { reducedMotion: 'reduce' } });
+
 for (const theme of ['light', 'dark'] as const) {
   test.describe(`görsel — ${theme} tema`, () => {
     test(`giriş ekranı (${theme})`, async ({ page }) => {
@@ -144,7 +156,15 @@ for (const theme of ['light', 'dark'] as const) {
       await girisYap(page, seed.tokenMuezzin);
       await page.goto('/takvim');
       await page.waitForSelector('#main-content');
-      await page.waitForTimeout(3000);
+      // Sabit 3000ms, emülatörün plan/bildirim verisini geç teslim ettiği
+      // durumlarda HaftalikTakvim.tsx'in `AnimatePresence` "loading"
+      // iskeletinden "plan" içeriğine geçişini kaçırıp ekran görüntüsünü
+      // hâlâ iskelet (`.skeleton-shimmer`) gösterirken yakalayabiliyordu
+      // (bkz. 2026-09-16 CI: %3 piksel farkı). Sabit süre yerine iskeletin
+      // gerçekten kaybolmasını bekle — zaten yoksa (yükleme daha önce
+      // bittiyse) `toBeHidden` anında geçer.
+      await expect(page.locator('.skeleton-shimmer').first()).toBeHidden({ timeout: 15000 });
+      await page.waitForTimeout(300);
       await expect(page).toHaveScreenshot(`haftalik-takvim-${theme}.png`, { ...SS_OPTS, fullPage: true });
     });
 
@@ -154,7 +174,15 @@ for (const theme of ['light', 'dark'] as const) {
       await girisYap(page, seed.tokenMuezzin);
       await page.goto('/profil');
       await page.waitForSelector('#main-content');
-      await page.waitForTimeout(3000);
+      // Profil.tsx `loading` (auth + muezzin store senkronu) true olduğu
+      // sürece tam içerik yerine "VERİLER SENKRONİZE EDİLİYOR" spinner'ını
+      // (çok daha kısa bir sayfa yüksekliğiyle) gösteriyor. Sabit 3000ms
+      // emülatörün gecikmesiyle yarışıyordu ve bazen spinner hâlâ
+      // ekrandayken yakalanıyordu (bkz. 2026-09-16 CI: 1655px yerine
+      // 823px). Spinner metninin kaybolmasını bekle — hiç görünmediyse
+      // `toBeHidden` anında geçer.
+      await expect(page.getByText('VERİLER SENKRONİZE EDİLİYOR')).toBeHidden({ timeout: 15000 });
+      await page.waitForTimeout(300);
       await expect(page).toHaveScreenshot(`profil-${theme}.png`, { ...SS_OPTS, fullPage: true });
     });
 
