@@ -30,7 +30,7 @@ jobs:
         run: npm ci
       - name: Firestore'u NDJSON'a yedekle
         env:
-          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_MUEZZIN_C8485 }}
+          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_EZANMERKEZI }}
         run: npm run yedek:al -- --out=yedek/firestore-yedek.ndjson
       # Tavan aşılırsa (firestoreYedekle.ts, bkz. dosya başı yorumu)
       # dosya hiç YAZILMAZ — bu adım o durumda sessizce atlanır, aşağıdaki
@@ -59,12 +59,12 @@ jobs:
       - name: Başarıyı admin paneline bildir (önceki uyarıyı otomatik çöz)
         if: success()
         env:
-          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_MUEZZIN_C8485 }}
+          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_EZANMERKEZI }}
         run: npx tsx scripts/lib/reportWorkflowSuccess.ts "Firestore Yedekle"
       - name: Başarısızlığı admin paneline bildir
         if: failure()
         env:
-          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_MUEZZIN_C8485 }}
+          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_EZANMERKEZI }}
         run: npx tsx scripts/lib/reportWorkflowFailure.ts "Firestore Yedekle"
       # UYARI_WEBHOOK_URL tanımlı değilse script sessizce atlar (bkz.
       # scripts/lib/disKanalUyari.ts).

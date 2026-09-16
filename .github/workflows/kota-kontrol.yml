@@ -39,7 +39,7 @@ jobs:
         run: npm ci
       - name: Kota kullanımını tahmin et
         env:
-          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_MUEZZIN_C8485 }}
+          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_EZANMERKEZI }}
         # Script eşik aşımında BAŞARISIZ OLMAZ (uyarıyı kendisi
         # adminUyarilari'na yazar) — buradaki failure() dalı yalnızca
         # gerçek script/altyapı hataları için.
@@ -52,12 +52,12 @@ jobs:
       - name: Başarıyı admin paneline bildir (önceki uyarıyı otomatik çöz)
         if: success()
         env:
-          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_MUEZZIN_C8485 }}
+          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_EZANMERKEZI }}
         run: npx tsx scripts/lib/reportWorkflowSuccess.ts "Kota Kullanım Kontrolü"
       - name: Başarısızlığı admin paneline bildir
         if: failure()
         env:
-          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_MUEZZIN_C8485 }}
+          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_EZANMERKEZI }}
         run: npx tsx scripts/lib/reportWorkflowFailure.ts "Kota Kullanım Kontrolü"
       # UYARI_WEBHOOK_URL tanımlı değilse script sessizce atlar (bkz.
       # scripts/lib/disKanalUyari.ts) — Firestore'un kendisi arızalıysa

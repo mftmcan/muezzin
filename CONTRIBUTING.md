@@ -26,7 +26,7 @@ smoke + unit + rules + integration + sw-config + indexes zincirini çalıştır�
 `test:rules`, `test:integration` ve `test:e2e` bir Firebase emülatörü ister:
 
 ```bash
-firebase emulators:exec --only firestore,auth --project muezzin-c8485 "npx playwright test"
+firebase emulators:exec --only firestore,auth --project ezanmerkezi "npx playwright test"
 ```
 
 ## Commit ve dallanma
