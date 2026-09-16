@@ -1,0 +1,178 @@
+name: Görsel Baseline Yenile (Linux)
+
+# YALNIZCA ELLE TETİKLENİR (workflow_dispatch). Bilerek `push`/`pull_request`
+# tetikleyicisi YOK: baseline'ın otomatik yenilenmesi, gerçek bir görsel
+# regresyonu "kabul edilmiş yeni normal" haline getirip sessizce yutardı —
+# yani görsel testleri tamamen anlamsız kılardı. Baseline kabulü bilinçli,
+# insan tarafından başlatılan bir karardır.
+#
+# NEDEN VAR: CI `ubuntu-latest`'te koşar, yani `gorsel_regresyon` job'ının
+# (test.yml) karşılaştırdığı dosyalar `-chromium-linux.png` ve
+# `-mobile-chrome-linux.png`'dir. Geliştirme Windows'ta yapıldığından yerelde
+# `--update-snapshots` yalnızca `-chromium-win32.png`'i yeniler; bu tam olarak
+# 2026-09-16'da yaşandı (0d71808 Windows baseline'larını yeniledi, Linux
+# baseline'ları eski/bozuk render'ı içerdiği için CI kırık kaldı ve deploy
+# zinciri koptu). Bu workflow o boşluğu kapatır: Linux baseline'larını CI'ın
+# kendi ortamında üretir.
+#
+# KAPSAM: `--grep @gorsel` ile yalnızca tests/e2e/visual.spec.ts, iki
+# Playwright projesi için de (chromium + mobile-chrome) → `-linux.png`
+# dosyaları. WINDOWS baseline'ları (`-chromium-win32.png`) bu workflow'un
+# KAPSAMI DIŞINDADIR, yerelde `npm run test:visual -- --update-snapshots` ile
+# elle yönetilir; ikisi ayrı ayrı commit'lenir.
+on:
+  workflow_dispatch:
+    inputs:
+      gerekce:
+        description: 'Baseline neden yenileniyor? (commit mesajına yazılır)'
+        required: true
+        type: string
+
+# Aynı anda iki yenileme koşusu aynı dosyalara push etmeye çalışmasın.
+# `cancel-in-progress: false` — koşan bir yenileme commit/push aşamasında
+# yarıda kesilmesin, sıraya girsin.
+concurrency:
+  group: gorsel-baseline-yenile
+  cancel-in-progress: false
+
+jobs:
+  yenile:
+    name: Linux baseline üret ve commit'le
+    # Elle tetiklendiği için bile olsa main'e yazan bir iştir — yalnızca
+    # main'den çalıştırılabilsin.
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # Yalnızca baseline commit'ini push edebilmek için. Başka hiçbir izin yok.
+    permissions:
+      contents: write
+    steps:
+      # `token`/`persist-credentials` varsayılanı: GITHUB_TOKEN kalıcı olur,
+      # aşağıdaki `git push` bunu kullanır.
+      - name: Checkout Repository
+        uses: actions/checkout@v7
+
+      # Aşağıdaki ortam kurulumu, test.yml'deki `gorsel_regresyon` job'ıyla
+      # BİREBİR aynı olmalı — baseline hangi ortamda üretiliyorsa CI'ın
+      # karşılaştırdığı ortam da o olmalı, aksi halde bu workflow sorunu
+      # çözmek yerine yeniden üretir.
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v6
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Install Playwright Browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
+
+      - name: Install Playwright OS dependencies (cache hit)
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
+
+      - name: Setup Java (for Firebase Emulator)
+        uses: actions/setup-java@v6
+        with:
+          distribution: 'temurin'
+          # firebase-tools artık Auth emülatörü için JDK 21+ istiyor.
+          java-version: '21'
+
+      # `--update-snapshots` eşleşmeyen her baseline'ı yeniden yazar ve bunu
+      # "başarısız test" olarak raporlar — bu BEKLENEN durumdur (zaten yenilemek
+      # için çalıştırıyoruz), bu yüzden `continue-on-error`. Asıl doğrulama
+      # aşağıdaki "değişiklikleri topla" adımında: hiç dosya değişmediyse
+      # yenilenecek bir şey yoktu demektir.
+      - name: Görsel baseline'ları yeniden üret
+        continue-on-error: true
+        run: ./node_modules/.bin/firebase emulators:exec --only firestore,auth --project ezanmerkezi "npx playwright test --grep @gorsel --update-snapshots"
+
+      # SINIRLI COMMIT: `git add` YALNIZCA baseline dizinindeki PNG'leri alır.
+      # `--update-snapshots` koşusu test-results/ gibi başka çıktılar da
+      # üretir (.gitignore'da olsalar bile) — burada `git add -A` kullanmak
+      # bu işi "her şeyi commit'le" haline getirirdi. Ayrıca yalnızca
+      # `-linux.png` deseni: bu runner Windows baseline'ı üretmez, yanlışlıkla
+      # silinmiş/değişmiş görünen bir win32 dosyası buradan commit'lenmemeli.
+      - name: Değişiklikleri topla
+        id: degisiklik
+        # Kullanıcı girdisi `run:` gövdesine `${{ }}` ile GÖMÜLMEZ — ortam
+        # değişkeni olarak geçer. Gömülseydi, dispatch girdisine kabuk
+        # metakarakteri koyan biri bu adımda kod çalıştırabilirdi (GitHub'ın
+        # script-injection rehberi). Aynı gerekçe aşağıdaki push adımında da.
+        env:
+          GEREKCE: ${{ inputs.gerekce }}
+        run: |
+          git add -- 'tests/e2e/visual.spec.ts-snapshots/*-linux.png'
+          if git diff --cached --quiet; then
+            echo "degisti=hayir" >> "$GITHUB_OUTPUT"
+            {
+              echo "## Görsel baseline yenileme: değişiklik yok"
+              echo ""
+              echo "Üretilen Linux baseline'ları mevcut dosyalarla birebir aynı — commit atılmadı."
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          echo "degisti=evet" >> "$GITHUB_OUTPUT"
+          {
+            echo "## Görsel baseline yenilendi (Linux)"
+            echo ""
+            printf '**Gerekçe:** %s\n' "$GEREKCE"
+            echo ""
+            echo '```'
+            git diff --cached --stat
+            echo '```'
+            echo ""
+            echo "Windows baseline'ları (\`-chromium-win32.png\`) bu koşuma DAHİL DEĞİLDİR; gerekiyorsa yerelde ayrıca yenilenmelidir."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Baseline commit'ini main'e push et
+        if: steps.degisiklik.outputs.degisti == 'evet'
+        env:
+          GEREKCE: ${{ inputs.gerekce }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # Mesaj bir dosyadan okunuyor: `-m` içine gömülü çok satırlı bir
+          # dizge, YAML blok girintisini de commit gövdesine taşırdı.
+          # `$GEREKCE` kullanıcı girdisidir — komut satırına değil yalnızca
+          # bir dosyaya, tırnaksız genişletme olmadan yazılır.
+          {
+            printf "Test: Linux görsel baseline'larını yenile\n\n"
+            printf "Gerekçe: %s\n\n" "$GEREKCE"
+            printf "'.github/workflows/gorsel-baseline-yenile.yml' tarafından elle tetiklenerek\n"
+            printf "üretildi (ubuntu-latest, --grep @gorsel --update-snapshots). Yalnızca\n"
+            printf "tests/e2e/visual.spec.ts-snapshots/ altındaki *-linux.png dosyalarını kapsar;\n"
+            printf "Windows baseline'ları (-chromium-win32.png) DAHİL DEĞİLDİR.\n\n"
+            printf "Tetikleyen: %s\n" "$GITHUB_ACTOR"
+            printf "Kaynak commit: %s\n" "$GITHUB_SHA"
+          } > "$RUNNER_TEMP/baseline-commit-mesaji.txt"
+          # Yalnızca yukarıda stage'lenen PNG'ler commit'lenir (`git commit`
+          # bayraksız çağrıldığında index'te ne varsa onu alır; `-a` YOK).
+          git commit -F "$RUNNER_TEMP/baseline-commit-mesaji.txt"
+          # Yenileme koşusu sırasında main'e başka bir commit girmiş olabilir;
+          # rebase ile üstüne al (bu commit yalnızca PNG'lere dokunduğu için
+          # çakışma pratikte olmaz, olursa push başarısız olur ve elle
+          # bakılır — sessizce force-push YOK).
+          git pull --rebase origin main
+          git push origin HEAD:main
+
+      # Değişiklik olsun olmasın, farkın kendisi (actual/diff PNG'leri)
+      # incelenebilsin diye — gerçek bir regresyonu yanlışlıkla kabul edip
+      # etmediğini ancak buna bakarak anlarsın.
+      - name: Playwright çıktılarını yükle
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: baseline-yenileme-ciktilari
+          path: test-results/
+          retention-days: 7
+          if-no-files-found: ignore

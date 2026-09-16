@@ -264,7 +264,15 @@ boyunca deploy'u bloklayan tek sebep oldu.
 - **Baseline yenilerken CI'ın `ubuntu-latest` olduğunu unutma:**
   `-chromium-linux.png` VE `-mobile-chrome-linux.png` yenilenmelidir.
   Yalnızca Windows'ta (`-chromium-win32.png`) yenilemek CI'ı kırık bırakır —
-  2026-09-16'da tam olarak bu oldu (`0d71808` → `4bc9450` döngüsü).
+  2026-09-16'da tam olarak bu oldu (`0d71808` → `4bc9450` döngüsü). Linux
+  baseline'ları için `.github/workflows/gorsel-baseline-yenile.yml` var:
+  **yalnızca `workflow_dispatch`** (zorunlu bir "gerekçe" girdisiyle), sonucu
+  `tests/e2e/visual.spec.ts-snapshots/*-linux.png` ile SINIRLI tek bir
+  commit olarak `main`'e push eder ve `git diff --stat`'ı iş akışı özetine
+  yazar. Windows baseline'ları kapsam dışıdır, yerelde
+  `npm run test:visual -- --update-snapshots` ile ayrıca yönetilir. Bu
+  workflow'a **push/PR tetikleyicisi ekleme** — otomatik baseline kabulü,
+  gerçek bir regresyonu sessizce "yeni normal" yapardı.
 - Görsel testlerde ekran görüntüsünden önceki bekleme `ekranHazirBekle()`
   üzerinden gerçek sinyallere bağlıdır (`data-ekran-hazir`,
   `.skeleton-shimmer`, `document.fonts.ready`). **Yeni bir görsel test
@@ -356,7 +364,9 @@ kök `CLAUDE.md` → Model Seçimi, 2026-09-03 ölçümü). **Opus'a geç**
   hosting geri alma zincirini ve rules/indexes deploy'unu yürütür, sağlık kontrolünün
   tek kaynağı `scripts/lib/hostingSaglik.ts`'tir; public repo'da canlıya kendi
   başına deploy/yazan tetikleyiciler, bkz. kök otomasyon ayarlarındaki soft-deny
-  listesi).
+  listesi). Ayrıca `gorsel-baseline-yenile.yml` — `contents: write` ile
+  DOĞRUDAN `main`'e commit/push eder; tetikleyicisini (`workflow_dispatch`),
+  `main` kısıtını veya `git add` pathspec'ini genişletmek riskli kategoridedir.
 - **Planlama**: `mazeretKurallari.ts`/vekalet zincirindeki üç uygulama noktasından birini
   değiştirirken (diğer ikisini birlikte tasarlamak gerekir), ya da yeni bir zamanlanmış
   script/GitHub Actions workflow eklerken.
