@@ -1,0 +1,35 @@
+name: (Geçici) Linux Görsel Baseline Üret
+
+# Yalnızca elle tetiklenir. saatiSabitle() artık RTDB saat senkronunu
+# (globalThis.__timeOffset) da 0'a sabitliyor — önceki baseline'lar bu
+# senkronun sahte tarihi geçersiz kılıp ana ekranı boş/yükleniyor
+# durumunda yakaladığı bozuk render'ı içeriyordu (bkz. commit mesajı).
+# İşi bitince silinecek.
+on:
+  workflow_dispatch:
+
+jobs:
+  generate:
+    name: Generate Linux Snapshots
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: 'npm'
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - uses: actions/setup-java@v6
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - run: npm install -g firebase-tools
+      - run: firebase emulators:exec --only firestore,auth --project ezanmerkezi "npx playwright test tests/e2e/visual.spec.ts --update-snapshots"
+        continue-on-error: true
+      - uses: actions/upload-artifact@v7
+        with:
+          name: linux-snapshots
+          path: tests/e2e/visual.spec.ts-snapshots/*-linux.png
+          if-no-files-found: error
