@@ -165,8 +165,16 @@ async function ekranHazirBekle(page: Page) {
 // yakalanabiliyordu (bkz. 2026-09-16 CI koşusu köküneden analizi).
 test.use({ contextOptions: { reducedMotion: 'reduce' } });
 
+// `@gorsel` etiketi, CI'ın bu dosyayı diğer e2e testlerinden AYIRMASINI
+// sağlar (.github/workflows/test.yml): fonksiyonel e2e `--grep-invert @gorsel`
+// ile deploy'u BLOKLAYAN `test` job'ında, görsel regresyon ise `--grep @gorsel`
+// ile deploy'u bloklamayan ayrı bir job'da koşar. Ayrım BİLEREK dosya
+// yoluyla/test başlığıyla değil etiketle yapılıyor: yeni eklenen bir spec
+// dosyası hiçbir şey yapılmadan fonksiyonel (bloklayan) tarafa düşer —
+// yani varsayılan FAIL-CLOSED'dır; bir testin deploy kapısından çıkması
+// ancak bu etiketin BİLİNÇLİ olarak eklenmesiyle olur.
 for (const theme of ['light', 'dark'] as const) {
-  test.describe(`görsel — ${theme} tema`, () => {
+  test.describe(`görsel — ${theme} tema`, { tag: '@gorsel' }, () => {
     test(`giriş ekranı (${theme})`, async ({ page }) => {
       await temaAyarla(page, theme);
       await saatiSabitle(page);

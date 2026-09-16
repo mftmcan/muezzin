@@ -72,8 +72,16 @@ jobs:
       - name: Run rules & smoke tests
         run: npm run test:all
 
-      - name: Run Playwright E2E tests (against Firestore + Auth emulators)
-        run: firebase emulators:exec --only firestore,auth --project ezanmerkezi "npx playwright test"
+      # `--grep-invert @gorsel`: GÖRSEL regresyon testleri bilerek DIŞARIDA
+      # bırakılır, onlar ayrı `gorsel_regresyon` job'ında koşar (gerekçe:
+      # aşağıdaki o job'ın başındaki not). Burada kalan her şey gerçek
+      # fonksiyonel/güvenlik regresyonu olduğundan deploy'u BLOKLAMAYA devam
+      # eder. Etiket bazlı filtre, dosya yolu/başlık bazlı olana bilerek
+      # tercih edildi: etiketsiz her YENİ spec dosyası kendiliğinden bu
+      # bloklayan tarafa düşer (fail-closed), deploy kapısından çıkmak için
+      # `@gorsel` etiketinin bilinçli eklenmesi gerekir.
+      - name: Run Playwright functional E2E tests (against Firestore + Auth emulators)
+        run: firebase emulators:exec --only firestore,auth --project ezanmerkezi "npx playwright test --grep-invert @gorsel"
 
       # E2E başarısız olduğunda trace.zip/error-context.md indirilemiyordu —
       # kök nedeni yalnızca CI loglarındaki metinden tahmin etmek gerekiyordu
@@ -87,8 +95,119 @@ jobs:
           path: test-results/
           retention-days: 7
 
+  # GÖRSEL REGRESYON — BİLEREK `build_and_deploy`'un `needs:` ZİNCİRİNDE DEĞİL.
+  #
+  # Gerekçe: görsel testler bir PNG karşılaştırmasıdır ve gerçek bir kod
+  # regresyonu olmadan da kırılabilirler — runner'ın font render'ı/OS'u
+  # değişirse, baseline yanlış OS için üretilmişse (bir kez gerçekten oldu:
+  # `-chromium-win32.png` yenilenip `-chromium-linux.png` eski bırakıldı,
+  # CI ubuntu'da koştuğu için deploy zinciri koptu), ya da ekranın veri
+  # yüklemesiyle yarışılırsa. Bu sınıf, son ~10 commit boyunca aynı testi
+  # tekrar tekrar kırıp PRODUCTION DEPLOY'unu bloklayan tek sebep oldu —
+  # oysa aynı koşularda `npm run test:all` (unit/rules/integration/smoke) ve
+  # fonksiyonel e2e'nin tamamı yeşildi. Bir piksel farkının güvenlik
+  # kurallarının canlıya çıkmasını engellemesi yanlış bir risk dengesidir.
+  #
+  # Ayrım deploy'u GEVŞETMEZ: `test` job'ı (test:all + fonksiyonel e2e)
+  # `needs:` ile bloklamaya devam ediyor, yani gerçek regresyon/güvenlik
+  # testleri hâlâ sert kapıdır.
+  #
+  # SESSİZ DEĞİL: testin kendisi `continue-on-error` ile koşar (artifact'ler
+  # yüklenebilsin diye) ama son adım fark varsa job'ı BAŞARISIZ eder —
+  # commit/PR üzerinde kırmızı bir kontrol, bir `::warning::` anotasyonu ve
+  # $GITHUB_STEP_SUMMARY'de ne yapılacağını anlatan bir blok bırakır.
+  # Sadece deploy'u durdurmaz.
+  gorsel_regresyon:
+    name: Görsel Regresyon (deploy'u bloklamaz)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # `test` job'ıyla aynı gerekçe (bkz. yukarısı): aynı ref'e art arda
+    # push'landığında eski koşu iptal edilir. Ayrı grup — `test`i iptal
+    # etmesin.
+    concurrency:
+      group: gorsel-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v6
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Install Playwright Browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
+
+      - name: Install Playwright OS dependencies (cache hit)
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
+
+      - name: Setup Java (for Firebase Emulator)
+        uses: actions/setup-java@v6
+        with:
+          distribution: 'temurin'
+          # firebase-tools artık Auth emülatörü için JDK 21+ istiyor.
+          java-version: '21'
+
+      # `test` job'ı firebase-tools'u global kuruyor; burada repo'nun kendi
+      # devDependency'si (sürümü package-lock.json ile sabit) kullanılıyor —
+      # ek bir global kurulum adımı ve ikinci, izlenmeyen bir sürüm pin'i
+      # gerekmiyor (aynı gerekçe deploy job'ında da uygulanıyor).
+      - name: Run Playwright visual regression tests
+        id: gorsel
+        continue-on-error: true
+        run: ./node_modules/.bin/firebase emulators:exec --only firestore,auth --project ezanmerkezi "npx playwright test --grep @gorsel"
+
+      # Fark varsa beklenen/gerçek/diff PNG'leri ve trace burada — baseline'ın
+      # mı bayatladığı yoksa gerçek bir regresyon mu olduğu ancak bunlara
+      # bakarak ayırt edilebilir. `test` job'ındaki artifact'ten FARKLI bir ad
+      # (aynı koşuda ad çakışması olmaması için).
+      - name: Upload visual diff artifacts on failure
+        if: steps.gorsel.outcome == 'failure'
+        uses: actions/upload-artifact@v7
+        with:
+          name: gorsel-regresyon-raporu
+          path: test-results/
+          retention-days: 7
+
+      - name: Sonucu raporla
+        if: always()
+        run: |
+          if [ "${{ steps.gorsel.outcome }}" != "success" ]; then
+            {
+              echo "## Görsel fark tespit edildi"
+              echo ""
+              echo "\`tests/e2e/visual.spec.ts\` (\`@gorsel\`) baseline PNG'lerle eşleşmedi."
+              echo "**Bu, deploy'u BLOKLAMADI** — \`build_and_deploy\` yalnızca \`test\` job'ına bağlı."
+              echo ""
+              echo "Yapılacaklar:"
+              echo "1. Bu koşudaki \`gorsel-regresyon-raporu\` artifact'ini indir; \`*-expected.png\` / \`*-actual.png\` / \`*-diff.png\` dosyalarına bak."
+              echo "2. Fark GERÇEK bir tasarım regresyonuysa düzelt."
+              echo "3. Fark KASITLI bir tasarım değişikliğiyse baseline'ı yenile — CI **ubuntu-latest**'te koşar, yani \`-chromium-linux.png\` ve \`-mobile-chrome-linux.png\` dosyaları da yenilenmelidir. Yalnızca Windows'ta (\`-chromium-win32.png\`) yenilemek CI'ı kırık bırakır (daha önce tam olarak bu oldu)."
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "::warning title=Görsel fark tespit edildi::Gorsel regresyon testleri basarisiz - deploy BLOKLANMADI, ayrintilar icin is akisi ozetine ve 'gorsel-regresyon-raporu' artifactine bakin."
+            exit 1
+          fi
+          echo "## Görsel regresyon: fark yok" >> "$GITHUB_STEP_SUMMARY"
+
   build_and_deploy:
     name: Build & Deploy to Firebase
+    # BİLEREK yalnızca `test` — `gorsel_regresyon` kasıtlı olarak YOK
+    # (gerekçe: o job'ın başındaki not). O job kırmızıya düşse bile deploy
+    # zinciri çalışır.
     needs: test
     # `environment: production` GitHub'ın deployment protection rules'ını
     # devreye sokar — Settings → Environments → production → Required

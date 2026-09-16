@@ -233,7 +233,9 @@ npm run typecheck         # tsc --noEmit
 npm run lint               # eslint .
 npm run build              # production build
 npm run test:unit          # vitest (tests/unit/**/*.test.{ts,tsx})
-npm run test:e2e           # playwright (Firebase emülatörü gerektirir)
+npm run test:e2e           # playwright, TÜM e2e (görsel dahil; emülatör gerektirir)
+npm run test:e2e:fonksiyonel # playwright, görsel OLMAYAN e2e (--grep-invert @gorsel)
+npm run test:visual        # yalnızca görsel regresyon (--grep @gorsel)
 npm run test:rules         # firestore.rules testleri (emülatör)
 npm run test:integration   # admin-SDK uzlaştırma cron'ları (tests/integration, emülatör)
 npm run test:all           # typecheck + typecheck:scripts + lint + smoke + unit + rules + integration + sw-config + indexes
@@ -241,6 +243,37 @@ npm run test:all           # typecheck + typecheck:scripts + lint + smoke + unit
 
 **`npm test` `test:all`'ın takma adı DEĞİL** — sadece `test:smoke`'u çalıştırır.
 Tam doğrulama için `npm run test:all` kullan.
+
+### Görsel regresyon deploy'u BLOKLAMAZ (`@gorsel` etiketi)
+
+`tests/e2e/visual.spec.ts`'teki iki `describe` `{ tag: '@gorsel' }` taşır ve
+`test.yml`'de AYRI bir `gorsel_regresyon` job'ında koşar. `build_and_deploy`
+BİLEREK yalnızca `needs: test`'e bağlıdır — yani bir piksel farkı production
+deploy'unu durdurmaz (sessizce yutulmaz: job kırmızıya düşer, bir
+`::warning::` anotasyonu, `$GITHUB_STEP_SUMMARY` bloğu ve
+`gorsel-regresyon-raporu` artifact'i bırakır). Gerekçe: görsel testler gerçek
+bir kod regresyonu olmadan da kırılabiliyor (font render'ı, yanlış OS için
+üretilmiş baseline, veri yükleme yarışı) ve tam olarak bu, son ~10 commit
+boyunca deploy'u bloklayan tek sebep oldu.
+
+- Deploy'u bloklayan taraf `--grep-invert @gorsel`'dir; yani **etiketi
+  olmayan her YENİ spec dosyası kendiliğinden BLOKLAYAN tarafa düşer**
+  (fail-closed). Bir testi deploy kapısının dışına çıkarmak ancak `@gorsel`
+  etiketini bilinçli eklemekle olur — bunu yapmadan önce testin gerçekten
+  yalnızca görsel olduğundan emin ol.
+- **Baseline yenilerken CI'ın `ubuntu-latest` olduğunu unutma:**
+  `-chromium-linux.png` VE `-mobile-chrome-linux.png` yenilenmelidir.
+  Yalnızca Windows'ta (`-chromium-win32.png`) yenilemek CI'ı kırık bırakır —
+  2026-09-16'da tam olarak bu oldu (`0d71808` → `4bc9450` döngüsü).
+- Görsel testlerde ekran görüntüsünden önceki bekleme `ekranHazirBekle()`
+  üzerinden gerçek sinyallere bağlıdır (`data-ekran-hazir`,
+  `.skeleton-shimmer`, `document.fonts.ready`). **Yeni bir görsel test
+  yazarken `waitForTimeout(NNNN)` ile "veri gelsin diye" bekleme** — bu
+  kalıp bu dosyada defalarca kırıldı ve süreyi büyütmek onu çözmedi.
+- Yerelde `test:e2e`/`test:e2e:fonksiyonel` paralel worker'larla koşar
+  (`workers` yalnızca `CI` ortamında 1'dir) ve spec'ler AYNI emülatörü
+  paylaşıp kendi seed'lerini yazdığından birbirini bozabilir. CI davranışını
+  taklit etmek için yerelde `--workers=1` ekle.
 
 ### ⚠️ Emulator güvenliği — port çakışmasında ASLA çalışan instance'a bağlanma
 
