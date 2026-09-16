@@ -297,11 +297,12 @@ dönüyor**; `__timeOffset` hiç yazılmadığından `dateUtils.ts` onu 0 kabul
 eder. **Production davranışı değişmez** (`VITE_USE_EMULATOR` yalnızca
 `playwright.config.ts` → `webServer.env` ile set edilir, bkz. `.env.example`).
 
-Bu kök neden daha önce test tarafında İKİ ayrı bantajla örtülmüştü
-(`visual.spec.ts`'te `__timeOffset`'i salt-okunur 0'a sabitleme,
-`mazeret-flow.spec.ts`'te RTDB host'una giden istek/WebSocket'i abort etme).
-İkisi de KALDIRILDI. **Saat-bağımlı yeni bir e2e testi yazarken bu bantajları
-yeniden icat etme** — `page.clock.setFixedTime` tek başına yeterli.
+Bu kök neden daha önce test tarafında ÜÇ ayrı bantajla örtülmüştü:
+`visual.spec.ts`'te `__timeOffset`'i salt-okunur 0'a sabitleme, ayrıca
+`mazeret-flow.spec.ts` ve `vekalet-flow.spec.ts`'te RTDB host'una giden
+istek/WebSocket'i abort etme. **Üçü de KALDIRILDI. Saat-bağımlı yeni bir e2e
+testi yazarken bu bantajları yeniden icat etme** — `page.clock.setFixedTime`
+tek başına yeterli.
 
 ### ⚠️ Emulator güvenliği — port çakışmasında ASLA çalışan instance'a bağlanma
 

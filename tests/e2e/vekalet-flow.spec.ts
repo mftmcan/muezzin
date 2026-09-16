@@ -32,23 +32,17 @@ function turkeyFixedMorning(): Date {
   return new Date(Date.UTC(turkey.getUTCFullYear(), turkey.getUTCMonth(), turkey.getUTCDate(), 7, 0, 0));
 }
 
-const RTDB_HOST_PATTERN = /firebasedatabase\.app|firebaseio\.com/;
-
-/** Bir sayfayı dondurulmuş "bugün 10:00" Türkiye saatiyle, gerçek RTDB saat
- *  senkronu engellenmiş halde açar ve verilen custom token ile oturum açar
- *  — mazeret-flow.spec.ts'teki tek-sayfalık akışın iki bağımsız context'e
- *  genellenmiş hali. */
+/** Bir sayfayı dondurulmuş "bugün 10:00" Türkiye saatiyle açar ve verilen
+ *  custom token ile oturum açar — mazeret-flow.spec.ts'teki tek-sayfalık
+ *  akışın iki bağımsız context'e genellenmiş hali.
+ *
+ *  Burada RTDB host'una giden istek/WebSocket'i abort eden bir bantaj daha
+ *  vardı (aynı bantajın üçüncü kopyası). Gerekmiyor: `initTimeSync()` artık
+ *  `VITE_USE_EMULATOR === '1'` iken RTDB'ye hiç bağlanmıyor, yani
+ *  `globalThis.__timeOffset` hiç yazılmıyor ve dondurduğumuz saat kalıcı
+ *  oluyor (bkz. src/lib/timeSync.ts). */
 async function girisYapVeHaz(page: Page, token: string) {
   await page.clock.setFixedTime(turkeyFixedMorning());
-  await page.route(
-    (url) => RTDB_HOST_PATTERN.test(url.hostname),
-    (route) => route.abort()
-  );
-  await page.routeWebSocket(
-    (url) => RTDB_HOST_PATTERN.test(url.hostname),
-    () => {}
-  );
-
   await page.goto('/');
   await page.waitForFunction(() => window.__testSignIn !== undefined, { timeout: 15000 });
   await page.evaluate((t) => window.__testSignIn!(t), token);
