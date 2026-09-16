@@ -200,6 +200,18 @@ export default function MuezzinAnaEkran() {
     <div
       style={{ '--dynamic-aura': auraColor } as React.CSSProperties}
       className="w-full min-h-screen bg-[var(--app-bg)] relative overflow-hidden transition-colors duration-[3000ms]"
+      // SALT TEST-GÖZLEMLENEBİLİRLİĞİ (hiçbir stil/davranış etkisi yok):
+      // ekranın TÜM Firestore kaynaklarının ilk snapshot'ını teslim edip
+      // iskelet/spinner katmanlarından çıktığı anı DOM'a yansıtır. Görsel
+      // regresyon testi (tests/e2e/visual.spec.ts) önceden bunun yerine
+      // `waitForTimeout(3000)` ile KEYFİ bir süre bekliyordu — CI'da
+      // emülatörün teslim süresi değişken olduğundan bu pay defalarca
+      // yetersiz kalıp sayfayı yükleniyor durumundayken yakaladı ve gerçek
+      // bir regresyon olmadan baseline'ı kırdı (1500ms → 3000ms
+      // yükseltmesinin kendisi de bu sınıfın kanıtı). `isHeroLoading`
+      // ayrıca `.skeleton-shimmer` DEĞİL bir spinner render ettiğinden
+      // (AnaEkranHero.tsx) iskelet-yok kontrolü tek başına yeterli değildi.
+      data-ekran-hazir={!isHeroLoading && !isHademelerLoading && !gorevLoading ? 'evet' : 'hayir'}
     >
       {/* Sayfaya özgü ikinci bir aura blob katmanı önceden burada AYRICA render
      ediliyordu — Layout.tsx zaten global bir 2-blob sirkadiyen katman

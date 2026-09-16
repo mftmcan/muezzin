@@ -237,6 +237,15 @@ export default function AdminPanel() {
     <div
       style={{ '--dynamic-aura': activeAuraColor } as React.CSSProperties}
       className="min-h-screen flex lg:flex-row bg-[var(--app-bg)] font-apple pb-24 lg:pb-0 overflow-hidden selection:bg-[var(--dynamic-aura,var(--aura-indigo))]/20 fluid-transition"
+      // SALT TEST-GÖZLEMLENEBİLİRLİĞİ (hiçbir stil/davranış etkisi yok) —
+      // MuezzinAnaEkran.tsx'teki aynı bayrağın admin karşılığı, aynı
+      // gerekçeyle: görsel regresyon testi artık keyfi bir `waitForTimeout`
+      // yerine bu bayrağı bekliyor. `isPending` de dahil, çünkü sekme geçişi
+      // bir `useTransition` içinde ve geçiş sürerken başlık/gövde bilerek
+      // `opacity-20 blur-sm` / `scale-[0.99] opacity-60` ara durumunda
+      // render ediliyor — o ara durumda alınan bir ekran görüntüsü de
+      // baseline'dan sapardı.
+      data-ekran-hazir={!authLoading && !statsLoading && !isPending ? 'evet' : 'hayir'}
     >
       {/* Sayfaya özgü ikinci bir aura blob katmanı önceden burada AYRICA render
      ediliyordu — Layout.tsx zaten global bir 2-blob sirkadiyen katman

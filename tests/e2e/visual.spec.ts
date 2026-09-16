@@ -114,6 +114,45 @@ function anaEkranMaskeleri(page: Page) {
 
 const SS_OPTS = { maxDiffPixelRatio: 0.02 } as const;
 
+// Ekran görüntüsünden hemen önceki TEK sabit bekleme. `reducedMotion:'reduce'`
+// ve `toHaveScreenshot`'ın `animations:'disabled'`'ı transform animasyonlarını
+// ve CSS/WAAPI geçişlerini durdurur, ama motion/react `reducedMotion="user"`
+// altında OPAKLIK geçişlerini bilerek oynatmaya devam eder (bkz. App.tsx
+// MotionConfig). Bu paydaki en uzun opaklık geçişi AnaEkranHero'nun
+// yükleniyor→içerik `AnimatePresence` geçişi (0.55s) — 700ms onu kapsar.
+// DİKKAT: bu, "veri gelsin diye bekleme" DEĞİLDİR; veri beklemesi aşağıdaki
+// `ekranHazirBekle` içinde tamamen sinyale bağlıdır. Bu ayrım önemli: eski
+// `waitForTimeout(3000)` İKİ işi birden yapıyordu ve CI'da emülatörün
+// değişken teslim süresiyle yarıştığı için defalarca kırıldı.
+const YERLESME_PAYI_MS = 700;
+
+/**
+ * "Ekran gerçekten yüklendi" beklemesi — keyfi süre YOK.
+ *
+ * Katmanlar:
+ *  1. `#main-content` (Layout) DOM'a girdi mi,
+ *  2. `data-ekran-hazir` bayrağı (yalnızca onu taşıyan sayfalarda): ilgili
+ *     sayfanın TÜM Firestore kaynakları ilk snapshot'ını teslim etti mi
+ *     (MuezzinAnaEkran.tsx / AdminPanel.tsx — salt test-gözlemlenebilirliği),
+ *  3. `.skeleton-shimmer`: lazy modül Suspense fallback'leri ve liste
+ *     iskeletleri DOM'dan çıktı mı (iç içe alt modülleri de kapsar),
+ *  4. web fontları yüklendi mi (yüklenmemiş font metin genişliğini ve
+ *     dolayısıyla sayfa yüksekliğini kaydırır),
+ *  5. tek, kısa ve gerekçeli animasyon yerleşme payı.
+ *
+ * `toHaveCount(0)` hiç eşleşme olmayan sayfada anında geçer — bu yüzden
+ * bayrağı/iskeleti olmayan ekranlarda da güvenle çağrılabilir.
+ */
+async function ekranHazirBekle(page: Page) {
+  await page.waitForSelector('#main-content');
+  await expect(page.locator('[data-ekran-hazir="hayir"]')).toHaveCount(0, { timeout: 20_000 });
+  await expect(page.locator('.skeleton-shimmer')).toHaveCount(0, { timeout: 20_000 });
+  // `document.fonts.ready` bir FontFaceSet'e çözülür — serialize edilemediği
+  // için bilerek undefined'a düşürülüyor.
+  await page.evaluate(() => document.fonts.ready.then(() => undefined));
+  await page.waitForTimeout(YERLESME_PAYI_MS);
+}
+
 // App.tsx'teki `<MotionConfig reducedMotion="user">` tüm motion/react
 // animasyonlarını `prefers-reduced-motion` tercihine bağlıyor — burada
 // context'i 'reduce' olarak emüle etmek giriş/stagger animasyonlarını
@@ -141,15 +180,17 @@ for (const theme of ['light', 'dark'] as const) {
       await saatiSabitle(page);
       await girisYap(page, seed.tokenMuezzin);
       // 'networkidle' Firestore'un kalıcı WebChannel bağlantısı yüzünden hiç
-      // tetiklenmiyor (bkz. a11y.spec.ts'teki aynı not) — #main-content'i
-      // bekleyip kısa bir yerleşme payı vermek daha güvenilir. Pay 1500ms'den
-      // 3000ms'e çıkarıldı: CI'da emülatörün ilk Firestore verisini
-      // teslim etme süresi değişken — 1500ms bazen yetmeyip sayfayı yükleniyor
-      // durumundayken yakalıyordu (ör. admin-paneli-dark 1217px yerine 2728px,
-      // haftalik-takvim-light 1306px yerine 2394px — her ikisi de gerçek bir
-      // regresyon değil, bu yarış koşuluydu, bkz. 2026-09-15 CI koşu geçmişi).
-      await page.waitForSelector('#main-content');
-      await page.waitForTimeout(3000);
+      // tetiklenmiyor (bkz. a11y.spec.ts'teki aynı not). Önceden burada
+      // `#main-content` + KEYFİ bir yerleşme payı vardı; pay 1500ms'ten
+      // 3000ms'e çıkarılmıştı çünkü CI'da emülatörün ilk Firestore verisini
+      // teslim etme süresi değişken ve 1500ms bazen yetmeyip sayfayı
+      // yükleniyor durumundayken yakalıyordu (ör. admin-paneli-dark 1217px
+      // yerine 2728px, haftalik-takvim-light 1306px yerine 2394px — gerçek
+      // regresyon değil, bu yarış koşuluydu, bkz. 2026-09-15 CI koşu
+      // geçmişi). Sabit süreyi BÜYÜTMEK bu sınıfı çözmez, yalnızca yarışın
+      // kaybedilme olasılığını düşürür — bekleme artık gerçek bir "veri
+      // yüklendi" sinyaline bağlı.
+      await ekranHazirBekle(page);
       // OzelVakitBanner (kerahat/teheccüd/bayram) ve RamazanHub, gerçek
       // saatle karşılaştırılarak KOŞULLU monte ediliyor — `mask` yalnızca
       // var olan pikselleri kapatabilir, DOM'a hiç girmeyen/çıkan bir
@@ -176,16 +217,13 @@ for (const theme of ['light', 'dark'] as const) {
       await saatiSabitle(page);
       await girisYap(page, seed.tokenMuezzin);
       await page.goto('/takvim');
-      await page.waitForSelector('#main-content');
       // Sabit 3000ms, emülatörün plan/bildirim verisini geç teslim ettiği
       // durumlarda HaftalikTakvim.tsx'in `AnimatePresence` "loading"
       // iskeletinden "plan" içeriğine geçişini kaçırıp ekran görüntüsünü
       // hâlâ iskelet (`.skeleton-shimmer`) gösterirken yakalayabiliyordu
-      // (bkz. 2026-09-16 CI: %3 piksel farkı). Sabit süre yerine iskeletin
-      // gerçekten kaybolmasını bekle — zaten yoksa (yükleme daha önce
-      // bittiyse) `toBeHidden` anında geçer.
-      await expect(page.locator('.skeleton-shimmer').first()).toBeHidden({ timeout: 15000 });
-      await page.waitForTimeout(300);
+      // (bkz. 2026-09-16 CI: %3 piksel farkı). İskeletin gerçekten
+      // kaybolmasını bekleme artık ortak `ekranHazirBekle` içinde.
+      await ekranHazirBekle(page);
       await expect(page).toHaveScreenshot(`haftalik-takvim-${theme}.png`, { ...SS_OPTS, fullPage: true });
     });
 
@@ -194,16 +232,16 @@ for (const theme of ['light', 'dark'] as const) {
       await saatiSabitle(page);
       await girisYap(page, seed.tokenMuezzin);
       await page.goto('/profil');
-      await page.waitForSelector('#main-content');
       // Profil.tsx `loading` (auth + muezzin store senkronu) true olduğu
       // sürece tam içerik yerine "VERİLER SENKRONİZE EDİLİYOR" spinner'ını
       // (çok daha kısa bir sayfa yüksekliğiyle) gösteriyor. Sabit 3000ms
       // emülatörün gecikmesiyle yarışıyordu ve bazen spinner hâlâ
       // ekrandayken yakalanıyordu (bkz. 2026-09-16 CI: 1655px yerine
-      // 823px). Spinner metninin kaybolmasını bekle — hiç görünmediyse
-      // `toBeHidden` anında geçer.
+      // 823px). Bu spinner bir `.skeleton-shimmer` DEĞİL (ekranHazirBekle
+      // onu göremez), bu yüzden sayfaya özgü bekleme burada kalıyor —
+      // hiç görünmediyse `toBeHidden` anında geçer.
       await expect(page.getByText('VERİLER SENKRONİZE EDİLİYOR')).toBeHidden({ timeout: 15000 });
-      await page.waitForTimeout(300);
+      await ekranHazirBekle(page);
       await expect(page).toHaveScreenshot(`profil-${theme}.png`, { ...SS_OPTS, fullPage: true });
     });
 
@@ -212,8 +250,10 @@ for (const theme of ['light', 'dark'] as const) {
       await saatiSabitle(page);
       await girisYap(page, seed.tokenAdmin);
       await page.goto('/admin');
-      await page.waitForSelector('#main-content');
-      await page.waitForTimeout(3000);
+      // Ana ekrandaki ile aynı gerekçe (bkz. yukarıdaki not) — admin panelinin
+      // `data-ekran-hazir` bayrağı müezzin/alarm/izin store'larının ilk
+      // snapshot'ını ve `useTransition` sekme geçişini de kapsıyor.
+      await ekranHazirBekle(page);
       await expect(page).toHaveScreenshot(`admin-paneli-${theme}.png`, {
         ...SS_OPTS,
         fullPage: true,
