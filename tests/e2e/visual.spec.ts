@@ -73,6 +73,23 @@ async function saatiSabitle(page: Page) {
   const [yil, ay, gun] = GORSEL_SABIT_TARIH.split('-').map(Number);
   const donmusAn = new Date(Date.UTC(yil, ay - 1, gun, 8, 0, 0));
   await page.clock.setFixedTime(donmusAn);
+  // src/lib/timeSync.ts (initTimeSync, App.tsx'te her sayfa yüklemesinde
+  // çalışır) gerçek Firebase RTDB sunucusuna bağlanıp cihaz saati ile sunucu
+  // saati arasındaki GERÇEK farkı `globalThis.__timeOffset`'e yazar —
+  // getTurkeyNow() bu offset'i mocklanmış Date'e EKLER. RTDB emülatörü
+  // koşmadığından (yalnızca firestore+auth) bu gerçek prod RTDB'ye bağlanır;
+  // bizim sahte tarihimiz (GORSEL_SABIT_TARIH) gerçek "bugün"den aylarca uzak
+  // olduğundan, offset gelir gelmez mock'u sessizce iptal edip sayfayı GERÇEK
+  // tarihe geri döndürüyordu (bkz. 2026-09-16 CI: ana-ekran başlığı "16 Eylül
+  // 2026" gösterip vakit verisi bulunamadığından sonsuz "güncelleniyor"
+  // spinner'ına düşüyordu — kök neden bu, haftalık takvim gibi "bugün"ü tek
+  // seferlik `useState` ile donduran sayfalar bu yarışı kaçırdığı için
+  // etkilenmiyordu). `__timeOffset`'i salt-okunur 0'a sabitleyip bu RTDB
+  // senkronunu zararsız hale getiriyoruz — production kodunda hiçbir
+  // değişiklik gerekmiyor.
+  await page.addInitScript(() => {
+    Object.defineProperty(globalThis, '__timeOffset', { get: () => 0, set: () => {}, configurable: false });
+  });
 }
 
 async function girisYap(page: Page, token: string) {
