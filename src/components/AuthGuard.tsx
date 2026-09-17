@@ -107,9 +107,36 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
         prompt: 'select_account',
       });
 
+      // Mobil tarayıcılarda signInWithPopup sıkıkla NE HATA FİRLATIR NE
+      // DE SONUÇLANIR: hesap seçildikten sonra popup/sekme opener'a
+      // postMessage ile sonucu bildiremiyor ve promise sonsuza kadar
+      // "Kimlik Doğrulanıyor..." durumunda askıda kalıyor (bkz. canlı
+      // arıza: mobilde giriş takılıyor). Alttaki catch bloğu yalnızca
+      // FIRLATILAN hatalara baktığı için bu durumu hiç yakalayamıyor —
+      // bu yüzden mobilde popup'ı hiç denemeden doğrudan redirect'e geçiyoruz.
+      const isMobileTarayici = /android|iphone|ipad|ipod/i.test(navigator.userAgent);
+      if (isMobileTarayici) {
+        sessionStorage.setItem('muezzin:auth_redirect_pending', 'true');
+        await signInWithRedirect(auth, provider);
+        return;
+      }
+
       // Try popup first (faster experience)
       try {
-        await signInWithPopup(auth, provider);
+        // Bazı taraytıcılarda (masaüstü Safari, Brave, sıkı gizlilik modundaki
+        // Firefox) üçüncü taraf depolama engeli signInWithPopup'ın postMessage
+        // el sıkışmasını NE HATA FIRLATACAK NE DE SONUÇLANACAK şekilde
+        // kırıyor — yukarıdaki mobil UA kontrolü yalnızca telefon tipi
+        // cihazları kapsıyor (ör. iPad varsayılan ayarda masaüstü UA'sı
+        // gönderir), bu yüzden hatasız-askıda-kalma ihtimaline karşı genel
+        // bir zaman aşımı şart. Süre dolunca popup hâlâ açık kalabilir
+        // (kapatma referansımız yok) ama ana sekme redirect ile devam eder.
+        await Promise.race([
+          signInWithPopup(auth, provider),
+          new Promise((_resolve, reject) =>
+            setTimeout(() => reject({ code: 'auth/popup-timeout' }), 8000)
+          ),
+        ]);
       } catch (popupErr: unknown) {
         // If popup is blocked or fails, fallback to redirect.
         // 'auth/internal-error' EKLENDİ: bu, popup + postMessage el sıkışması
@@ -124,7 +151,8 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
           (popupErr.code === 'auth/popup-blocked' ||
             popupErr.code === 'auth/cancelled-popup-request' ||
             popupErr.code === 'auth/internal-error' ||
-            popupErr.code === 'auth/web-storage-unsupported');
+            popupErr.code === 'auth/web-storage-unsupported' ||
+            popupErr.code === 'auth/popup-timeout');
         if (popupYerineDeneRedirect) {
           sessionStorage.setItem('muezzin:auth_redirect_pending', 'true');
           await signInWithRedirect(auth, provider);
