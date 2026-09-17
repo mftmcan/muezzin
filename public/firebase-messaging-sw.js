@@ -3,7 +3,7 @@ importScripts('https://www.gstatic.com/firebasejs/12.12.0/firebase-messaging-com
 
 firebase.initializeApp({
   "apiKey": "AIzaSyBLuax0dOUhoRi3b8YKKpTNydFaJMq_aPc",
-  "authDomain": "ezanmerkezi.firebaseapp.com",
+  "authDomain": "ezanmerkezi.web.app",
   "databaseURL": "https://ezanmerkezi-default-rtdb.europe-west1.firebasedatabase.app",
   "projectId": "ezanmerkezi",
   "storageBucket": "ezanmerkezi.firebasestorage.app",
