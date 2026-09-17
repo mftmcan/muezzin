@@ -133,9 +133,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
         // (kapatma referansımız yok) ama ana sekme redirect ile devam eder.
         await Promise.race([
           signInWithPopup(auth, provider),
-          new Promise((_resolve, reject) =>
-            setTimeout(() => reject({ code: 'auth/popup-timeout' }), 8000)
-          ),
+          new Promise((_resolve, reject) => setTimeout(() => reject({ code: 'auth/popup-timeout' }), 8000)),
         ]);
       } catch (popupErr: unknown) {
         // If popup is blocked or fails, fallback to redirect.
