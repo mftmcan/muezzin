@@ -2,7 +2,7 @@ import React, { useState, useEffect, lazy, Suspense, useMemo, useCallback } from
 import { ErrorBoundary } from 'react-error-boundary';
 import { createPortal } from 'react-dom';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { LogOut, X } from 'lucide-react';
+import { LogOut, X, ShieldAlert } from 'lucide-react';
 import { performLogout } from '../../hooks/useFcmToken';
 import { useKrizAlarmlariStore } from '../../store/useKrizAlarmlariStore';
 import { useAdminIzinlerStore } from '../../store/useAdminIzinlerStore';
@@ -83,6 +83,11 @@ export default function AdminPanel() {
   const navigate = useNavigate();
   const isAdmin = useAuthStore((s) => s.isAdmin);
   const authLoading = useAuthStore((s) => s.loading);
+  // "Rolü bilmiyoruz" — `isAdmin === false`'tan ayrı üçüncü durum (bkz.
+  // useAuthStore.ts'teki alan tanımı).
+  const rolDogrulanamadi = useAuthStore((s) => s.rolDogrulanamadi);
+  const rolDogrulaniyor = useAuthStore((s) => s.rolDogrulaniyor);
+  const rolTekrarDene = useAuthStore((s) => s.rolTekrarDene);
 
   // Stats & States
   const muezzinlerLength = useMuezzinStore(
@@ -146,11 +151,20 @@ export default function AdminPanel() {
   // yerel olarak override eder.
   const activeAuraColor = useMemo(() => getActiveAuraColor(mevcutVakit), [mevcutVakit]);
 
+  // `rolDogrulanamadi` ŞARTI KRİTİK: `isAdmin === false` iki AYRI şeyi
+  // birden ifade edebiliyordu — "admin değil" ve "rolü hiç öğrenemedik".
+  // useAuthStore'un 6 sn'lik snapshot failsafe'i (ya da onSnapshot'ın hata
+  // callback'i) rol çözülmeden `loading`'i false'a düşürdüğünde ikincisi
+  // oluyor ve bu yönlendirme GERÇEK bir admini ana ekrana atıyordu (yavaş
+  // bağlantı / soğuk Firestore bağlantısı; 2026-09-16'da görsel regresyon
+  // testinde yakalandı). Artık yönlendirme yalnızca rol GERÇEKTEN
+  // çözüldüğünde ve sonuç KESİN olarak "admin değil" olduğunda çalışır;
+  // belirsizlik durumunda aşağıdaki tekrar-dene ekranı gösterilir.
   useEffect(() => {
-    if (!authLoading && isAdmin === false) {
+    if (!authLoading && !rolDogrulanamadi && isAdmin === false) {
       navigate('/');
     }
-  }, [isAdmin, authLoading, navigate]);
+  }, [isAdmin, authLoading, rolDogrulanamadi, navigate]);
 
   const renderContent = useMemo(() => {
     switch (activeTab) {
@@ -205,12 +219,65 @@ export default function AdminPanel() {
   const { theme, toggleTheme } = useThemeStore();
   const { showNotification } = useNotificationStore();
 
-  // Rules-of-Hooks: bu erken dönüş TÜM hook çağrılarından (useState/useEffect/
+  // Rules-of-Hooks: bu erken dönüşler TÜM hook çağrılarından (useState/useEffect/
   // useMemo/useThemeStore) SONRA gelmelidir. isAdmin bir oturum sırasında
   // false'a dönerse (rol değişikliği/pasifleştirme), hook çağrı sırası hâlâ
   // sabit kalır ve React "Rendered fewer hooks than expected" ile çökmez.
   // Yönlendirme zaten yukarıdaki useEffect ile yapılıyor; authLoading da
   // AuthGuard tarafından ele alınıyor.
+  //
+  // `rolDogrulanamadi` durumunda BİLEREK `null` DÖNÜLMEZ ve yönlendirme de
+  // yapılmaz: kullanıcı gerçekten admin OLABİLİR, sadece rolünü okuyamadık.
+  // Boş ekran ya da sessiz yönlendirme yerine sebebi söyleyip bir çıkış yolu
+  // (tekrar dene) sunulur. Bu dal yetki VERMEZ — `isAdmin` hâlâ false
+  // olduğundan panelin kendisi render edilmez (fail-closed).
+  if (!isAdmin && rolDogrulanamadi) {
+    return (
+      <div
+        className="min-h-screen flex items-center justify-center bg-[var(--app-bg)] px-4"
+        // Görsel regresyon testinin "ekran hazır" sinyali (bkz.
+        // tests/e2e/visual.spec.ts → ekranHazirBekle). Bu bir HATA durumu,
+        // "hazır" değil: bir görsel test buraya düşerse zaman aşımına uğrayıp
+        // BAŞARISIZ olmalı, sessizce bu ekranın görüntüsünü almamalı.
+        data-ekran-hazir="hayir"
+      >
+        {/* Yerleşim/sınıf idiyomu AuthErrorScreen.tsx ile bilerek aynı —
+            aynı sorunun (kimlik/yetki çözülemedi) aynı görünmesi için. */}
+        <div className="max-w-md w-full spatial-glass rounded-card shadow-[var(--spatial-shadow)] p-10 text-center border border-[var(--glass-border)]">
+          <div className="w-20 h-20 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto mb-8">
+            <ShieldAlert className="w-10 h-10 text-amber-500" />
+          </div>
+          <h2 className="text-2xl font-semibold text-[var(--text-primary)] mb-4 tracking-tight">Yetki Doğrulanamadı</h2>
+          {/* Gövde kopyası: cümle düzeni, ≥13px — `authority-title`/uppercase
+              iki satırı aşabilecek metinlerde kullanılmaz (bkz. CLAUDE.md). */}
+          <p className="text-sm text-[var(--text-secondary)] text-muted leading-relaxed mb-8">
+            Yönetici yetkiniz doğrulanamadı. Bu genellikle geçici bir bağlantı sorunudur; hesabınızın yetkisi değişmiş olmayabilir.
+            Bağlantınızı kontrol edip tekrar deneyin.
+          </p>
+          <div className="space-y-3">
+            <button
+              type="button"
+              onClick={() => void rolTekrarDene()}
+              disabled={rolDogrulaniyor}
+              // Doygun dolgu üzerine `text-[var(--app-bg)]` — ışık temasında
+              // `--text-primary` bu zemin üzerinde WCAG'ı geçmiyor (CLAUDE.md).
+              className="w-full h-14 bg-[var(--dynamic-aura,var(--aura-indigo))] hover:opacity-90 text-[var(--app-bg)] rounded-2xl font-medium shadow-lg shadow-[color-mix(in_srgb,var(--dynamic-aura,var(--aura-indigo))_20%,transparent)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {rolDogrulaniyor ? 'DOĞRULANIYOR...' : 'TEKRAR DENE'}
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate('/')}
+              className="w-full h-14 bg-[var(--text-primary)]/5 text-[var(--text-primary)] rounded-2xl font-medium hover:bg-[var(--text-primary)]/10 transition-all"
+            >
+              ANA EKRANA DÖN
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!isAdmin) return null;
 
   const requestLogout = () => setLogoutConfirmOpen(true);

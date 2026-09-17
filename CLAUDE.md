@@ -225,6 +225,35 @@ Gerçek-zamanlı veri gereken yerlerde `onSnapshot`, tek seferlik okuma yeterli
 olan yerlerde `getDocs`/`getDoc` kullanılır (bkz. `useDuyurular.ts`). Bir hook
 "neden bu veri canlı değil" sorusuna cevap veremiyorsa muhtemelen bug'dır.
 
+### Rol/yetki ÜÇ durumludur — `isAdmin:false` "admin değil" demek DEĞİLDİR
+
+`useAuthStore` rol için üç ayrı durum taşır: **yükleniyor** (`loading`),
+**çözüldü** (`role`/`isAdmin` geçerli) ve **çözülemedi**
+(`rolDogrulanamadi`). Üçüncüsü, 6 sn'lik `snapshotFailsafe` ya da
+`onSnapshot`'ın hata callback'i devreye girdiğinde (yavaş bağlantı, soğuk
+Firestore bağlantısı, `permission-denied`) oluşur — bu yollarda rol HİÇ
+öğrenilmez ama `loading` false'a düşer.
+
+**`isAdmin`/`isSuperAdmin`/`isReadOnly` bir yönlendirme/karar kapısında tek
+başına kullanılmamalı** — belirsizlik durumunda hepsi `false`'tur ve gerçek
+bir admin "admin değil" muamelesi görür. `AdminPanel.tsx` tam olarak bunu
+yapıyordu ve adminleri ana ekrana atıyordu (2026-09-16'da görsel regresyon
+testi yakaladı). Doğru desen:
+
+- **Yönlendirme/redirect**: `!authLoading && !rolDogrulanamadi && isAdmin === false`.
+  Belirsizlikte yönlendirme YOK — sebebi söyleyen + `rolTekrarDene()`
+  sunan bir ekran gösterilir.
+- **Yetki verme (buton/aksiyon/panel render)**: `isAdmin`/`isSuperAdmin`
+  tek başına yeterlidir ve `rolDogrulanamadi` bunu GEVŞETMEZ — belirsizlikte
+  yetki kapalı kalır (fail-closed). Gerçek sınır zaten `firestore.rules`.
+
+`rolTekrarDene()` tek seferlik `getDocFromServer` yapar, **ikinci bir
+`onSnapshot` açmaz** (failsafe yolunda canlı dinleyici hâlâ ayakta olabilir).
+Rol türetimi (süper-admin kontrolü dahil) tek bir yerde —
+`init()` içindeki `rolDurumunuUygula` — tanımlıdır; **kopyalama**, bu
+dosyanın geçmişindeki `isSuperAdmin` hatasının aynısını üretir.
+Kapsam: `tests/unit/useAuthStore.test.ts`.
+
 ## Komutlar
 
 ```bash

@@ -27,6 +27,24 @@ interface AuthState {
   isReadOnly: boolean;
   isPending: boolean;
   loading: boolean;
+  // "ROLÜ BİLMİYORUZ" — `isAdmin:false`'tan (yani "admin DEĞİL" bilgisinden)
+  // KASITLI olarak ayrı üçüncü bir durum. Önceden bu ayrım yoktu: aşağıdaki
+  // `snapshotFailsafe` (6 sn) ya da `onSnapshot`'ın hata callback'i
+  // `loading:false, initialized:true` yazıp `isAdmin`'e hiç dokunmuyordu,
+  // yani varsayılan `false` kalıyordu. Tüketici taraf bu ikisini ayırt
+  // edemediğinden GERÇEK bir admin de "admin değil" muamelesi görüyordu —
+  // AdminPanel.tsx'teki `!authLoading && isAdmin === false` yönlendirmesi
+  // yavaş bağlantıda/soğuk Firestore bağlantısında admini ana ekrana
+  // atıyordu (2026-09-16'da görsel regresyon testinde yakalandı: test
+  // /admin'e gidip müezzin ana ekranını buluyordu).
+  //
+  // FAIL-CLOSED KALIR: bu bayrak yetki VERMEZ. `isAdmin`/`isSuperAdmin`
+  // hâlâ `false`'tur, yani yönetici arayüzü ve yıkıcı işlemler kapalı
+  // kalır; bayrak yalnızca "kesin bilgi yok, yönlendirme/karar verme,
+  // kullanıcıya tekrar deneme yolu göster" anlamına gelir.
+  rolDogrulanamadi: boolean;
+  /** `rolTekrarDene()` şu an uçuşta mı (düğme durumu için). */
+  rolDogrulaniyor: boolean;
   error: string | null;
   // `error`'dan kasıtlı olarak ayrı tutulur: `error` kullanıcı tarafından
   // "TEKRAR DENE" ile dismiss edilebilen geçici/ağ hatalarını taşır, ama
@@ -40,7 +58,20 @@ interface AuthState {
   init: () => () => void;
   setError: (error: string | null) => void;
   setLoading: (loading: boolean) => void;
+  /**
+   * `rolDogrulanamadi` durumundan çıkmak için TEK SEFERLİK bir sunucu
+   * okuması dener. Bilerek ikinci bir `onSnapshot` AÇMAZ — canlı dinleyici
+   * (failsafe yolunda) hâlâ ayakta olabilir ve iki dinleyici birbirinin
+   * üzerine yazardı. `getDocFromServer` kullanılır (cache-öncelikli `getDoc`
+   * DEĞİL): zaten gelmeyen bir veriyi cache'ten okumaya çalışmak anlamsız.
+   */
+  rolTekrarDene: () => Promise<void>;
 }
+
+// `init()` kapanışı içinde kurulur: rolü çözen mantık (süper-admin kontrolü
+// dahil) yalnızca ORADA tanımlı ve ÇOĞALTILMAMALI — `isAdmin`/`isSuperAdmin`
+// türetimi güvenlik sınırıdır, iki kopya zamanla birbirinden ayrışırdı.
+let _rolTekrarDeneImpl: (() => Promise<void>) | null = null;
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
@@ -50,12 +81,21 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isReadOnly: false,
   isPending: false,
   loading: false, // Start false to avoid initial flash, init will set it
+  rolDogrulanamadi: false,
+  rolDogrulaniyor: false,
   error: null,
   disabledReason: null,
   initialized: false,
 
   setError: (error) => set({ error }),
   setLoading: (loading) => set({ loading }),
+
+  rolTekrarDene: async () => {
+    // `init()` henüz çalışmadıysa yapacak bir şey yok (bayrak da zaten
+    // false'tur, bu dal pratikte yalnızca savunma amaçlı).
+    if (!_rolTekrarDeneImpl) return;
+    await _rolTekrarDeneImpl();
+  },
 
   init: () => {
     if (get().initialized || _authInitStarted) return () => {};
@@ -86,6 +126,99 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     // olduğundan maliyeti ihmal edilebilir.
     let superAdminCheckedForUid: string | null = null;
     let cachedIsSuperAdminSelf = false;
+
+    /**
+     * `muezzins/{uid}` belgesindeki (aktif, silinmemiş) bir profil verisinden
+     * rol/yetki durumunu TÜRETİP store'a yazar. Hem canlı `onSnapshot`
+     * callback'i hem `rolTekrarDene()` bunu çağırır — `isAdmin`/`isSuperAdmin`
+     * türetimi bir güvenlik sınırı olduğundan İKİNCİ BİR KOPYASI OLMAMALI
+     * (iki kopya zamanla ayrışır; bu dosyanın geçmişinde tam olarak böyle bir
+     * hata var — bkz. yukarıdaki "kısayol kaldırıldı" notu).
+     */
+    const rolDurumunuUygula = async (currentUser: User, data: Record<string, unknown>) => {
+      if (superAdminCheckedForUid !== currentUser.uid) {
+        try {
+          const currentEmail = currentUser.email?.toLowerCase().trim() || '';
+          const bootstrapDoc = currentEmail ? await getDoc(doc(db, 'config', 'bootstrap')) : null;
+          const superAdminEmails: string[] = bootstrapDoc?.exists() ? bootstrapDoc.data().superAdminEmails || [] : [];
+          cachedIsSuperAdminSelf = !!currentEmail && superAdminEmails.includes(currentEmail);
+        } catch {
+          // Çevrimdışı/erişim hatası: role alanına güven, güvenli varsayılan.
+          // (Yıkıcı işlemler bu durumda UI'da kapalı kalır — fail-closed.)
+          cachedIsSuperAdminSelf = false;
+        }
+        superAdminCheckedForUid = currentUser.uid;
+      }
+      // `await` sırasında oturum değiştiyse (kullanıcı çıkış yaptı ya da
+      // başka biri giriş yaptı) bu sonuç artık BAŞKA birine ait — yazma.
+      // (Aynı `buCallbackGecerliMi` ölçütü; burada kendi kapanışında
+      // yeniden kuruluyor çünkü bu yardımcı `handleAuthStateChange`'in
+      // DIŞINDA, `rolTekrarDene` tarafından da çağrılabilir olmalı.)
+      if (get().user?.uid !== currentUser.uid) return;
+      const isSuperAdminResolved = cachedIsSuperAdminSelf;
+      const isAdminResolved = data.role === 'admin' || isSuperAdminResolved;
+      set({
+        role: data.role as AuthState['role'],
+        isAdmin: isAdminResolved,
+        isSuperAdmin: isSuperAdminResolved,
+        // `!isAdminResolved` şartı, yukarıdaki kilitlenme senaryosunun
+        // aynısını salt-okuma tarafında da önler: rolü yanlışlıkla
+        // 'gozlemci'ye çekilmiş bir süper-admin, sunucu ona hâlâ tam
+        // yetki verirken UI'da kendi aksiyonlarından kilitlenmemeli.
+        isReadOnly: data.role === 'gozlemci' && !isAdminResolved,
+        isPending: !!data.onayBekliyor,
+        disabledReason: null,
+        // Rol GERÇEKTEN çözüldü — "bilmiyoruz" durumundan çıkıyoruz.
+        rolDogrulanamadi: false,
+        loading: false,
+        initialized: true,
+      });
+    };
+
+    // `rolTekrarDene()` store aksiyonunun gerçek gövdesi (bkz. arayüzdeki
+    // gerekçe). Canlı dinleyici hâlâ ayakta olabileceğinden ikinci bir
+    // `onSnapshot` açılmaz; tek seferlik, sunucudan zorlamalı bir okuma.
+    _rolTekrarDeneImpl = async () => {
+      const currentUser = get().user;
+      if (!currentUser || get().rolDogrulaniyor) return;
+      set({ rolDogrulaniyor: true });
+      try {
+        const snap = await getDocFromServer(doc(db, 'muezzins', currentUser.uid));
+        if (get().user?.uid !== currentUser.uid) return;
+        if (!snap.exists()) {
+          // Profil sunucuda gerçekten yok. Davet/ilk-kayıt akışı (aşağıdaki
+          // "New user detection" dalı) BİLEREK burada tekrarlanmıyor —
+          // çoğaltılması gereken ~60 satırlık bir akış ve tam sayfa yeniden
+          // yükleme onu zaten baştan çalıştırır.
+          set({ rolDogrulanamadi: false, error: 'Profil kaydınız okunamadı. Lütfen sayfayı yenileyin.' });
+          return;
+        }
+        const data = snap.data();
+        if (data.aktif === false) {
+          set({
+            disabledReason: 'Hesabınız devre dışı bırakılmış.',
+            error: null,
+            role: null,
+            isAdmin: false,
+            isSuperAdmin: false,
+            isReadOnly: false,
+            isPending: false,
+            rolDogrulanamadi: false,
+            loading: false,
+            initialized: true,
+          });
+          return;
+        }
+        await rolDurumunuUygula(currentUser, data);
+      } catch (err) {
+        // Başarısız: `rolDogrulanamadi` BİLEREK true kalır — kullanıcı
+        // tekrar deneyebilsin ve hiçbir tüketici "admin değil" sonucuna
+        // atlamasın.
+        handleFirestoreError(err, OperationType.GET, `muezzins/${currentUser.uid}`);
+      } finally {
+        set({ rolDogrulaniyor: false });
+      }
+    };
 
     // Cold start failsafe: if Firebase Auth does not fire within 4.5 seconds (network lag, locked DB, etc.), force load
     authInitFailsafe = setTimeout(() => {
@@ -120,7 +253,18 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       });
 
       if (!currentUser) {
-        set({ role: null, isAdmin: false, isSuperAdmin: false, isReadOnly: false, isPending: false, loading: false, initialized: true });
+        set({
+          role: null,
+          isAdmin: false,
+          isSuperAdmin: false,
+          isReadOnly: false,
+          isPending: false,
+          // Kullanıcı yok — "rolü bilmiyoruz" durumu da yok (bilinecek bir
+          // rol yok). Önceki oturumdan kalan bayrak burada temizlenir.
+          rolDogrulanamadi: false,
+          loading: false,
+          initialized: true,
+        });
         return;
       }
 
@@ -129,7 +273,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       snapshotFailsafe = setTimeout(() => {
         if (get().loading) {
           console.warn('AuthStore: Snapshot failsafe triggered');
-          set({ loading: false, initialized: true });
+          // `rolDogrulanamadi: true` — ASIL DÜZELTME. Burada yalnızca
+          // `loading:false` yazmak, rolü hiç öğrenmemiş olmamıza rağmen
+          // tüketicilere `isAdmin:false`'ı KESİN bir cevap gibi
+          // gösteriyordu (bkz. alanın tanımındaki gerekçe).
+          set({ loading: false, initialized: true, rolDogrulanamadi: true });
         }
       }, 6000);
 
@@ -164,49 +312,32 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                 isSuperAdmin: false,
                 isReadOnly: false,
                 isPending: false,
+                // Bu ÇÖZÜLMÜŞ bir durum ("devre dışı"), belirsizlik değil.
+                rolDogrulanamadi: false,
                 loading: false,
                 initialized: true,
               });
             } else {
-              if (superAdminCheckedForUid !== currentUser.uid) {
-                try {
-                  const currentEmail = currentUser.email?.toLowerCase().trim() || '';
-                  const bootstrapDoc = currentEmail ? await getDoc(doc(db, 'config', 'bootstrap')) : null;
-                  const superAdminEmails: string[] = bootstrapDoc?.exists() ? bootstrapDoc.data().superAdminEmails || [] : [];
-                  cachedIsSuperAdminSelf = !!currentEmail && superAdminEmails.includes(currentEmail);
-                } catch {
-                  // Çevrimdışı/erişim hatası: role alanına güven, güvenli varsayılan.
-                  // (Yıkıcı işlemler bu durumda UI'da kapalı kalır — fail-closed.)
-                  cachedIsSuperAdminSelf = false;
-                }
-                superAdminCheckedForUid = currentUser.uid;
-              }
-              // `await` sırasında oturum değiştiyse (kullanıcı çıkış yaptı ya da
-              // başka biri giriş yaptı) bu sonuç artık BAŞKA birine ait — yazma.
-              if (!buCallbackGecerliMi()) return;
-              const isSuperAdminResolved = cachedIsSuperAdminSelf;
-              const isAdminResolved = data.role === 'admin' || isSuperAdminResolved;
-              set({
-                role: data.role,
-                isAdmin: isAdminResolved,
-                isSuperAdmin: isSuperAdminResolved,
-                // `!isAdminResolved` şartı, yukarıdaki kilitlenme senaryosunun
-                // aynısını salt-okuma tarafında da önler: rolü yanlışlıkla
-                // 'gozlemci'ye çekilmiş bir süper-admin, sunucu ona hâlâ tam
-                // yetki verirken UI'da kendi aksiyonlarından kilitlenmemeli.
-                isReadOnly: data.role === 'gozlemci' && !isAdminResolved,
-                isPending: !!data.onayBekliyor,
-                disabledReason: null,
-                loading: false,
-                initialized: true,
-              });
+              // Süper-admin kontrolü + rol türetimi `rolDurumunuUygula`'da
+              // (tek kaynak — `rolTekrarDene()` de aynısını çağırır).
+              // İçindeki `await`ten sonra oturum değişmişse orada zaten
+              // `buCallbackGecerliMi` ile aynı ölçüte göre yazmadan dönüyor.
+              await rolDurumunuUygula(currentUser, data);
             }
           } else {
             // New user detection
             try {
               const currentEmail = currentUser.email?.toLowerCase().trim() || '';
               if (!currentEmail) {
-                set({ error: 'Google hesabınızda bir e-posta adresi bulunamadı.', loading: false, initialized: true });
+                // Bu ve aşağıdaki iki `error` dalı ÇÖZÜLMÜŞ durumlardır
+                // (AuthGuard kendi hata ekranını gösterir) — "rolü
+                // bilmiyoruz" belirsizliği burada biter.
+                set({
+                  error: 'Google hesabınızda bir e-posta adresi bulunamadı.',
+                  loading: false,
+                  initialized: true,
+                  rolDogrulanamadi: false,
+                });
                 return;
               }
 
@@ -239,6 +370,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
                   error: `Dizgede kaydınız bulunamadı. Lütfen yöneticiye e-postanızı (${currentEmail}) bildirin.`,
                   loading: false,
                   initialized: true,
+                  rolDogrulanamadi: false,
                 });
                 return;
               }
@@ -274,14 +406,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
               // kullanılmıyor, yalnızca yapılandırılmış log + telemetri için çağrılıyor.
               handleFirestoreError(err, OperationType.WRITE, `muezzins/${currentUser.uid}`);
               if (!buCallbackGecerliMi()) return;
-              set({ error: 'Profiliniz oluşturulurken bir hata oluştu.', loading: false, initialized: true });
+              set({ error: 'Profiliniz oluşturulurken bir hata oluştu.', loading: false, initialized: true, rolDogrulanamadi: false });
             }
           }
         },
         (err) => {
           clearTimeout(snapshotFailsafe!);
           handleFirestoreError(err, OperationType.GET, `muezzins/${currentUser.uid}`);
-          set({ loading: false, initialized: true });
+          // `onSnapshot`'ın hata callback'i dinleyiciyi KALICI olarak
+          // sonlandırır — yani rol bu oturumda kendiliğinden bir daha
+          // gelmez. Failsafe yoluyla aynı sınıf: rolü bilmiyoruz, ama
+          // `isAdmin:false` bunu "admin değil" gibi gösteriyordu.
+          // `rolTekrarDene()` bu durumdan çıkmanın tek yolu.
+          set({ loading: false, initialized: true, rolDogrulanamadi: true });
         }
       );
     }; // end handleAuthStateChange
