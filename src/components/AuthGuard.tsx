@@ -10,6 +10,7 @@ import { useAuthStore } from '../store/useAuthStore';
 import { LoginScreen } from './auth/LoginScreen';
 import { AuthErrorScreen } from './auth/AuthErrorScreen';
 import { PendingApprovalScreen } from './auth/PendingApprovalScreen';
+import { OturumBelirsizEkrani } from './auth/OturumBelirsizEkrani';
 import { EASE } from '../lib/motion';
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
@@ -20,6 +21,11 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   const disabledReason = useAuthStore((state) => state.disabledReason);
   const setError = useAuthStore((state) => state.setError);
   const setLoading = useAuthStore((state) => state.setLoading);
+  // "Oturum durumunu henüz bilmiyoruz" — `user === null`'dan AYRI (bkz.
+  // useAuthStore.ts'teki alan tanımı). Cold-start failsafe tetiklendiğinde
+  // true olur; geç gelen `onAuthStateChanged` onu kendiliğinden temizler.
+  const authDogrulanamadi = useAuthStore((state) => state.authDogrulanamadi);
+  const authBeklemeyiGec = useAuthStore((state) => state.authBeklemeyiGec);
 
   const [isLoginInProgress, setIsLoginInProgress] = useState(false);
   const [loadingTimeout, setLoadingTimeout] = useState(false);
@@ -216,6 +222,15 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
             <AuthErrorScreen error={error} setError={setError} setLoading={setLoading} logout={logout} />
           ) : isPending ? (
             <PendingApprovalScreen logout={logout} />
+          ) : authDogrulanamadi && !user ? (
+            // `!user` dalından ÖNCE gelmeli: aksi halde bu durum yine
+            // "giriş yapılmamış" diye okunurdu. Cold-start failsafe
+            // tetiklendiğinde `user` null'dır ama bu bir CEVAP değil,
+            // cevabın henüz gelmemiş olmasıdır — gerçekte oturumu açık olan
+            // bir kullanıcıyı çıkış yapmış gibi göstermek yerine durumu
+            // olduğu gibi anlatıp iki çıkış yolu bırakıyoruz. Erişim
+            // GENİŞLEMİYOR: kullanıcı hâlâ `children`'a alınmıyor.
+            <OturumBelirsizEkrani isOffline={isOffline} girisEkraninaGec={authBeklemeyiGec} />
           ) : !user ? (
             <LoginScreen login={login} isLoginInProgress={isLoginInProgress} />
           ) : (

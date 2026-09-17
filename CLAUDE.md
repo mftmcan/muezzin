@@ -225,6 +225,33 @@ Gerçek-zamanlı veri gereken yerlerde `onSnapshot`, tek seferlik okuma yeterli
 olan yerlerde `getDocs`/`getDoc` kullanılır (bkz. `useDuyurular.ts`). Bir hook
 "neden bu veri canlı değil" sorusuna cevap veremiyorsa muhtemelen bug'dır.
 
+### Oturum da ÜÇ durumludur — `user:null` "çıkış yapmış" demek DEĞİLDİR
+
+Aşağıdaki rol sorununun bir katman YUKARIDAKİ ikizi. `init()` içindeki 4.5
+sn'lik `authInitFailsafe`, `onAuthStateChanged` hiç ateşlenmezse
+`loading:false, initialized:true` yazar ama `user` hâlâ `null`'dır — bu bir
+CEVAP değil, cevabın gelmemiş olmasıdır (yavaş ağ, kilitli/yavaş IndexedDB;
+uygulama offline-first olduğundan oturum IndexedDB'den geri yükleniyor).
+`AuthGuard` bunu "giriş yapılmamış" diye okuyup **login ekranı** gösteriyordu:
+oturumu açık bir kullanıcı, kendisi çıkış yapmamışken çıkış yapmış gibi
+görünüyordu.
+
+`authDogrulanamadi: boolean` bu belirsizliği taşır. `AuthGuard`'ın karar
+zinciri: `disabledReason → error → isPending → (authDogrulanamadi && !user)
+→ !user → children`. Belirsizlik dalı `OturumBelirsizEkrani`'nı gösterir —
+"sayfayı yenile" ve "giriş ekranına geç" (`authBeklemeyiGec()`) ile.
+
+- **Failsafe'in amacını bozma:** `loading:false` KALMALI, yoksa sonsuz splash
+  ekranı sorunu geri gelir. Eklenen tek şey belirsizliğin işaretlenmesi.
+- **Erişim genişlemez:** kullanıcı yine `children`'a alınmaz. Buradaki
+  düzeltme güvenlik yönünü değiştirmez (login göstermek zaten erişim
+  vermiyordu); düzeltilen şey KESİN OLMAYAN bir bilgiyi kesinmiş gibi
+  sunmaktı.
+- **Çıkış yolu ŞART:** gerçekten çıkış yapmış ama ağı da kötü olan kullanıcı
+  giriş düğmesine ulaşamadan tıkanmamalı — `authBeklemeyiGec()` bunun için.
+- Dinleyici sökülmez; geç gelen `onAuthStateChanged` (user dolu VEYA null)
+  bayrağı kendiliğinden temizler.
+
 ### Rol/yetki ÜÇ durumludur — `isAdmin:false` "admin değil" demek DEĞİLDİR
 
 `useAuthStore` rol için üç ayrı durum taşır: **yükleniyor** (`loading`),

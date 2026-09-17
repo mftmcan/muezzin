@@ -209,7 +209,7 @@ describe('useAuthStore — rol doğrulanamadı durumu', () => {
     });
   });
 
-  it('çıkış yapıldığında (user null) bayrak temizlenir', async () => {
+  it('çıkış yapıldığında (user null) rol bayrağı temizlenir', async () => {
     const s = await tazeStore();
     temizle = s.temizle;
     s.authCallback(SAHTE_KULLANICI);
@@ -220,5 +220,97 @@ describe('useAuthStore — rol doğrulanamadı durumu', () => {
 
     expect(s.useAuthStore.getState().rolDogrulanamadi).toBe(false);
     expect(s.useAuthStore.getState().user).toBeNull();
+  });
+});
+
+/**
+ * `authDogrulanamadi` — bir katman YUKARIDAKİ ikiz sorun.
+ *
+ * 4.5 sn'lik cold-start failsafe, `onAuthStateChanged` hiç ateşlenmeden
+ * `loading:false, initialized:true` yazıyordu. `user` hâlâ `null` olduğundan
+ * AuthGuard bunu "giriş yapılmamış" diye okuyup LOGIN EKRANINI gösteriyordu —
+ * oysa Firebase Auth SDK'sı yalnızca yavaş olabilir (offline-first: oturum
+ * IndexedDB'den geri yükleniyor). Gerçekte oturumu açık olan kullanıcı, kendi
+ * çıkış yapmamışken çıkış yapmış gibi gösteriliyordu.
+ */
+describe('useAuthStore — oturum durumu doğrulanamadı (cold start)', () => {
+  it('onAuthStateChanged 4.5 sn içinde hiç ateşlenmezse authDogrulanamadi true olur', async () => {
+    const s = await tazeStore();
+    temizle = s.temizle;
+    // BİLEREK authCallback ÇAĞRILMIYOR — SDK'nın hiç yanıt vermediği senaryo.
+
+    expect(s.useAuthStore.getState().authDogrulanamadi).toBe(false);
+
+    await vi.advanceTimersByTimeAsync(4500);
+
+    const durum = s.useAuthStore.getState();
+    expect(durum.authDogrulanamadi).toBe(true);
+    // Failsafe'in ASIL AMACI korunmalı: sonsuz splash ekranında takılı kalma.
+    expect(durum.loading).toBe(false);
+    expect(durum.initialized).toBe(true);
+    // Erişim GENİŞLEMİYOR — hâlâ kullanıcı yok.
+    expect(durum.user).toBeNull();
+  });
+
+  it('geç gelen bir oturum (user dolu) bayrağı temizler — kullanıcı login ekranına düşmez', async () => {
+    const s = await tazeStore();
+    temizle = s.temizle;
+    await vi.advanceTimersByTimeAsync(4500);
+    expect(s.useAuthStore.getState().authDogrulanamadi).toBe(true);
+
+    // Dinleyici sökülmedi: SDK geç de olsa yanıt veriyor.
+    s.authCallback(SAHTE_KULLANICI);
+
+    expect(s.useAuthStore.getState().authDogrulanamadi).toBe(false);
+    expect(s.useAuthStore.getState().user).toEqual(SAHTE_KULLANICI);
+  });
+
+  it('geç gelen "gerçekten çıkış yapılmış" yanıtı da bayrağı temizler (login ekranı doğru cevap olur)', async () => {
+    const s = await tazeStore();
+    temizle = s.temizle;
+    await vi.advanceTimersByTimeAsync(4500);
+    expect(s.useAuthStore.getState().authDogrulanamadi).toBe(true);
+
+    s.authCallback(null);
+
+    const durum = s.useAuthStore.getState();
+    expect(durum.authDogrulanamadi).toBe(false);
+    expect(durum.user).toBeNull();
+  });
+
+  it('authBeklemeyiGec() belirsizliği kapatır — ağı kötü ama gerçekten çıkmış kullanıcı tıkanmaz', async () => {
+    const s = await tazeStore();
+    temizle = s.temizle;
+    await vi.advanceTimersByTimeAsync(4500);
+    expect(s.useAuthStore.getState().authDogrulanamadi).toBe(true);
+
+    s.useAuthStore.getState().authBeklemeyiGec();
+
+    expect(s.useAuthStore.getState().authDogrulanamadi).toBe(false);
+    expect(s.useAuthStore.getState().user).toBeNull();
+  });
+
+  it('auth zamanında ateşlenirse failsafe hiç tetiklenmez', async () => {
+    const s = await tazeStore();
+    temizle = s.temizle;
+    s.authCallback(SAHTE_KULLANICI);
+
+    // Failsafe penceresini fazlasıyla aş — timer temizlenmiş olmalı.
+    await vi.advanceTimersByTimeAsync(5000);
+
+    expect(s.useAuthStore.getState().authDogrulanamadi).toBe(false);
+  });
+
+  it('iki bayrak BAĞIMSIZ: rol failsafe’i authDogrulanamadi’yi kirletmez', async () => {
+    const s = await tazeStore();
+    temizle = s.temizle;
+    s.authCallback(SAHTE_KULLANICI);
+
+    await vi.advanceTimersByTimeAsync(6000);
+
+    const durum = s.useAuthStore.getState();
+    expect(durum.rolDogrulanamadi).toBe(true);
+    // Oturum KESİN olarak biliniyor (kullanıcı var) — yalnızca rolü bilmiyoruz.
+    expect(durum.authDogrulanamadi).toBe(false);
   });
 });

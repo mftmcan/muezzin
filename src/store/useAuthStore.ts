@@ -45,6 +45,28 @@ interface AuthState {
   rolDogrulanamadi: boolean;
   /** `rolTekrarDene()` şu an uçuşta mı (düğme durumu için). */
   rolDogrulaniyor: boolean;
+  // "OTURUM DURUMUNU BİLMİYORUZ" — `rolDogrulanamadi`'nin bir katman
+  // yukarıdaki İKİZİ. Orada "rolü bilmiyoruz" ile "admin değil" karışıyordu;
+  // burada "oturumu bilmiyoruz" ile "giriş yapılmamış" karışıyordu.
+  //
+  // Aşağıdaki `authInitFailsafe` (4.5 sn) `onAuthStateChanged` hiç
+  // ateşlenmediğinde `loading:false, initialized:true` yazıyor ama `user`
+  // hâlâ `null` — AuthGuard bunu "giriş yapılmamış" diye okuyup LOGIN
+  // EKRANINI gösteriyordu. Oysa Firebase Auth SDK'sı yalnızca yavaş
+  // olabilir (ağ gecikmesi, kilitli/yavaş IndexedDB; bu uygulama
+  // offline-first olduğundan oturum IndexedDB'den geri yükleniyor). Gerçekte
+  // oturumu AÇIK olan bir kullanıcı, kendisi çıkış yapmamışken çıkış
+  // yapmış gibi gösteriliyordu.
+  //
+  // GÜVENLİK YÖNÜ (bkz. `rolDogrulanamadi`'daki aynı not — ama buradaki
+  // muhakeme FARKLI): orada belirsizlikte yetki VERMEMEK güvenli taraftı.
+  // Burada belirsizlikte login ekranı göstermek zaten erişim VERMEZ, yani
+  // güvenlik yönü baştan güvenliydi; kırık olan şey KESİN OLMAYAN bir
+  // bilgiyi ("çıkış yapmışsınız") kesinmiş gibi SUNMAKTI. Bu yüzden
+  // düzeltme erişimi gevşetmiyor: kullanıcı yine içeri alınmıyor, yalnızca
+  // "hâlâ deniyoruz" durumu dürüstçe gösteriliyor ve tıkanmaması için
+  // açık bir çıkış yolu (giriş ekranına geç / sayfayı yenile) sunuluyor.
+  authDogrulanamadi: boolean;
   error: string | null;
   // `error`'dan kasıtlı olarak ayrı tutulur: `error` kullanıcı tarafından
   // "TEKRAR DENE" ile dismiss edilebilen geçici/ağ hatalarını taşır, ama
@@ -66,6 +88,15 @@ interface AuthState {
    * DEĞİL): zaten gelmeyen bir veriyi cache'ten okumaya çalışmak anlamsız.
    */
   rolTekrarDene: () => Promise<void>;
+  /**
+   * Kullanıcı "belirsiz oturum" ekranını bilerek geçtiğinde çağrılır —
+   * `authDogrulanamadi`'yi temizler, böylece AuthGuard normal giriş
+   * ekranına düşer. GEREKLİ: gerçekten çıkış yapmış AMA ağı da kötü olan
+   * bir kullanıcı aksi halde giriş düğmesine hiç ulaşamaz, yani bekleme
+   * ekranında tıkanırdı. Oturum dinleyicisi arka planda çalışmaya devam
+   * eder; geç gelen bir `onAuthStateChanged` yine de kullanıcıyı içeri alır.
+   */
+  authBeklemeyiGec: () => void;
 }
 
 // `init()` kapanışı içinde kurulur: rolü çözen mantık (süper-admin kontrolü
@@ -83,6 +114,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   loading: false, // Start false to avoid initial flash, init will set it
   rolDogrulanamadi: false,
   rolDogrulaniyor: false,
+  authDogrulanamadi: false,
   error: null,
   disabledReason: null,
   initialized: false,
@@ -96,6 +128,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     if (!_rolTekrarDeneImpl) return;
     await _rolTekrarDeneImpl();
   },
+
+  authBeklemeyiGec: () => set({ authDogrulanamadi: false }),
 
   init: () => {
     if (get().initialized || _authInitStarted) return () => {};
@@ -224,7 +258,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     authInitFailsafe = setTimeout(() => {
       if (!get().initialized) {
         console.warn('AuthStore: Cold start failsafe triggered (onAuthStateChanged took too long)');
-        set({ loading: false, initialized: true });
+        // `loading:false` KORUNDU — bu failsafe'in var olma amacı sonsuz
+        // splash ekranında takılı kalmayı önlemek ve o amaç bozulmamalı.
+        // Eklenen tek şey, o anda `user:null` olmasının "çıkış yapılmış"
+        // DEĞİL "henüz bilmiyoruz" anlamına geldiğinin işaretlenmesi;
+        // AuthGuard bu bayrağa bakarak login ekranı yerine "bağlantı
+        // kuruluyor" ekranını gösterir. Dinleyici sökülmez: geç gelen
+        // `onAuthStateChanged` bayrağı temizleyip normal akışa döndürür.
+        set({ loading: false, initialized: true, authDogrulanamadi: true });
       }
     }, 4500);
 
@@ -250,6 +291,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         error: null,
         disabledReason: null,
         loading: currentUser ? shouldShowLoading : false,
+        // Oturum durumu ARTIK KESİN — `currentUser` ister dolu ister null
+        // olsun, bu bir cevaptır. Cold-start failsafe'in bıraktığı
+        // belirsizlik bayrağı burada temizlenir (geç gelen callback dahil).
+        authDogrulanamadi: false,
       });
 
       if (!currentUser) {
