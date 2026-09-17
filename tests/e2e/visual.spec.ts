@@ -249,6 +249,19 @@ for (const theme of ['light', 'dark'] as const) {
       // onu göremez), bu yüzden sayfaya özgü bekleme burada kalıyor —
       // hiç görünmediyse `toBeHidden` anında geçer.
       await expect(page.getByText('VERİLER SENKRONİZE EDİLİYOR')).toBeHidden({ timeout: 15000 });
+      // Profil.tsx'teki `LazySection`, `PersonalHistoryCard`'ı yalnızca bir
+      // `IntersectionObserver` ile viewport'a girince monte eder (performans
+      // için kasıtlı — bkz. Profil.tsx yorumu). `mobile-chrome`'un dar/kısa
+      // viewport'unda bu bölüm sayfa yüklenince görünür alanın dışında
+      // kalıyor; `toHaveScreenshot({fullPage:true})` scroll'u KENDİ İÇİNDE
+      // yönetir ama bu, IntersectionObserver'ın (root'u varsayılan viewport)
+      // ateşlenmesini garanti etmiyor — sonuç: `.skeleton-shimmer` (Suspense
+      // fallback'i) hiç kaybolmuyor, `ekranHazirBekle` 20 sn'de zaman aşımına
+      // uğruyordu (bkz. 2026-09-17 baseline-yenileme koşusu). Gerçek
+      // kullanıcı için sorun değil (fiilen scroll etmek observer'ı tetikler)
+      // — burada yalnızca ekran görüntüsünden önce aynı tetiklemeyi elle
+      // (deterministik) yapıyoruz.
+      await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
       await ekranHazirBekle(page);
       await expect(page).toHaveScreenshot(`profil-${theme}.png`, { ...SS_OPTS, fullPage: true });
     });
