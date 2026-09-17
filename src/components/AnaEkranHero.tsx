@@ -207,27 +207,21 @@ export const AnaEkranHero = React.memo(({ isLoading, mevcutVakit, sonraki, bugun
                               : 'Müftülük'}
                         </span>
                         <span className="text-2xs font-medium tracking-wide opacity-75 hidden sm:inline">•</span>
-                        {/* Hicri tarih için serif italik — Gregoryen tarihin (üstte,
-                            sans-serif) yanında ayrı bir "kayıt sistemi" hissi verir;
-                            display katmanının ilk kullanım noktası (bkz. görsel
-                            tasarım denetimi V16). Okunabilirlik: `tracking-tight`
-                            italik bir serif'te harfleri birbirine yaklaştırıp
-                            (zaten eğik olan) karakterleri ayırt etmeyi zorlaştırıyordu
-                            — `tracking-normal`'a alındı. Renk artık çıplak `auraColor`
-                            değil: `color-mix` ile %30 `--text-primary`'ye çapalanıyor —
-                            beş aura tonunun (ruby/amber/emerald/indigo/rose) hepsi
-                            aynı doygunlukta değil, çıplak haliyle açık modda bazı
-                            tonlarda kontrast WCAG eşiğine yaklaşabiliyordu (bkz.
-                            index.css'teki aynı gerekçeyle kurulmuş text-secondary/
-                            doygun-dolgu kontrast düzeltmeleri). Boyut BİLEREK text-xs'te
-                            (12px) bırakıldı — 13px'e çıkarmak satır yüksekliğini
-                            değiştirip kartın geri kalanını birkaç piksel kaydırıyordu,
-                            bu da görsel regresyon testinde maskelenmemiş alanlarda geniş
-                            çaplı (kart genelinde) sahte fark üretiyordu (bkz. CI
-                            koşusu 34991161721, %4 piksel farkı — kök neden bu satır
-                            yüksekliği kayması). */}
+                        {/* Hicri tarih artık uygulamanın gövde fontuyla (--font-sans,
+                            `font-apple`) yazılıyor — önceki `font-serif italic` stili
+                            Gregoryen tarihin sans-serif kimliğiyle uyumsuz duruyordu.
+                            Boyut/ağırlık/tracking, yanındaki müftülük etiketiyle
+                            (yukarıdaki span) aynı ölçeğe (`text-2xs font-medium
+                            tracking-wide`) hizalandı — ikisi de aynı "ikincil meta
+                            bilgi" satırında. Ayırt edici tek şey renk: `color-mix` ile
+                            aura tonuna %70 çapalanıyor (aynı gerekçeyle kurulmuş
+                            text-secondary/doygun-dolgu kontrast düzeltmesi, bkz.
+                            index.css). Boyut 12px'ten 11px'e indiği için satır
+                            yüksekliği değişti — görsel regresyon baseline'larının
+                            yenilenmesi gerekir (Actions → "Görsel Baseline Yenile
+                            (Linux)"), ama artık bu job deploy'u bloklamıyor. */}
                         <span
-                          className="text-xs font-serif italic tracking-normal"
+                          className="text-2xs font-medium tracking-wide font-apple"
                           style={{ color: `color-mix(in srgb, ${auraColor} 70%, var(--text-primary) 30%)` }}
                         >
                           {hijriDate}

@@ -296,8 +296,9 @@ export function GeriSayim({
           {/* Vakit adı: ince (font-light) + büyük harf + geniş izleme (tracking) —
               premium/editoryal his. Serif'ten sans'a (font-sans) bilerek geçildi:
               serif display yüzleri büyük harfte kimliğini kaybediyor (bkz. eski
-              yorum, görsel tasarım denetimi V16), o karakter artık yalnızca
-              üstteki Hicri tarihte (font-serif italic) kalıyor. Büyük harf CSS
+              yorum, görsel tasarım denetimi V16). Hicri tarihteki (AnaEkranHero.tsx)
+              serif italik stil de sonradan kaldırıldı — uygulama genelinde artık
+              yalnızca `--font-sans` kullanılıyor. Büyük harf CSS
               `uppercase` yerine `toTurkishUpperCase()` ile JS'te uygulanıyor —
               CSS text-transform Türkçe İ/i çiftini locale'siz yanlış eşleyebilir;
               bu dosyadaki SÜRÜYOR rozetinde de aynı desen kullanılıyor. */}
