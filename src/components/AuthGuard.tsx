@@ -40,10 +40,17 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
+    // ESKİDEN bir sessionStorage bayrağı ('muezzin:auth_redirect_pending')
+    // set edilmeden getRedirectResult HİÇ çağrılmıyordu. Google'ın çok
+    // adımlı yönlendirme zincirinde (uygulama → firebaseapp.com/__/auth/
+    // handler → accounts.google.com → tekrar handler → uygulama) bu bayrak
+    // bazı mobil tarayıcılarda (ör. Opera'nın veri tasarrufu/proxy modu)
+    // hayatta kalmıyor — bayrak kaybolunca redirect SONUÇLANMIŞ olsa bile
+    // hiç okunmuyor, kullanıcı oturum açılmadan login ekranına geri
+    // dönüyordu (bkz. canlı arıza: redirect'ten sonra tekrar login ekranı).
+    // getRedirectResult bekleyen bir redirect yokken de ucuz şekilde
+    // null'a çözülüyor, o yüzden koşulsuz her mount'ta çağırmak güvenli.
     const checkRedirect = async () => {
-      const isRedirectPending = sessionStorage.getItem('muezzin:auth_redirect_pending') === 'true';
-      if (!isRedirectPending) return;
-
       try {
         const result = await getRedirectResult(auth);
         if (result?.user) {
@@ -60,8 +67,6 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
         } else {
           setError(`Giriş yapılırken bir sorun oluştu. Lütfen tekrar deneyin. [${kod}]`);
         }
-      } finally {
-        sessionStorage.removeItem('muezzin:auth_redirect_pending');
       }
     };
     checkRedirect();
@@ -116,7 +121,6 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       // bu yüzden mobilde popup'ı hiç denemeden doğrudan redirect'e geçiyoruz.
       const isMobileTarayici = /android|iphone|ipad|ipod/i.test(navigator.userAgent);
       if (isMobileTarayici) {
-        sessionStorage.setItem('muezzin:auth_redirect_pending', 'true');
         await signInWithRedirect(auth, provider);
         return;
       }
@@ -152,7 +156,6 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
             popupErr.code === 'auth/web-storage-unsupported' ||
             popupErr.code === 'auth/popup-timeout');
         if (popupYerineDeneRedirect) {
-          sessionStorage.setItem('muezzin:auth_redirect_pending', 'true');
           await signInWithRedirect(auth, provider);
         } else {
           throw popupErr;
