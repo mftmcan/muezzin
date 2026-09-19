@@ -10,6 +10,7 @@ import { LoadingState } from '../../../components/ui/LoadingState';
 import { exportCsv } from '../../../lib/csvExport';
 import { mazeretKaydiSil } from '../../../services/mazeretServisi';
 import { toTurkishUpperCase } from '../../../lib/dateUtils';
+import { SPRING } from '../../../lib/motion';
 
 export default function MazeretGecmisi() {
   const { gecmis, loading, arsivAySayisi } = useMazeretGecmisi();
@@ -155,7 +156,7 @@ export default function MazeretGecmisi() {
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, scale: 0.95 }}
-                      transition={{ type: 'spring', stiffness: 400, damping: 30, delay: idx * 0.03 }}
+                      transition={{ ...SPRING.snappy, delay: idx * 0.03 }}
                       key={g.id}
                       className="group"
                     >
@@ -174,7 +175,7 @@ export default function MazeretGecmisi() {
                       </td>
                       <td className="px-6 py-5 spatial-glass-elevated border-x-0">
                         <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 rounded-[14px] bg-[var(--text-primary)]/[0.03] border border-[var(--text-primary)]/5 flex items-center justify-center text-[var(--dynamic-aura,var(--aura-indigo))] font-light text-lg shadow-elev2">
+                          <div className="w-10 h-10 rounded-chip bg-[var(--text-primary)]/[0.03] border border-[var(--text-primary)]/5 flex items-center justify-center text-[var(--dynamic-aura,var(--aura-indigo))] font-light text-lg shadow-elev2">
                             {getMuezzinName(g.uid).charAt(0)}
                           </div>
                           <span className="text-sm font-light text-[var(--text-primary)] tracking-tight">{getMuezzinName(g.uid)}</span>
@@ -225,7 +226,7 @@ export default function MazeretGecmisi() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.05 }}
-                className="spatial-glass-elevated p-4 space-y-3 !rounded-[20px] sm:!rounded-3xl border border-[var(--text-primary)]/5"
+                className="spatial-glass-elevated p-4 space-y-3 !rounded-control sm:!rounded-3xl border border-[var(--text-primary)]/5"
               >
                 <div className="flex justify-between items-start">
                   <div className="flex flex-col gap-1">

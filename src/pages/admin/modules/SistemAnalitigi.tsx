@@ -281,14 +281,14 @@ export default function SistemAnalitigi() {
 
         <motion.div
           variants={itemVariants}
-          className="flex items-center gap-1.5 bg-[var(--surface-low)] p-1 rounded-[18px] border border-[var(--glass-border)]"
+          className="flex items-center gap-1.5 bg-[var(--surface-low)] p-1 rounded-panel border border-[var(--glass-border)]"
         >
           {PERIOD_OPTIONS.map((opt) => (
             <button
               key={opt.days}
               type="button"
               onClick={() => setPeriodDays(opt.days)}
-              className={`px-5 py-2.5 rounded-[14px] text-2xs font-bold uppercase tracking-wide transition-all ${
+              className={`px-5 py-2.5 rounded-chip text-2xs font-bold uppercase tracking-wide transition-all ${
                 periodDays === opt.days
                   ? 'bg-[var(--surface-medium)] text-[var(--text-primary)] shadow-elev2'
                   : 'text-muted hover:text-[var(--text-primary)]/70'

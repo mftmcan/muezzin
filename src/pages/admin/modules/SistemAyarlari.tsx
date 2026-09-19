@@ -160,7 +160,7 @@ export default function SistemAyarlari() {
         className="spatial-glass !rounded-card p-1 sm:p-8 relative overflow-hidden"
       >
         <div className="flex items-center gap-3 sm:gap-5 mb-6 sm:mb-8 relative z-10">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-[14px] bg-[var(--surface-medium)] flex items-center justify-center border border-[var(--glass-border)]">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-chip bg-[var(--surface-medium)] flex items-center justify-center border border-[var(--glass-border)]">
             <MapPin className="text-[var(--dynamic-aura,var(--aura-indigo))] w-5 h-5" strokeWidth={1.6} />
           </div>
           <div>
@@ -201,7 +201,7 @@ export default function SistemAyarlari() {
                   value={ilceId}
                   onChange={(e) => setIlceId(e.target.value)}
                   inputMode="numeric"
-                  className="w-full bg-[var(--surface-medium)] border border-[var(--glass-border)] rounded-[14px] px-4 py-3.5 text-[var(--text-primary)] text-sm font-medium focus:border-[var(--dynamic-aura,var(--aura-indigo))]/50 outline-none transition-colors placeholder:text-muted placeholder:italic placeholder:font-normal"
+                  className="w-full bg-[var(--surface-medium)] border border-[var(--glass-border)] rounded-chip px-4 py-3.5 text-[var(--text-primary)] text-sm font-medium focus:border-[var(--dynamic-aura,var(--aura-indigo))]/50 outline-none transition-colors placeholder:text-muted placeholder:italic placeholder:font-normal"
                   placeholder="9148"
                   required
                 />
@@ -218,7 +218,7 @@ export default function SistemAyarlari() {
                   type="text"
                   value={ilceAdi}
                   onChange={(e) => setIlceAdi(e.target.value)}
-                  className="w-full bg-[var(--surface-medium)] border border-[var(--glass-border)] rounded-[14px] px-4 py-3.5 text-[var(--text-primary)] text-sm font-medium focus:border-[var(--dynamic-aura,var(--aura-indigo))]/50 outline-none transition-colors placeholder:text-muted placeholder:italic placeholder:font-normal"
+                  className="w-full bg-[var(--surface-medium)] border border-[var(--glass-border)] rounded-chip px-4 py-3.5 text-[var(--text-primary)] text-sm font-medium focus:border-[var(--dynamic-aura,var(--aura-indigo))]/50 outline-none transition-colors placeholder:text-muted placeholder:italic placeholder:font-normal"
                   placeholder="Ceyhan"
                   required
                 />
@@ -234,7 +234,7 @@ export default function SistemAyarlari() {
                   id="ayarlar-hicri-duzeltme"
                   value={hicriDuzeltme}
                   onChange={(e) => setHicriDuzeltme(Number(e.target.value))}
-                  className="w-full bg-[var(--surface-medium)] border border-[var(--glass-border)] rounded-[14px] px-4 py-3.5 text-[var(--text-primary)] text-sm font-medium focus:border-[var(--dynamic-aura,var(--aura-indigo))]/50 outline-none transition-colors"
+                  className="w-full bg-[var(--surface-medium)] border border-[var(--glass-border)] rounded-chip px-4 py-3.5 text-[var(--text-primary)] text-sm font-medium focus:border-[var(--dynamic-aura,var(--aura-indigo))]/50 outline-none transition-colors"
                   style={{ colorScheme: theme }}
                 >
                   <option value={-2} className="bg-[var(--card-elevated-bg)] text-[var(--text-primary)]">
@@ -265,7 +265,7 @@ export default function SistemAyarlari() {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
-                    className={`flex items-center gap-3 px-4 py-2.5 rounded-[14px] border ${
+                    className={`flex items-center gap-3 px-4 py-2.5 rounded-chip border ${
                       statusMessage.type === 'success'
                         ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
                         : statusMessage.type === 'warning'
@@ -285,7 +285,7 @@ export default function SistemAyarlari() {
               whileTap={{ scale: 0.98 }}
               type="submit"
               disabled={saving}
-              className="bg-[var(--dynamic-aura,var(--aura-indigo))] text-[var(--app-bg)] w-full sm:w-auto px-6 py-3.5 sm:px-8 sm:py-4 rounded-[14px] font-bold text-2xs uppercase tracking-wide shadow-[var(--spatial-shadow)] transition-all disabled:opacity-50 flex items-center justify-center gap-3 cursor-pointer"
+              className="bg-[var(--dynamic-aura,var(--aura-indigo))] text-[var(--app-bg)] w-full sm:w-auto px-6 py-3.5 sm:px-8 sm:py-4 rounded-chip font-bold text-2xs uppercase tracking-wide shadow-[var(--spatial-shadow)] transition-all disabled:opacity-50 flex items-center justify-center gap-3 cursor-pointer"
             >
               {saving ? (
                 <div className="w-4 h-4 border-2 border-[var(--text-primary)]/30 border-t-[var(--text-primary)] rounded-full animate-spin" />
@@ -316,7 +316,7 @@ export default function SistemAyarlari() {
         className="spatial-glass !bg-rose-500/[0.02] border-rose-500/15 !rounded-card p-1 sm:p-8 relative overflow-hidden mt-6"
       >
         <div className="flex items-center gap-3 sm:gap-5 mb-6 relative z-10">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-[14px] bg-rose-500/10 flex items-center justify-center border border-rose-500/20">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-chip bg-rose-500/10 flex items-center justify-center border border-rose-500/20">
             <AlertTriangle className="text-rose-500 w-5 h-5" strokeWidth={1.6} />
           </div>
           <div>
@@ -342,7 +342,7 @@ export default function SistemAyarlari() {
             onClick={() => {
               if (isSuperAdmin) setVeriSifirlamaAcik(true);
             }}
-            className="shrink-0 bg-rose-500/10 text-rose-400 border border-rose-500/25 px-6 py-3.5 rounded-[14px] font-bold text-2xs uppercase tracking-wide transition-all flex items-center justify-center gap-3 cursor-pointer hover:bg-rose-500/15 disabled:opacity-35 disabled:cursor-not-allowed disabled:hover:bg-rose-500/10"
+            className="shrink-0 bg-rose-500/10 text-rose-400 border border-rose-500/25 px-6 py-3.5 rounded-chip font-bold text-2xs uppercase tracking-wide transition-all flex items-center justify-center gap-3 cursor-pointer hover:bg-rose-500/15 disabled:opacity-35 disabled:cursor-not-allowed disabled:hover:bg-rose-500/10"
           >
             Operasyonel Veriyi Sıfırla
           </motion.button>

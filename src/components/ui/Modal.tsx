@@ -2,6 +2,7 @@ import React, { useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { motion, AnimatePresence, useDragControls } from 'motion/react';
+import { SPRING } from '../../lib/motion';
 
 interface ModalProps {
   isOpen: boolean;
@@ -116,7 +117,7 @@ export function Modal({ isOpen, onClose, title, children, className = '', conten
             initial={{ opacity: 0, scale: 0.95, y: 150 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 150 }}
-            transition={{ type: 'spring', stiffness: 320, damping: 28, mass: 1 }}
+            transition={{ ...SPRING.sheet, mass: 1 }}
             className={`spatial-glass phi-padding w-full sm:max-w-2xl max-h-[85dvh] sm:max-h-[90dvh] flex flex-col overflow-hidden relative z-10 shadow-[var(--spatial-shadow)] mt-auto sm:mt-0 rounded-t-card rounded-b-none sm:rounded-card outline-none ${contentClassName}`}
             style={{
               paddingBottom: 'max(var(--phi-space), env(safe-area-inset-bottom, 0px))',
@@ -141,7 +142,7 @@ export function Modal({ isOpen, onClose, title, children, className = '', conten
               <button
                 onClick={onClose}
                 aria-label="Kapat"
-                className="w-11 h-11 sm:w-12 sm:h-12 bg-[var(--text-primary)]/[0.03] hover:bg-[var(--text-primary)]/[0.06] hover:text-[var(--dynamic-aura,var(--aura-indigo))] hover:border-[var(--dynamic-aura,var(--aura-indigo))]/40 hover:shadow-[0_0_15px_color-mix(in_srgb,var(--dynamic-aura,var(--aura-indigo))_20%,transparent)] rounded-[18px] sm:rounded-[20px] flex items-center justify-center border border-[var(--glass-border)] transition-all text-[var(--text-primary)]"
+                className="w-11 h-11 sm:w-12 sm:h-12 bg-[var(--text-primary)]/[0.03] hover:bg-[var(--text-primary)]/[0.06] hover:text-[var(--dynamic-aura,var(--aura-indigo))] hover:border-[var(--dynamic-aura,var(--aura-indigo))]/40 hover:shadow-[0_0_15px_color-mix(in_srgb,var(--dynamic-aura,var(--aura-indigo))_20%,transparent)] rounded-panel sm:rounded-control flex items-center justify-center border border-[var(--glass-border)] transition-all text-[var(--text-primary)]"
               >
                 <X size={18} className="sm:hidden" strokeWidth={1.5} />
                 <X size={20} className="hidden sm:block" strokeWidth={1} />

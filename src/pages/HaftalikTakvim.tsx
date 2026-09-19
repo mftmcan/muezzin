@@ -138,7 +138,7 @@ export default function HaftalikTakvim() {
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="flex items-center bg-[var(--text-primary)]/[0.03] p-1.5 rounded-[20px] border border-[var(--glass-border)] backdrop-blur-3xl shadow-[0_10px_30px_-10px_rgba(0,0,0,0.1)] self-start"
+              className="flex items-center bg-[var(--text-primary)]/[0.03] p-1.5 rounded-control border border-[var(--glass-border)] backdrop-blur-3xl shadow-[0_10px_30px_-10px_rgba(0,0,0,0.1)] self-start"
             >
               <motion.button
                 whileTap={{ scale: 0.9 }}

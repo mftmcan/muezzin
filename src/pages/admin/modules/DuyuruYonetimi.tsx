@@ -11,6 +11,7 @@ import { duyurularAbone, duyuruYayinla, duyuruSil } from '../../../services/duyu
 import { toTurkishLowerCase, toJsDate } from '../../../lib/dateUtils';
 import { useNotificationStore } from '../../../store/useNotificationStore';
 import { duyuruFormSemasi } from '../../../lib/validation';
+import { SPRING } from '../../../lib/motion';
 
 export const DuyuruYonetimi: React.FC = () => {
   const [duyurular, setDuyurular] = useState<Duyuru[]>([]);
@@ -191,7 +192,7 @@ export const DuyuruYonetimi: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 30, delay: idx * 0.05 }}
+              transition={{ ...SPRING.snappy, delay: idx * 0.05 }}
               className="spatial-glass !rounded-card p-6 group relative overflow-hidden flex flex-col min-h-[220px]"
             >
               {/* Type Accent Aura */}
@@ -207,7 +208,7 @@ export const DuyuruYonetimi: React.FC = () => {
 
               <div className="flex items-start justify-between mb-6">
                 <div
-                  className={`w-12 h-12 rounded-[18px] flex items-center justify-center shadow-elev2 border ${
+                  className={`w-12 h-12 rounded-panel flex items-center justify-center shadow-elev2 border ${
                     duyuru.tip === 'onemli'
                       ? 'bg-rose-500/10 text-rose-400 border-rose-500/20'
                       : duyuru.tip === 'bilgi'

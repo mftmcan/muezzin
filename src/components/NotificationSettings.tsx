@@ -164,7 +164,7 @@ export default function NotificationSettings({ userData, user }: NotificationSet
         </div>
       )}
 
-      <div className="mb-6 p-4 bg-[var(--text-primary)]/[0.02] border border-[var(--glass-border)] rounded-[20px] flex items-start gap-4 flex-col sm:flex-row">
+      <div className="mb-6 p-4 bg-[var(--text-primary)]/[0.02] border border-[var(--glass-border)] rounded-control flex items-start gap-4 flex-col sm:flex-row">
         <div
           className={`p-2.5 rounded-xl flex items-center justify-center shrink-0 ${
             userData?.fcmToken

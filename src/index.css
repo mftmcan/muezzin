@@ -49,6 +49,27 @@
   --radius-avatar: 22px;
   --radius-icon: 28px;
 
+  /* Üçüncü radius basamağı — kod denetimi (premium/kurumsal SaaS standardı
+     analizi) 24 dosyada 58 `rounded-[NNpx]` kalıntısı buldu; üçü Tailwind
+     ölçeğinde (8/12/16/24px) veya --radius-card/avatar/icon'da karşılığı
+     olmayan, gerçekten tekrarlayan değerlerdi: 14px (22 kullanım, en yoğun —
+     liste satırı/küçük chip), 18px (13 kullanım — ikincil panel/modal iç
+     bölüm; 16px'e (rounded-2xl) yuvarlamak görsel bir değişim olurdu ve
+     visual.spec.ts baseline'larını kırardı) ve 20px (15 kullanım — kontrol
+     yüzeyi; aşağıdaki .neural-btn zaten 20px kullanıyordu, bu üçü tek bir
+     token'a bağlandı). Değerler DEĞİŞTİRİLMEDİ, yalnızca adlandırıldı —
+     sıfır görsel diff hedeflendi. 14px ile --radius-card (15px) arasındaki
+     1px fark muhtemelen tarihsel sürüklenme ve birleştirmeye adaydır, ama bu
+     tasarımcı onayı gerektiren ayrı bir görsel karardır (kapsam dışı). */
+  --radius-chip: 14px;
+  --radius-panel: 18px;
+  --radius-control: 20px;
+
+  /* easeOutQuart — src/lib/motion.ts EASE.outQuart'ın Tailwind sınıf formu
+     (`ease-[var(--ease-out-quart)]`) karşılığı; JS ve CSS tarafı aynı tek
+     kaynağı paylaşsın diye ikisi birlikte tanımlı (bkz. motion.ts). */
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+
   /* Yükseklik (elevation) ölçeği — --radius-card'ın kurduğu desenin gölge
      karşılığı (bkz. görsel tasarım denetimi V4/V5). Öncesinde tek token
      (--spatial-shadow, tema bloklarında ayrı tanımlı, @theme'e hiç
@@ -853,7 +874,7 @@
   background: var(--text-primary);
   color: var(--app-bg);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 20px;
+  border-radius: var(--radius-control);
   font-family: var(--font-sans);
   font-weight: 700;
   text-transform: uppercase;

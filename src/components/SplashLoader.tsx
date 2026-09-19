@@ -226,7 +226,7 @@ export const SplashLoader: React.FC = () => {
           <motion.div
             initial={{ scaleX: 0, transformOrigin: 'left' }}
             animate={{ scaleX: 1 }}
-            transition={{ delay: 0.6, duration: 1.0, ease: [0.25, 1, 0.5, 1] }}
+            transition={{ delay: 0.6, duration: 1.0, ease: EASE.outQuart }}
             style={{
               height: '100%',
               width: '100%',

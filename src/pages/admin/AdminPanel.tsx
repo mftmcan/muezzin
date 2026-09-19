@@ -19,6 +19,7 @@ import { IslamicGeometricBg } from '../../components/ui/IslamicGeometricBg';
 import { playClick } from '../../lib/sounds';
 import { ChunkErrorFallback } from '../../components/ChunkErrorFallback';
 import { toError } from '../../lib/errorUtils';
+import { EASE } from '../../lib/motion';
 
 import { SlimSidebar } from './components/SlimSidebar';
 import ExecutiveHeroScreen from './modules/ExecutiveHeroScreen';
@@ -344,7 +345,7 @@ export default function AdminPanel() {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -15 }}
-            transition={{ duration: 0.5, ease: [0.25, 1, 0.5, 1] }}
+            transition={{ duration: 0.5, ease: EASE.outQuart }}
             className="fluid-wrapper"
           >
             {/* Authority Header */}
@@ -363,7 +364,7 @@ export default function AdminPanel() {
                 <button
                   type="button"
                   onClick={requestLogout}
-                  className="lg:hidden flex items-center justify-center w-11 h-11 rounded-[14px] border border-[var(--glass-border)] bg-[var(--text-primary)]/[0.025] text-rose-500/50 hover:text-rose-500 hover:bg-rose-500/10 transition-all"
+                  className="lg:hidden flex items-center justify-center w-11 h-11 rounded-chip border border-[var(--glass-border)] bg-[var(--text-primary)]/[0.025] text-rose-500/50 hover:text-rose-500 hover:bg-rose-500/10 transition-all"
                   aria-label="Oturumu kapat"
                   title="Oturumu kapat"
                 >
@@ -439,7 +440,7 @@ export default function AdminPanel() {
                   <button
                     onClick={closeDrawer}
                     aria-label="Kapat"
-                    className="w-12 h-12 flex items-center justify-center bg-[var(--text-primary)]/[0.03] hover:bg-[var(--text-primary)]/[0.06] hover:text-rose-500 rounded-[20px] border border-[var(--glass-border)] transition-all text-[var(--text-primary)]"
+                    className="w-12 h-12 flex items-center justify-center bg-[var(--text-primary)]/[0.03] hover:bg-[var(--text-primary)]/[0.06] hover:text-rose-500 rounded-control border border-[var(--glass-border)] transition-all text-[var(--text-primary)]"
                   >
                     <X size={20} strokeWidth={1} />
                   </button>

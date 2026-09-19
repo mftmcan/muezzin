@@ -47,7 +47,7 @@ export const SlimSidebar = React.memo<SlimSidebarProps>(
           onClick={() => onNavigateApp('/')}
           aria-label="Müezzin vakit ekranına git"
           title="Vakit ekranı"
-          className="w-12 h-12 flex-shrink-0 bg-[var(--text-primary)]/[0.03] border border-[var(--glass-border)] rounded-[18px] flex items-center justify-center text-[var(--text-primary)] mb-12 shadow-[var(--spatial-shadow)] group cursor-pointer transition-all duration-500 relative overflow-hidden"
+          className="w-12 h-12 flex-shrink-0 bg-[var(--text-primary)]/[0.03] border border-[var(--glass-border)] rounded-panel flex items-center justify-center text-[var(--text-primary)] mb-12 shadow-[var(--spatial-shadow)] group cursor-pointer transition-all duration-500 relative overflow-hidden"
         >
           <div className="absolute inset-0 bg-gradient-to-tr from-[var(--dynamic-aura,var(--aura-indigo))]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
           <Logo
@@ -69,7 +69,7 @@ export const SlimSidebar = React.memo<SlimSidebarProps>(
                 title={item.fullLabel}
                 onClick={() => setActiveTab(item.id)}
                 onMouseEnter={() => onPrefetch?.(item.id)}
-                className={`relative flex flex-col items-center justify-center gap-2 w-full h-[72px] rounded-[20px] transition-all duration-300 group z-10 ${
+                className={`relative flex flex-col items-center justify-center gap-2 w-full h-[72px] rounded-control transition-all duration-300 group z-10 ${
                   isActive
                     ? 'text-[var(--text-primary)] shadow-inner'
                     : 'text-subtle hover:text-[var(--text-primary)]/60 hover:bg-[var(--text-primary)]/[0.02]'
@@ -94,7 +94,7 @@ export const SlimSidebar = React.memo<SlimSidebarProps>(
                   <>
                     <motion.div
                       layoutId="active-slim-pill"
-                      className="absolute inset-0 bg-[var(--text-primary)]/[0.03] border border-[var(--glass-border)] rounded-[20px] -z-10 shadow-elev2"
+                      className="absolute inset-0 bg-[var(--text-primary)]/[0.03] border border-[var(--glass-border)] rounded-control -z-10 shadow-elev2"
                       transition={SPRING.snappy}
                     />
                     <motion.div
@@ -121,7 +121,7 @@ export const SlimSidebar = React.memo<SlimSidebarProps>(
               aria-label={`${item.label} sayfasına git`}
               title={item.label}
               onClick={() => onNavigateApp(item.path)}
-              className="relative w-full h-11 rounded-[14px] flex items-center justify-center text-[var(--text-primary)]/45 hover:text-[var(--text-primary)]/70 hover:bg-[var(--text-primary)]/[0.025] border border-transparent hover:border-[var(--glass-border)] transition-all group"
+              className="relative w-full h-11 rounded-chip flex items-center justify-center text-[var(--text-primary)]/45 hover:text-[var(--text-primary)]/70 hover:bg-[var(--text-primary)]/[0.025] border border-transparent hover:border-[var(--glass-border)] transition-all group"
             >
               <item.icon strokeWidth={1.6} size={18} />
               <span className="absolute left-[58px] px-3 py-1.5 rounded-xl bg-[var(--app-bg)] border border-[var(--glass-border)] shadow-[var(--spatial-shadow)] text-2xs font-medium tracking-wide opacity-0 translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 pointer-events-none whitespace-nowrap transition-all">

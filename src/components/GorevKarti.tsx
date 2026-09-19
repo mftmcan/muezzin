@@ -18,6 +18,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useNotificationStore } from '../store/useNotificationStore';
 import { useMuezzinStore } from '../store/useMuezzinStore';
 import { auth } from '../lib/firebase';
+import { SPRING } from '../lib/motion';
 import { vekaletTeklifEt } from '../services/vekaletServisi';
 import { useAktifIzinlerStore } from '../store/useAktifIzinlerStore';
 import { useVakitBildirimleri } from '../hooks/useVakitBildirimleri';
@@ -264,7 +265,7 @@ export const GorevKarti = React.memo(
           style={{ boxShadow: undefined }}
           whileHover={{ y: -2, boxShadow: glowShadow }}
           whileTap={{ scale: 0.99 }}
-          transition={{ type: 'spring', stiffness: 260, damping: 28, mass: 0.6 }}
+          transition={{ ...SPRING.gentle, mass: 0.6 }}
           className={`p-4 sm:p-8 tactile-card !rounded-card relative overflow-hidden group border border-[var(--text-primary)]/5 ${
             bildirim.durum === 'onaylandi' ? 'border-emerald-500/20 shadow-lg shadow-emerald-500/5' : ''
           } ${isAktif && bildirim.durum === 'bekliyor' ? 'animate-living-glow' : ''}`}
@@ -410,7 +411,7 @@ export const GorevKarti = React.memo(
                 onClick={isAktif && !isReadOnly ? handleOkudum : undefined}
                 disabled={!isAktif || isReadOnly || isOnaylaniyor}
                 title={isReadOnly ? GOZLEMCI_SALT_OKUMA_IPUCU : undefined}
-                className={`w-full py-5 rounded-[18px] font-bold text-2xs tracking-wide uppercase transition-all duration-200 relative overflow-hidden group/btn shadow-elev2 ${
+                className={`w-full py-5 rounded-panel font-bold text-2xs tracking-wide uppercase transition-all duration-200 relative overflow-hidden group/btn shadow-elev2 ${
                   isAktif && !isReadOnly
                     ? 'bg-[var(--dynamic-aura,var(--aura-indigo))] text-[var(--app-bg)] '
                     : 'bg-[var(--text-primary)]/[0.03] text-[var(--text-primary)]/35 cursor-not-allowed border border-[var(--glass-border)]'
@@ -440,7 +441,7 @@ export const GorevKarti = React.memo(
                   onClick={() => setIsMazeretModalOpen(true)}
                   disabled={isReadOnly}
                   title={isReadOnly ? GOZLEMCI_SALT_OKUMA_IPUCU : undefined}
-                  className="flex-1 py-5 rounded-[18px] font-bold text-2xs tracking-wide uppercase transition-all duration-200 text-rose-500 bg-rose-500/[0.03] border border-rose-500/20 shadow-elev1 cursor-pointer disabled:opacity-35 disabled:cursor-not-allowed"
+                  className="flex-1 py-5 rounded-panel font-bold text-2xs tracking-wide uppercase transition-all duration-200 text-rose-500 bg-rose-500/[0.03] border border-rose-500/20 shadow-elev1 cursor-pointer disabled:opacity-35 disabled:cursor-not-allowed"
                 >
                   {GOREV_LABELS.mazeretBildir}
                 </motion.button>
@@ -450,7 +451,7 @@ export const GorevKarti = React.memo(
                   onClick={() => setIsVekaletModalOpen(true)}
                   disabled={isReadOnly}
                   title={isReadOnly ? GOZLEMCI_SALT_OKUMA_IPUCU : undefined}
-                  className="flex-1 py-5 rounded-[18px] font-bold text-2xs tracking-wide uppercase transition-all duration-200 text-[var(--dynamic-aura,var(--aura-indigo))] bg-[var(--dynamic-aura,var(--aura-indigo))]/[0.03] border border-[var(--dynamic-aura,var(--aura-indigo))]/20 shadow-elev1 cursor-pointer disabled:opacity-35 disabled:cursor-not-allowed"
+                  className="flex-1 py-5 rounded-panel font-bold text-2xs tracking-wide uppercase transition-all duration-200 text-[var(--dynamic-aura,var(--aura-indigo))] bg-[var(--dynamic-aura,var(--aura-indigo))]/[0.03] border border-[var(--dynamic-aura,var(--aura-indigo))]/20 shadow-elev1 cursor-pointer disabled:opacity-35 disabled:cursor-not-allowed"
                 >
                   {GOREV_LABELS.goreviDevret}
                 </motion.button>

@@ -142,7 +142,7 @@ export default function EzanOnbellegi() {
       <section className="spatial-glass !rounded-card p-1 sm:p-8 relative overflow-hidden">
         <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-5 mb-6">
           <div className="flex items-center gap-4">
-            <div className="w-11 h-11 rounded-[14px] bg-[var(--surface-medium)] text-[var(--dynamic-aura,var(--aura-indigo))] flex items-center justify-center border border-[var(--glass-border)]">
+            <div className="w-11 h-11 rounded-chip bg-[var(--surface-medium)] text-[var(--dynamic-aura,var(--aura-indigo))] flex items-center justify-center border border-[var(--glass-border)]">
               <DatabaseZap className="w-5 h-5" strokeWidth={1.7} />
             </div>
             <div>
@@ -158,14 +158,14 @@ export default function EzanOnbellegi() {
             whileTap={{ scale: 0.98 }}
             onClick={handleSenkronizeEt}
             disabled={syncing}
-            className="w-full sm:w-auto px-6 py-3.5 bg-[var(--dynamic-aura,var(--aura-indigo))] text-[var(--app-bg)] rounded-[14px] uppercase tracking-wide text-2xs flex items-center justify-center gap-3 transition-all font-bold shadow-[var(--spatial-shadow)] cursor-pointer disabled:opacity-60"
+            className="w-full sm:w-auto px-6 py-3.5 bg-[var(--dynamic-aura,var(--aura-indigo))] text-[var(--app-bg)] rounded-chip uppercase tracking-wide text-2xs flex items-center justify-center gap-3 transition-all font-bold shadow-[var(--spatial-shadow)] cursor-pointer disabled:opacity-60"
           >
             <RefreshCw size={16} className={syncing ? 'animate-spin' : ''} />
             <span>{syncing ? 'Senkronize ediliyor' : 'Verileri senkronize et'}</span>
           </motion.button>
         </div>
 
-        <div className="hidden md:block rounded-[18px] overflow-hidden border border-[var(--glass-border)] bg-[var(--surface-medium)]">
+        <div className="hidden md:block rounded-panel overflow-hidden border border-[var(--glass-border)] bg-[var(--surface-medium)]">
           <table className="w-full text-left">
             <thead>
               <tr className="authority-title !text-2xs opacity-55 uppercase tracking-wide border-b border-[var(--glass-border)]">

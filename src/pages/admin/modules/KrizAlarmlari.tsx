@@ -11,6 +11,7 @@ import { EmptyState } from '../../../components/ui/EmptyState';
 import { LoadingState } from '../../../components/ui/LoadingState';
 import { kriziBaslat } from '../../../services/mazeretServisi';
 import { useNotificationStore } from '../../../store/useNotificationStore';
+import { SPRING } from '../../../lib/motion';
 
 export default function KrizAlarmlari() {
   const { alarmlar, loading, error, alarmCoz } = useKrizAlarmlariStore();
@@ -255,7 +256,7 @@ export default function KrizAlarmlari() {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 30, delay: idx * 0.05 }}
+                transition={{ ...SPRING.snappy, delay: idx * 0.05 }}
                 className={`relative overflow-hidden p-6 rounded-card border transition-all duration-200 group ${
                   alarm.cozuldu
                     ? 'spatial-glass opacity-60 border-[var(--text-primary)]/5'

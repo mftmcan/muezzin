@@ -189,13 +189,13 @@ export default function MuezzinYonetimi() {
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="p-4 sm:p-6 spatial-glass border-[var(--glass-border)] rounded-card opacity-50 flex flex-col gap-6">
               <div className="flex items-center gap-5">
-                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-[18px] sm:rounded-3xl bg-[var(--text-primary)]/5 animate-pulse" />
+                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-panel sm:rounded-3xl bg-[var(--text-primary)]/5 animate-pulse" />
                 <div className="flex flex-col gap-2">
                   <div className="w-32 h-4 bg-[var(--text-primary)]/5 rounded-full animate-pulse" />
                   <div className="w-20 h-2 bg-[var(--text-primary)]/5 rounded-full animate-pulse" />
                 </div>
               </div>
-              <div className="w-full h-16 bg-[var(--text-primary)]/5 rounded-[20px] animate-pulse" />
+              <div className="w-full h-16 bg-[var(--text-primary)]/5 rounded-control animate-pulse" />
             </div>
           ))}
         </div>
@@ -351,7 +351,7 @@ export default function MuezzinYonetimi() {
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between items-start gap-4 sm:gap-0 min-w-0">
                       <div className="flex items-center gap-5 min-w-0 flex-1">
                         <div className="relative shrink-0">
-                          <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-[18px] sm:rounded-3xl bg-[var(--text-primary)]/[0.03] border border-[var(--glass-border)] flex items-center justify-center font-light text-xl sm:text-2xl text-[var(--dynamic-aura,var(--aura-indigo))] shadow-inner group-hover:rotate-3 transition-all duration-700 relative overflow-hidden">
+                          <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-panel sm:rounded-3xl bg-[var(--text-primary)]/[0.03] border border-[var(--glass-border)] flex items-center justify-center font-light text-xl sm:text-2xl text-[var(--dynamic-aura,var(--aura-indigo))] shadow-inner group-hover:rotate-3 transition-all duration-700 relative overflow-hidden">
                             <div className="absolute inset-0 bg-gradient-to-br from-[var(--dynamic-aura,var(--aura-indigo))]/10 to-transparent z-0" />
                             {m.photoURL ? (
                               <img src={m.photoURL} alt={m.displayName} className="w-full h-full object-cover relative z-10" />
@@ -430,7 +430,7 @@ export default function MuezzinYonetimi() {
                     </div>
 
                     {/* Body: Stats Bento Grid */}
-                    <div className="grid grid-cols-2 gap-3 sm:gap-4 p-3.5 sm:p-5 bg-[var(--text-primary)]/[0.02] rounded-[20px] sm:rounded-icon border border-[var(--glass-border)]">
+                    <div className="grid grid-cols-2 gap-3 sm:gap-4 p-3.5 sm:p-5 bg-[var(--text-primary)]/[0.02] rounded-control sm:rounded-icon border border-[var(--glass-border)]">
                       <div className="space-y-1.5">
                         <p className="premium-label !text-2xs !opacity-35 uppercase tracking-wide">İZİN GÜNÜ</p>
                         <p className="text-xs font-light text-[var(--text-primary)] tracking-wide">

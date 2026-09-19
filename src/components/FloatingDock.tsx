@@ -113,7 +113,7 @@ const AppNavItem = memo(({ item, isActive }: { item: (typeof ALL_NAV_ITEMS)[0]; 
           </div>
         </motion.div>
 
-        <div className="hidden sm:block absolute -top-14 left-1/2 -translate-x-1/2 px-4 py-2 bg-[var(--app-bg)] text-[var(--text-primary)] text-2xs font-sans font-extralight tracking-wide rounded-[14px] opacity-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none -translate-y-2 group-hover:translate-y-0 scale-90 shadow-[var(--spatial-shadow)] border border-[var(--glass-border)] backdrop-blur-xl">
+        <div className="hidden sm:block absolute -top-14 left-1/2 -translate-x-1/2 px-4 py-2 bg-[var(--app-bg)] text-[var(--text-primary)] text-2xs font-sans font-extralight tracking-wide rounded-chip opacity-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none -translate-y-2 group-hover:translate-y-0 scale-90 shadow-[var(--spatial-shadow)] border border-[var(--glass-border)] backdrop-blur-xl">
           {item.label}
           <div className="absolute bottom-[-5px] left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-[var(--app-bg)] rotate-45 border-r border-b border-[var(--glass-border)]" />
         </div>
@@ -250,7 +250,7 @@ export function FloatingDock() {
                   playClick();
                   navigateApp(item.path);
                 }}
-                className="min-w-[42px] h-[38px] px-2 rounded-[14px] flex items-center justify-center text-[var(--text-primary)]/45 hover:text-[var(--text-primary)] hover:bg-[var(--text-primary)]/[0.04] transition-all touch-manipulation"
+                className="min-w-[42px] h-[38px] px-2 rounded-chip flex items-center justify-center text-[var(--text-primary)]/45 hover:text-[var(--text-primary)] hover:bg-[var(--text-primary)]/[0.04] transition-all touch-manipulation"
               >
                 <item.icon size={16} strokeWidth={1.7} />
               </button>
@@ -271,7 +271,7 @@ export function FloatingDock() {
               onPointerDown={(event) => handleAdminPointerAction(event, () => toggleTheme())}
               aria-label={theme === 'dark' ? 'Aydınlık temaya geç' : 'Karanlık temaya geç'}
               title={theme === 'dark' ? 'Aydınlık temaya geç' : 'Karanlık temaya geç'}
-              className="min-w-[42px] h-[38px] px-2 rounded-[14px] flex items-center justify-center text-[var(--text-primary)]/45 hover:text-[var(--dynamic-aura,var(--aura-amber))] hover:bg-[var(--text-primary)]/[0.04] transition-all touch-manipulation"
+              className="min-w-[42px] h-[38px] px-2 rounded-chip flex items-center justify-center text-[var(--text-primary)]/45 hover:text-[var(--dynamic-aura,var(--aura-amber))] hover:bg-[var(--text-primary)]/[0.04] transition-all touch-manipulation"
             >
               {theme === 'dark' ? <Sun size={16} strokeWidth={1.7} /> : <Moon size={16} strokeWidth={1.7} />}
             </button>
@@ -345,7 +345,7 @@ export function FloatingDock() {
                       setActiveAdminTab(item.id);
                     }}
                     title={item.fullLabel}
-                    className={`relative min-w-[44px] min-h-[44px] sm:min-w-[54px] sm:min-h-[54px] p-2 sm:p-3 rounded-2xl sm:rounded-[20px] transition-all duration-150 z-10 flex flex-col items-center justify-center gap-1 group touch-manipulation ${
+                    className={`relative min-w-[44px] min-h-[44px] sm:min-w-[54px] sm:min-h-[54px] p-2 sm:p-3 rounded-2xl sm:rounded-control transition-all duration-150 z-10 flex flex-col items-center justify-center gap-1 group touch-manipulation ${
                       isActive
                         ? 'text-[var(--dynamic-aura,var(--aura-indigo))] scale-110'
                         : 'text-faint hover:text-[var(--text-primary)]/60'

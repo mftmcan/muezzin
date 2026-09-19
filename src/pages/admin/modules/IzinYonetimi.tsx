@@ -8,6 +8,7 @@ import { Check, X, Calendar, User, Trash2, AlertCircle, Undo2 } from 'lucide-rea
 import { ConfirmModal } from '../../../components/ui/ConfirmModal';
 import { LoadingState } from '../../../components/ui/LoadingState';
 import { izinGunSayisi, izinOnayCumaEngelMesaji, toTurkishUpperCase } from '../../../lib/dateUtils';
+import { SPRING } from '../../../lib/motion';
 
 export default function IzinYonetimi() {
   const { izinler, loading, error, detaylarHatasi, izinGuncelle, izinGeriAl, izinSil } = useAdminIzinlerStore();
@@ -167,7 +168,7 @@ export default function IzinYonetimi() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 30, delay: idx * 0.05 }}
+                  transition={{ ...SPRING.snappy, delay: idx * 0.05 }}
                   className={`group spatial-glass p-4 sm:p-6 transition-all duration-700 relative overflow-hidden flex flex-col lg:flex-row lg:items-center gap-4 sm:gap-6 lg:gap-8 border border-[var(--glass-border)] !rounded-card ${
                     izin.durum === 'onay_bekliyor'
                       ? 'hover:bg-amber-500/[0.02]'

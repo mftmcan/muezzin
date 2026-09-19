@@ -19,6 +19,7 @@ import { getHaftaIdFromDate, getTurkeyNow, kisiGunIcinMusaitMi, toTurkishUpperCa
 import { exportCsv } from '../../../lib/csvExport';
 import { selfHealingTetiklenmeliMi } from '../../../lib/planSelfHealing';
 import { useOneShotAnimation } from '../../../hooks/useOneShotAnimation';
+import { SPRING } from '../../../lib/motion';
 
 const VAKITLER: Vakit[] = ['sabah', 'ogle', 'ikindi', 'aksam', 'yatsi'];
 
@@ -204,9 +205,10 @@ export default function HaftalikCizelge() {
       })
     ) {
       selfHealingFiredHaftaIdRef.current = haftaId;
-      if (import.meta.env.DEV) {
-        console.log(`[Self-Healing] Cizelge sayfasında plan bulunamadı (${haftaId}). Otomatik oluşturma tetikleniyor...`);
-      }
+      // Self-healing'in ne sıklıkla tetiklendiği gerçek bir sinyaldir (cron'un
+      // kaçırdığı haftaları gösterir) — önceden yalnızca DEV konsoluna
+      // düşüyordu, production'da hiç görünmüyordu (bkz. kod denetimi).
+      telemetryService.addBreadcrumb(`Self-healing tetiklendi (çizelge): ${haftaId}`, 'network', { haftaId });
       // Effect gövdesinde senkron olarak handlePlanOlustur'u çağırmak,
       // içindeki ilk satır olan setGenerating(true)'nun aynı render turunda
       // senkron çalışmasına yol açıyordu. Bir microtask'a erteleyerek bunu
@@ -338,7 +340,7 @@ export default function HaftalikCizelge() {
                   layout
                   initial={shouldAnimate ? { opacity: 0, y: 20 } : false}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={shouldAnimate ? { type: 'spring', stiffness: 400, damping: 30, delay: idx * 0.05 } : { duration: 0.2 }}
+                  transition={shouldAnimate ? { ...SPRING.snappy, delay: idx * 0.05 } : { duration: 0.2 }}
                   className={`flex flex-col lg:flex-row items-stretch lg:items-center p-3 sm:p-4 gap-4 sm:gap-6 rounded-card border transition-all duration-700 relative overflow-hidden ${
                     isToday
                       ? 'bg-[var(--dynamic-aura,var(--aura-indigo))]/5 border-[var(--dynamic-aura,var(--aura-indigo))]/20 shadow-[var(--spatial-shadow)]'
@@ -393,7 +395,7 @@ export default function HaftalikCizelge() {
                           whileHover={{ y: -5, backgroundColor: 'var(--surface-medium)', zIndex: 50 }}
                           whileTap={{ scale: 0.98 }}
                           onClick={() => openEdit(tarih, gunAdi, vakit, atama)}
-                          className="spatial-glass-elevated p-3 sm:p-4 rounded-[18px] sm:rounded-3xl text-left border border-[var(--text-primary)]/5 transition-all duration-500 group relative min-h-[84px]"
+                          className="spatial-glass-elevated p-3 sm:p-4 rounded-panel sm:rounded-3xl text-left border border-[var(--text-primary)]/5 transition-all duration-500 group relative min-h-[84px]"
                         >
                           <div className="flex justify-between items-center mb-3">
                             <span className="authority-title !text-2xs opacity-40 uppercase tracking-wide font-bold text-[var(--dynamic-aura,var(--aura-indigo))]">
@@ -468,7 +470,7 @@ export default function HaftalikCizelge() {
           <p className="authority-title !text-2xs opacity-30 font-medium tracking-wide">OPERASYONEL GÖREV DAĞILIMI VE PLANLAMA</p>
         </div>
 
-        <div className="flex items-center gap-2 sm:gap-4 bg-[var(--text-primary)]/[0.02] p-2 rounded-[20px] sm:rounded-3xl border border-[var(--text-primary)]/5 shadow-[var(--spatial-shadow)] w-full lg:w-auto justify-between">
+        <div className="flex items-center gap-2 sm:gap-4 bg-[var(--text-primary)]/[0.02] p-2 rounded-control sm:rounded-3xl border border-[var(--text-primary)]/5 shadow-[var(--spatial-shadow)] w-full lg:w-auto justify-between">
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
@@ -565,7 +567,7 @@ export default function HaftalikCizelge() {
                   {Array.from({ length: 5 }).map((_, j) => (
                     <div
                       key={j}
-                      className="spatial-glass-elevated p-3 sm:p-4 rounded-[18px] sm:rounded-3xl border border-[var(--text-primary)]/5 min-h-[84px] animate-pulse bg-[var(--text-primary)]/[0.02]"
+                      className="spatial-glass-elevated p-3 sm:p-4 rounded-panel sm:rounded-3xl border border-[var(--text-primary)]/5 min-h-[84px] animate-pulse bg-[var(--text-primary)]/[0.02]"
                     />
                   ))}
                 </div>

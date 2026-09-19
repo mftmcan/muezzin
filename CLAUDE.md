@@ -40,15 +40,21 @@ denetim B20). Yeni yazımda:
 
 1. Değer Tailwind'in yerleşik ölçeğinde varsa (`rounded-lg/xl/2xl/3xl`)
    **onu kullan**, `rounded-[NNpx]` yazma.
-2. Yoksa iki ek token'dan birini kullan — `rounded-avatar` (22px: avatar,
-   büyük ikon kutusu) ve `rounded-icon` (28px: EmptyState/ConfirmModal/
-   GpsConsentModal ortak "sonuç ikonu" dairesi). Bu ikisi `src/index.css`
-   `@theme` bloğunda tanımlı; isimleri BİLEREK Tailwind'in yerleşik
-   `--radius-sm/md/lg/xl` namespace'iyle çakışmaz (o isimleri burada
-   tanımlamak `rounded-lg` gibi zaten kullanımda olan sınıfların piksel
-   değerini sessizce değiştirirdi).
+2. Yoksa şu token'lardan birini kullan — `rounded-avatar` (22px: avatar,
+   büyük ikon kutusu), `rounded-icon` (28px: EmptyState/ConfirmModal/
+   GpsConsentModal ortak "sonuç ikonu" dairesi), `rounded-chip` (14px: liste
+   satırı/küçük chip, en yoğun kullanılan ölçek), `rounded-panel` (18px:
+   ikincil panel/modal iç bölüm), `rounded-control` (20px: kontrol yüzeyi,
+   `.neural-btn` ile aynı değer). Bu beşi `src/index.css` `@theme` bloğunda
+   tanımlı; isimleri BİLEREK Tailwind'in yerleşik `--radius-sm/md/lg/xl`
+   namespace'iyle çakışmaz (o isimleri burada tanımlamak `rounded-lg` gibi
+   zaten kullanımda olan sınıfların piksel değerini sessizce değiştirirdi).
 3. Gerçekten tek seferlik, üçüncü bir bileşenle paylaşılmayan bir değerse
-   `rounded-[NNpx]` hâlâ meşru — ama önce 1 ve 2'yi ele.
+   `rounded-[NNpx]` hâlâ meşru — ama önce 1 ve 2'yi ele. `tests/unit/
+   tasarimSistemi.test.ts`'teki ratchet guard, 14/18/20px ve Tailwind
+   ölçeğindeki (8/12/16/24px) değerlerin `rounded-[NNpx]` olarak YENİDEN
+   sızmasını CI'da engeller (bkz. kod denetimi, premium/kurumsal SaaS
+   standardı analizi, 2026-09-19).
 
 ### `.spatial-glass` ailesi
 
@@ -97,10 +103,14 @@ taşma riskini artırır.
 
 Yeni bir `motion/react` geçişi yazarken `stiffness`/`damping`/`duration`/easing
 dizisi için elle sayı yazma — `SPRING`/`EASE`/`DURATION` (bkz. `src/lib/motion.ts`)
-dışında bir değer icat etmeden önce oradaki üç grubun birine bakılır. Mevcut
-çağrı noktaları (14 farklı spring, 3 farklı easing dizisine dağılmış, bkz.
-premium denetim B22) geriye dönük uyumluluk için değiştirilmedi — bu token'lar
-yalnızca YENİ yazılan kod için bağlayıcı.
+dışında bir değer icat etmeden önce oradaki gruplardan birine bakılır. Kod
+denetimi (premium/kurumsal SaaS standardı analizi, 2026-09-19) sonrası
+`SPRING.snappy`/`sheet`/`gentle` ve `EASE.in`'e birebir eşleşen tüm çağrı
+noktaları token'a taşındı, `EASE.outQuart` yeni eklendi — artık geriye dönük
+uyumluluk istisnası yok. Kalan tekil/bounce spring değerleri (FloatingDock.tsx,
+Layout.tsx, Switch.tsx vb.) bilinçli olarak token'a taşınmadı; bunlar
+`tests/unit/tasarimSistemi.test.ts`'teki ratchet guard'da gerekçeleriyle
+allowlist'te kayıtlı — yeni bir tekil değer eklemek istersen önce oraya bak.
 
 ### Doygun dolgu üzerine metin rengi
 

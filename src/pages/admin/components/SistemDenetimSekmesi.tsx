@@ -87,7 +87,7 @@ export const SistemDenetimSekmesi = React.memo(({ formatDate }: { formatDate: (t
             >
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-[14px] bg-[var(--text-primary)]/[0.03] border border-[var(--text-primary)]/5 flex items-center justify-center text-[var(--dynamic-aura,var(--aura-indigo))] flex-shrink-0 shadow-elev2">
+                  <div className="w-10 h-10 rounded-chip bg-[var(--text-primary)]/[0.03] border border-[var(--text-primary)]/5 flex items-center justify-center text-[var(--dynamic-aura,var(--aura-indigo))] flex-shrink-0 shadow-elev2">
                     <User size={18} />
                   </div>
                   <div>

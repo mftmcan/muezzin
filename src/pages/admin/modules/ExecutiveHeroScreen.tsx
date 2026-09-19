@@ -31,6 +31,8 @@ function HeroStatSkeleton({ className }: { className: string }) {
   return <Skeleton className={className} />;
 }
 
+const HERO_SPRING = { type: 'spring', stiffness: 300, damping: 24 } as const;
+
 export default function ExecutiveHeroScreen({
   muezzinlerSayisi,
   cozulmamisSayisi,
@@ -276,7 +278,7 @@ export default function ExecutiveHeroScreen({
           <motion.div
             whileHover={{ y: -4, scale: 1.01 }}
             whileTap={{ scale: 0.99 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 24 }}
+            transition={HERO_SPRING}
             onClick={() => onOpenDrawer('alarmlar')}
             className={`flex-1 spatial-glass !rounded-card p-6 relative overflow-hidden flex flex-col justify-between transition-all duration-200 cursor-pointer min-h-[140px] shimmer-trigger ${cozulmamisSayisi > 0 ? 'spatial-glass-elevated border-rose-500/30 bg-rose-500/[0.04]' : 'hover:bg-[var(--text-primary)]/[0.02]'}`}
           >
@@ -319,7 +321,7 @@ export default function ExecutiveHeroScreen({
             <motion.div
               whileHover={{ y: -4, scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 24 }}
+              transition={HERO_SPRING}
               onClick={() => setActiveTab('ekip', 'mazeretler')}
               className="flex-1 spatial-glass !rounded-card p-6 relative overflow-hidden flex flex-col justify-between transition-all duration-200 cursor-pointer min-h-[140px] shimmer-trigger"
             >
@@ -347,7 +349,7 @@ export default function ExecutiveHeroScreen({
             <motion.div
               whileHover={{ y: -4, scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 24 }}
+              transition={HERO_SPRING}
               onClick={() => setActiveTab('planlama')}
               className="flex-1 spatial-glass !rounded-card p-6 relative overflow-hidden flex flex-col justify-between transition-all duration-200 cursor-pointer min-h-[140px] shimmer-trigger"
             >
@@ -385,7 +387,7 @@ export default function ExecutiveHeroScreen({
             <motion.div
               whileHover={{ y: -4, scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 24 }}
+              transition={HERO_SPRING}
               onClick={() => onOpenDrawer('duyurular')}
               className="flex-1 spatial-glass !rounded-card p-6 relative overflow-hidden flex flex-col justify-between transition-all duration-200 cursor-pointer min-h-[140px] shimmer-trigger"
             >

@@ -174,7 +174,7 @@ export const GorevliKarti = React.memo(({ tip, isim, durum, isUser, izinde, isFr
                 warning/danger` token'larını kullanıyor. */}
             {durum === 'onaylandi' && (
               <div
-                className={`flex items-center gap-2 px-4 py-1.5 rounded-[14px] border transition-all duration-500 ${isFriday ? 'bg-[var(--status-success)]/10 border-[var(--status-success)]/30' : 'bg-[var(--status-success)]/10 border-[var(--status-success)]/20'}`}
+                className={`flex items-center gap-2 px-4 py-1.5 rounded-chip border transition-all duration-500 ${isFriday ? 'bg-[var(--status-success)]/10 border-[var(--status-success)]/30' : 'bg-[var(--status-success)]/10 border-[var(--status-success)]/20'}`}
               >
                 <CheckCircle2 size={11} className="text-[var(--status-success)] shadow-elev1" />
                 <span className="text-2xs font-bold uppercase tracking-wide text-[var(--status-success)]">AKTİF</span>
@@ -188,14 +188,14 @@ export const GorevliKarti = React.memo(({ tip, isim, durum, isUser, izinde, isFr
               <motion.button
                 type="button"
                 onClick={() => document.getElementById('gorev-akisi')?.scrollIntoView({ behavior: 'smooth' })}
-                className="flex items-center gap-2 px-4 py-1.5 rounded-[14px] bg-[var(--status-warning)]/10 border border-[var(--status-warning)]/20 shadow-elev1 cursor-pointer hover:bg-[var(--status-warning)]/15 transition-all"
+                className="flex items-center gap-2 px-4 py-1.5 rounded-chip bg-[var(--status-warning)]/10 border border-[var(--status-warning)]/20 shadow-elev1 cursor-pointer hover:bg-[var(--status-warning)]/15 transition-all"
               >
                 <Hourglass size={11} className="text-[var(--status-warning)] animate-spin" style={{ animationDuration: '4s' }} />
                 <span className="text-2xs font-bold uppercase tracking-wide text-[var(--status-warning)]">BEKLEYİŞTE</span>
               </motion.button>
             )}
             {izinde && (
-              <div className="flex items-center gap-2 px-4 py-1.5 rounded-[14px] bg-[var(--status-danger)]/10 border border-[var(--status-danger)]/20 shadow-elev1">
+              <div className="flex items-center gap-2 px-4 py-1.5 rounded-chip bg-[var(--status-danger)]/10 border border-[var(--status-danger)]/20 shadow-elev1">
                 <Compass size={11} className="text-[var(--status-danger)]" />
                 <span className="text-2xs font-bold uppercase tracking-wide text-[var(--status-danger)]">MEŞRU MAZERET</span>
               </div>

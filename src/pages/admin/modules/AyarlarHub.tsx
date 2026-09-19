@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { EASE } from '../../../lib/motion';
 import { SegmentedTabs } from '../../../components/ui/SegmentedTabs';
 import { PageSkeleton } from '../../../components/ui/Skeleton';
 import { useUrlTab } from '../../../hooks/admin/useUrlTab';
@@ -40,7 +41,7 @@ export default function AyarlarHub() {
         id={`ayarlar-panel-${activeTab}`}
         aria-labelledby={`ayarlar-tab-${activeTab}`}
         tabIndex={0}
-        className={`relative transition-all duration-1000 ease-[cubic-bezier(0.25,1,0.5,1)] ${isPending ? 'opacity-20 blur-xl scale-[0.98]' : 'opacity-100 blur-0 scale-100'}`}
+        className={`relative transition-all duration-1000 ease-[var(--ease-out-quart)] ${isPending ? 'opacity-20 blur-xl scale-[0.98]' : 'opacity-100 blur-0 scale-100'}`}
       >
         <AnimatePresence mode="wait">
           <motion.div
@@ -48,7 +49,7 @@ export default function AyarlarHub() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.6, ease: [0.25, 1, 0.5, 1] }}
+            transition={{ duration: 0.6, ease: EASE.outQuart }}
           >
             <Suspense fallback={<PageSkeleton />}>
               {activeTab === 'ayarlar' && <SistemAyarlari />}

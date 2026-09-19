@@ -63,7 +63,7 @@ export function SegmentedTabs({ items, activeId, onChange, ariaLabel, idPrefix, 
       <div
         role="tablist"
         aria-label={ariaLabel}
-        className="flex items-center gap-1.5 bg-[var(--surface-low)] p-1 rounded-[20px] sm:rounded-3xl border border-[var(--glass-border)] shadow-[var(--spatial-shadow)] w-full sm:w-auto"
+        className="flex items-center gap-1.5 bg-[var(--surface-low)] p-1 rounded-control sm:rounded-3xl border border-[var(--glass-border)] shadow-[var(--spatial-shadow)] w-full sm:w-auto"
       >
         {items.map((item) => {
           const Icon = item.icon;
@@ -79,7 +79,7 @@ export function SegmentedTabs({ items, activeId, onChange, ariaLabel, idPrefix, 
               tabIndex={isActive ? 0 : -1}
               onClick={() => onChange(item.id)}
               onKeyDown={(e) => handleTabKeyDown(e, item.id)}
-              className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 sm:gap-4 px-3 sm:px-8 py-3 sm:py-4 rounded-2xl sm:rounded-[20px] transition-all duration-200 relative group overflow-hidden ${
+              className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 sm:gap-4 px-3 sm:px-8 py-3 sm:py-4 rounded-2xl sm:rounded-control transition-all duration-200 relative group overflow-hidden ${
                 isActive ? 'text-[var(--text-primary)]' : 'text-[var(--text-primary)]/25 hover:text-[var(--text-primary)]/55'
               }`}
             >
@@ -181,7 +181,7 @@ export function SegmentedTabs({ items, activeId, onChange, ariaLabel, idPrefix, 
             whileTap={{ scale: 0.97 }}
             onClick={() => onChange(item.id)}
             onKeyDown={(e) => handleTabKeyDown(e, item.id)}
-            className={`px-8 py-3.5 rounded-[20px] transition-all duration-500 whitespace-nowrap text-2xs font-bold uppercase tracking-wide relative group ${
+            className={`px-8 py-3.5 rounded-control transition-all duration-500 whitespace-nowrap text-2xs font-bold uppercase tracking-wide relative group ${
               isActive
                 ? 'text-[var(--text-primary)]'
                 : 'text-subtle hover:text-[var(--text-primary)]/50 hover:bg-[var(--text-primary)]/[0.02]'
@@ -191,7 +191,7 @@ export function SegmentedTabs({ items, activeId, onChange, ariaLabel, idPrefix, 
             {isActive && (
               <motion.div
                 layoutId={pillLayoutId}
-                className="absolute inset-0 bg-[var(--surface-medium)] border border-[var(--glass-border)] rounded-[20px] -z-0 shadow-elev2"
+                className="absolute inset-0 bg-[var(--surface-medium)] border border-[var(--glass-border)] rounded-control -z-0 shadow-elev2"
                 transition={SPRING.snappy}
               />
             )}

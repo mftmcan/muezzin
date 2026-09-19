@@ -207,7 +207,7 @@ export function VeriSifirlamaModal({ isOpen, onClose }: Props) {
             disabled={calisiyor}
             aria-invalid={onayMetni.length > 0 && onayMetni.trim() !== ONAY_METNI}
             aria-describedby={onayMetni.length > 0 && onayMetni.trim() !== ONAY_METNI ? 'onay-metni-error' : undefined}
-            className="w-full bg-[var(--surface-medium)] border border-rose-500/20 rounded-[14px] px-4 py-3.5 text-[var(--text-primary)] text-sm font-medium focus:border-rose-500/50 outline-none transition-colors"
+            className="w-full bg-[var(--surface-medium)] border border-rose-500/20 rounded-chip px-4 py-3.5 text-[var(--text-primary)] text-sm font-medium focus:border-rose-500/50 outline-none transition-colors"
             placeholder={ONAY_METNI}
             autoComplete="off"
           />
