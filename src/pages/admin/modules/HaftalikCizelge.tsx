@@ -321,6 +321,18 @@ export default function HaftalikCizelge() {
     return 'bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.8)]'; // bekliyor
   };
 
+  // Renk kodlu noktanın (bkz. getStatusColor) anlamını açıklayan native
+  // tooltip metni — ExecutiveHeroScreen'deki "N/M onay bekliyor" sayacına
+  // tıklayan bir admin bu ızgarada hangi hücrelerin bekliyor/onaylandı/
+  // reddedildi olduğunu ayırt edemiyordu (yalnızca 1-1.5px'lik bir renk
+  // noktası, açıklama yoktu — bkz. kod denetimi, kullanıcı bildirimi).
+  const getStatusLabel = (durum: string | undefined) => {
+    if (!durum) return 'Bildirim yok';
+    if (durum === 'onaylandi') return 'Onaylandı';
+    if (durum === 'reddedildi') return 'Reddedildi (mazeret/vekalet)';
+    return 'Onay bekliyor';
+  };
+
   const renderedGrid = useMemo(() => {
     if (!plan) return null;
     // `tarih_vakit_uid` → bildirim ön-hesabı: aşağıdaki 7×5 hücre ızgarası
@@ -392,6 +404,7 @@ export default function HaftalikCizelge() {
                     {VAKITLER.map((vakit) => {
                       const atama = gunObj[vakit] || { asil: 'Sistem', yedek: 'Sistem' };
                       const asilBildirim = bildirimHaritasi.get(`${tarih}_${vakit}_${atama?.asil}`);
+                      const yedekBildirim = bildirimHaritasi.get(`${tarih}_${vakit}_${atama?.yedek}`);
                       // "Sistem" (Dizge) bir gerçek kişi değil, henüz elle atama
                       // yapılmamış vakit için otomatik-atama yer tutucusudur — bir
                       // ismin yanında aynı nokta+düz metin kalıbıyla gösterilirse
@@ -425,7 +438,10 @@ export default function HaftalikCizelge() {
                               {asilIsSistem ? (
                                 <Bot size={11} strokeWidth={1.7} className="text-muted shrink-0" />
                               ) : (
-                                <div className={`w-1.5 h-1.5 rounded-full ${getStatusColor(asilBildirim?.durum)}`} />
+                                <div
+                                  className={`w-1.5 h-1.5 rounded-full ${getStatusColor(asilBildirim?.durum)}`}
+                                  title={getStatusLabel(asilBildirim?.durum)}
+                                />
                               )}
                               <span
                                 className={`text-xs tracking-tight truncate ${
@@ -447,7 +463,10 @@ export default function HaftalikCizelge() {
                                 {yedekIsSistem ? (
                                   <Bot size={9} strokeWidth={1.7} className="text-[var(--text-secondary)] shrink-0" />
                                 ) : (
-                                  <div className="w-1 h-1 rounded-full bg-[var(--text-primary)]/40" />
+                                  <div
+                                    className={`w-1.5 h-1.5 rounded-full ${getStatusColor(yedekBildirim?.durum)}`}
+                                    title={getStatusLabel(yedekBildirim?.durum)}
+                                  />
                                 )}
                                 <span
                                   className={`text-2xs uppercase tracking-wide truncate ${yedekIsSistem ? 'italic font-normal' : 'font-bold'} text-[var(--text-secondary)]`}
