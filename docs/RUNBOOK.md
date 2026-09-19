@@ -279,6 +279,40 @@ mantığı artık `tests/unit/girisStratejisi.test.ts` ile kilitli, (2) giriş
 hataları `src/lib/girisTanisi.ts` ile oturum kurulana kadar `localStorage`'da
 tutulup ilk başarılı girişte `error_logs`'a yazılıyor.
 
+### Bilinen arıza: `frame-ancestors`/`X-Frame-Options` Firebase Auth'un kendi iframe'ini bloklar
+
+2026-09-19: `authDomain` hosting ile aynı origin'e taşındıktan (4f39745)
+SONRA masaüstünde (mobilde değil) redirect sessizce başarısız olmaya
+başladı — `getRedirectResult` ne kullanıcı ne hata döndürüyordu,
+`onAuthStateChanged` bazen hiç ateşlenmiyordu (cold-start failsafe
+tetikleniyordu). Tarayıcı konsolunda kök neden görünüyordu:
+
+```
+Framing 'https://ezanmerkezi.web.app/' violates the following Content
+Security Policy directive: "frame-ancestors 'none'". The request has been
+blocked.
+```
+
+**Kök neden**: Firebase Auth JS SDK, oturum/redirect durumunu senkronize
+etmek için `authDomain` üzerinde gizli bir iframe açar. `authDomain` artık
+hosting ile AYNI origin olduğundan, bu iframe `ezanmerkezi.web.app`'in
+**kendi kendini** frame'lemesi anlamına geliyor — ama CSP'deki
+`frame-ancestors 'none'` (ve eşdeğer `X-Frame-Options: DENY`, clickjacking
+koruması için konmuştu) HİÇBİR origin'e — kendisi dahil — bunu izin
+vermiyordu. Firebase Auth kendi iç mekanizmasını hiç çalıştıramadığından
+auth durumunu belirleyemiyordu.
+
+**Çözüm** (`firebase.json`): `frame-ancestors 'none'` → `'self'`,
+`X-Frame-Options: DENY` → `SAMEORIGIN`. Clickjacking koruması aynen kalır
+(başka HİÇBİR dış site hâlâ frame'leyemez), yalnızca kendi origin'inin
+kendi iç iframe'ini kullanmasına izin verilir.
+
+**Bu sınıf arızayı gelecekte hızlı teşhis etmek için**: konsolda
+"Framing ... violates ... frame-ancestors" veya "Refused to display ...
+in a frame" görülürse doğrudan bu bölüme bak — CSP/X-Frame-Options
+`authDomain` same-origin olduğu için Firebase Auth'un kendi iframe'ini
+bloklamış demektir, üçüncü taraf depolama/ITP ile karıştırma.
+
 ### İlk teşhis adımları
 
 1. Admin panel → **Sistem Hataları** sekmesinde `GIRIS_HATASI [...]` imzalı
