@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { Loader2 } from 'lucide-react';
 import { Logo } from '../ui/Logo';
-import { EASE } from '../../lib/motion';
+import { EASE, SPRING } from '../../lib/motion';
 
 interface LoginScreenProps {
   login: () => void;
@@ -64,7 +64,7 @@ export function LoginScreen({ login, isLoginInProgress }: LoginScreenProps) {
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.2, duration: 0.8, type: 'spring', stiffness: 200 }}
+          transition={{ delay: 0.2, ...SPRING.gentle }}
           className="relative mt-4 mb-12"
         >
           <div className="w-28 h-28 bg-[var(--text-primary)]/[0.03] backdrop-blur-2xl rounded-[36px] flex items-center justify-center mx-auto shadow-[var(--spatial-shadow)] ring-1 ring-[var(--glass-border)] relative group/logo">
@@ -91,7 +91,7 @@ export function LoginScreen({ login, isLoginInProgress }: LoginScreenProps) {
           <h1 className="text-4xl lg:text-5xl font-light mb-3 text-[var(--text-primary)] tracking-tighter leading-none apple-thin">
             Müezzin <span className="text-[var(--aura-indigo)] font-light">Hizmet Dizgesi</span>
           </h1>
-          <p className="text-[var(--text-secondary)]/75 mb-14 font-bold tracking-wide uppercase text-2xs">
+          <p className="text-muted mb-14 font-bold tracking-wide uppercase text-2xs">
             CAMİ VE DİN GÖREVLİLERİ HİZMET PLANLAMA DİZGESİ
           </p>
         </motion.div>
@@ -127,7 +127,7 @@ export function LoginScreen({ login, isLoginInProgress }: LoginScreenProps) {
             )}
           </motion.button>
 
-          <p className="text-2xs text-[var(--text-secondary)]/75 font-medium uppercase tracking-wide px-4">
+          <p className="text-2xs text-muted font-medium uppercase tracking-wide px-4">
             KURUMSAL KİMLİK DOĞRULAMA GEREKİR
           </p>
         </motion.div>

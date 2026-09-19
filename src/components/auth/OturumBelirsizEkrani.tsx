@@ -45,7 +45,7 @@ export function OturumBelirsizEkrani({ isOffline, girisEkraninaGec }: OturumBeli
         </h2>
         {/* Gövde kopyası: cümle düzeni, normal boyut — `authority-title`/
             uppercase yalnızca tek satırlık etiketlerde (bkz. CLAUDE.md). */}
-        <p className="text-sm text-[var(--text-secondary)] text-muted leading-relaxed mb-8">
+        <p className="text-sm text-muted leading-relaxed mb-8">
           {isOffline
             ? 'İnternet bağlantınız yok, bu yüzden oturumunuz doğrulanamıyor. Bağlantı geri geldiğinde otomatik olarak devam edilecektir.'
             : 'Oturum bilginiz beklenenden yavaş geliyor. Henüz çıkış yapmış sayılmıyorsunuz — bağlantı kurulur kurulmaz kaldığınız yerden devam edeceksiniz.'}

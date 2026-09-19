@@ -24,11 +24,11 @@ export function PendingApprovalScreen({ logout }: PendingApprovalScreenProps) {
         </p>
         <div className="bg-[var(--status-info)]/5 p-5 rounded-2xl text-xs text-[var(--status-info)] mb-10 text-left border border-[var(--status-info)]/10 space-y-1">
           <div className="flex justify-between border-b border-[var(--status-info)]/10 pb-1 mb-1">
-            <span className="opacity-50 text-[var(--text-secondary)]">Ad Soyad:</span>
+            <span className="text-subtle">Ad Soyad:</span>
             <span className="font-bold text-[var(--text-primary)]">{auth.currentUser?.displayName}</span>
           </div>
           <div className="flex justify-between">
-            <span className="opacity-50 text-[var(--text-secondary)]">E-posta:</span>
+            <span className="text-subtle">E-posta:</span>
             <span className="font-bold text-[var(--text-primary)]">{auth.currentUser?.email}</span>
           </div>
         </div>
