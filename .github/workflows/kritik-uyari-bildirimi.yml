@@ -1,5 +1,11 @@
 name: Kritik Uyari Bildirimlerini Gonder
 
+# En-az-ayrıcalık: salt-okuma cron — GITHUB_TOKEN yalnızca actions/checkout
+# için kullanılıyor, git push / gh CLI / PR yorumu / tag YOK. FCM push ve
+# Firestore yazımları Admin SDK kimliğiyle (FIREBASE_SERVICE_ACCOUNT_KEY) yapılır.
+permissions:
+  contents: read
+
 # adminUyarilari'nda biriken kriz uyarıları (bkz. KrizAlarmlari.tsx) şu ana
 # kadar yalnızca admin paneli AÇILDIĞINDA görünüyordu. Bu iş, çözülmemiş her
 # uyarı için tüm aktif admin'lere FCM push gönderir (bkz.

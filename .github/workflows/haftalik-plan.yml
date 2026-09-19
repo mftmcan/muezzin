@@ -1,5 +1,13 @@
 name: Haftalik Plan Olustur
 
+# En-az-ayrıcalık: bu cron GERÇEK Firestore yazımı yapar (haftaPlanlari,
+# mazeretSonBasvuru damgası, FCM push) ama bunu Admin SDK kimliğiyle
+# (FIREBASE_SERVICE_ACCOUNT_KEY) yapar — GITHUB_TOKEN yalnızca
+# actions/checkout için kullanılıyor, git push / gh CLI / PR yorumu / tag YOK.
+# `contents: read` bu yüzden yeterlidir ve plan üretimini sessizce kırmaz.
+permissions:
+  contents: read
+
 on:
   workflow_dispatch:
   schedule:

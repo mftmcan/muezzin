@@ -1,5 +1,12 @@
 name: Aylık Ezan Takvimi Güncelleme
 
+# En-az-ayrıcalık: salt-okuma cron — GITHUB_TOKEN yalnızca actions/checkout
+# için kullanılıyor, git push / gh CLI / PR yorumu / tag YOK. Firestore'a ve
+# Diyanet API'sine giden adımlar kimliği FIREBASE_SERVICE_ACCOUNT_KEY ve
+# DIYANET_* secret'larından alır, GITHUB_TOKEN'dan değil.
+permissions:
+  contents: read
+
 on:
   workflow_dispatch:
   schedule:

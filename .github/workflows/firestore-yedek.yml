@@ -1,5 +1,12 @@
 name: Firestore Yedekle
 
+# En-az-ayrıcalık: salt-okuma cron — GITHUB_TOKEN yalnızca actions/checkout
+# için kullanılıyor, git push / gh CLI / PR yorumu / tag YOK.
+# `actions/upload-artifact` GITHUB_TOKEN'a DEĞİL, runner'ın kendi
+# ACTIONS_RUNTIME_TOKEN'ına dayanır — bu yüzden `actions: write` gerekmez.
+permissions:
+  contents: read
+
 # Proje bilerek Spark planında kalıyor (bkz. scripts/kotaKontrol.ts) — native
 # Firestore Managed Export/scheduled backup Blaze gerektirir, kapalı. Bu iş
 # Admin SDK ile (scripts/firestoreYedekle.ts) iş verisi koleksiyonlarını

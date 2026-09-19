@@ -1,5 +1,13 @@
 name: Günlük Yatsı Sonu İşlemleri
 
+# En-az-ayrıcalık: bu cron GERÇEK Firestore yazımı yapar (aylık adalet
+# sayaçları) ama bunu Admin SDK kimliğiyle (FIREBASE_SERVICE_ACCOUNT_KEY)
+# yapar — GITHUB_TOKEN yalnızca actions/checkout için kullanılıyor, git push /
+# gh CLI / PR yorumu / tag YOK. `contents: read` bu yüzden yeterlidir ve
+# cron'u sessizce kırmaz.
+permissions:
+  contents: read
+
 on:
   workflow_dispatch:
   schedule:

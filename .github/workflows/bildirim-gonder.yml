@@ -1,5 +1,12 @@
 name: Duyuru ve Izin Durumu Bildirimlerini Gonder
 
+# En-az-ayrıcalık: salt-okuma cron — GITHUB_TOKEN yalnızca actions/checkout
+# için kullanılıyor, git push / gh CLI / PR yorumu / tag YOK. FCM push ve
+# Firestore yazımları Admin SDK kimliğiyle (FIREBASE_SERVICE_ACCOUNT_KEY)
+# yapılır, GITHUB_TOKEN ile değil.
+permissions:
+  contents: read
+
 # Duyuru yayınlama (duyuruServisi.ts) ve izin kararı (useAdminIzinlerStore.ts
 # izinGuncelle) istemci tarafında gerçekleşir — istemci Firebase SDK'sı FCM
 # push GÖNDEREMEZ (yalnızca Admin SDK gönderebilir). Bu iş, "duyurular" ve

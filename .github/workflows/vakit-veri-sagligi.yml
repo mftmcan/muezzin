@@ -1,5 +1,12 @@
 name: Vakit Veri Sağlığı Kontrolü
 
+# En-az-ayrıcalık: salt-okuma cron — GITHUB_TOKEN yalnızca actions/checkout
+# için kullanılıyor, git push / gh CLI / PR yorumu / tag YOK. Vakit verisi
+# tazeleme ve uyarı yazımı Admin SDK kimliğiyle (FIREBASE_SERVICE_ACCOUNT_KEY)
+# yapılır.
+permissions:
+  contents: read
+
 # Aylık takvim güncellemesi (aylik-ezan-takvimi.yml) yalnızca ayda bir
 # çalışır; aradaki bir hata veya yanlış dokümana yazma durumu fark
 # edilmeden günlerce sürebilir (bkz. 2026-07-30 kesintisi). Bu iş her gün

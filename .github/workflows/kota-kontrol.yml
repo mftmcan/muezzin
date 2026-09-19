@@ -1,5 +1,11 @@
 name: Kota Kullanım Kontrolü
 
+# En-az-ayrıcalık: salt-okuma cron — GITHUB_TOKEN yalnızca actions/checkout
+# için kullanılıyor, git push / gh CLI / PR yorumu / tag YOK. Kota sayımı ve
+# uyarı yazımı Admin SDK kimliğiyle (FIREBASE_SERVICE_ACCOUNT_KEY) yapılır.
+permissions:
+  contents: read
+
 # Proje Firebase Spark planında (ücretsiz kota: 50K okuma / 20K yazma / gün)
 # ve kota tükendiğinde uygulama sessizce çalışmayı durdurur — hiç kimse
 # önceden haberdar olmaz (bkz. premium denetim P2.3). Bu iş, kotayı

@@ -1,5 +1,16 @@
 name: CI Test Suite
 
+# En-az-ayrıcalık TABANI. `test` ve `gorsel_regresyon` job'ları GITHUB_TOKEN'ı
+# yalnızca actions/checkout için kullanır (upload-artifact runner'ın kendi
+# ACTIONS_RUNTIME_TOKEN'ına dayanır, GITHUB_TOKEN'a değil) — onlar bu tabanı
+# miras alır. `build_and_deploy` ise deploy sonunda git tag push ettiği için
+# KENDİ job seviyesinde `contents: write` taşımaya DEVAM EDER (aşağıya bkz.);
+# bu taban o job'ı gevşetmez/daraltmaz, yalnızca diğer iki job'ı salt-okumaya
+# sabitler ve ileride eklenecek bir job'ın repo varsayılanından yazma izni
+# miras almasını engeller.
+permissions:
+  contents: read
+
 # `build_and_deploy` job'ı `test` job'ına `needs:` ile bağlı ve YALNIZCA
 # main'e push testlerden geçtiyse deploy eder. Bu, firestore.rules gibi
 # güvenlik açısından kritik dosyaların test edilmeden production'a

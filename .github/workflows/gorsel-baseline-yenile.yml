@@ -1,5 +1,12 @@
 name: Görsel Baseline Yenile (Linux)
 
+# En-az-ayrıcalık TABANI. Tek job olan `yenile`, baseline commit'ini main'e
+# push ettiği için KENDİ job seviyesinde `contents: write` taşır (aşağıya
+# bkz.) — bu taban onu DEĞİŞTİRMEZ, yalnızca ileride eklenecek başka bir
+# job'ın repo varsayılanından yazma izni miras almasını engeller.
+permissions:
+  contents: read
+
 # YALNIZCA ELLE TETİKLENİR (workflow_dispatch). Bilerek `push`/`pull_request`
 # tetikleyicisi YOK: baseline'ın otomatik yenilenmesi, gerçek bir görsel
 # regresyonu "kabul edilmiş yeni normal" haline getirip sessizce yutardı —

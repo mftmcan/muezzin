@@ -1,5 +1,11 @@
 name: Hata Esigi Kontrolu
 
+# En-az-ayrıcalık: salt-okuma cron — GITHUB_TOKEN yalnızca actions/checkout
+# için kullanılıyor, git push / gh CLI / PR yorumu / tag YOK. Firestore
+# okuma/uyarı yazımı Admin SDK kimliğiyle (FIREBASE_SERVICE_ACCOUNT_KEY) yapılır.
+permissions:
+  contents: read
+
 # İstemci tarafında (src/services/telemetryService.ts) aynı imzalı bir
 # hatanın çok sayıda FARKLI oturumda anormal tekrarını erken yakalar (bkz.
 # scripts/hataEsigiKontrol.ts başındaki gerekçe) — kota-kontrol.yml ile AYNI

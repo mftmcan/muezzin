@@ -1,5 +1,11 @@
 name: Günlük Kayıtlarını Temizle
 
+# En-az-ayrıcalık: salt-okuma cron — GITHUB_TOKEN yalnızca actions/checkout
+# için kullanılıyor, git push / gh CLI / PR yorumu / tag YOK. Firestore
+# silme işlemleri Admin SDK kimliğiyle (FIREBASE_SERVICE_ACCOUNT_KEY) yapılır.
+permissions:
+  contents: read
+
 on:
   workflow_dispatch:
   schedule:

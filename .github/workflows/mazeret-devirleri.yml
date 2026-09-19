@@ -1,5 +1,13 @@
 name: Mazeret ve Vekalet Devirlerini Uzlaştır
 
+# En-az-ayrıcalık: bu cron GERÇEK, geri dönüşü olmayan görev devri yapar
+# (mazeret/vekalet uzlaştırma + mazeretSonBasvuru damgası) ama bunu Admin SDK
+# kimliğiyle (FIREBASE_SERVICE_ACCOUNT_KEY) yapar — GITHUB_TOKEN yalnızca
+# actions/checkout için kullanılıyor, git push / gh CLI / PR yorumu / tag YOK.
+# `contents: read` bu yüzden yeterlidir ve devir zincirini sessizce kırmaz.
+permissions:
+  contents: read
+
 on:
   workflow_dispatch:
   schedule:
