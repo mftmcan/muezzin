@@ -38,7 +38,7 @@ export interface GunlukKrediGirdisi {
    *  BAŞARIYLA commit olduktan SONRA ay/yıl sonu reset adımlarından biri
    *  başarısız olup job'ı "failed" gösterip birinin re-run tetiklemesi),
    *  bu 'onaylandi' kayıtlar İKİNCİ KEZ kredilendirilirdi — aylikVakitSayisi
-   *  (kişi kartlarındaki "GÖREV YÜKÜ"/"HİZMET VERİMİ" ve tieBreaker.ts'nin
+   *  (kişi kartlarındaki "GÖREV YÜKÜ"/"KADRO YÜKÜ PAYI" ve tieBreaker.ts'nin
    *  adalet algoritmasının girdisi) kalıcı olarak şişerdi (bkz. kod
    *  denetimi bulgusu). */
   puanIslendi?: boolean;

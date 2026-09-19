@@ -147,16 +147,28 @@ export default function MuezzinYonetimi() {
 
   const operationalUsers = React.useMemo(() => activeUsers.filter((m) => m.role === 'muezzin'), [activeUsers]);
 
+  // Sıralama/toplam tabanı SADECE fiilen hizmet veren (aktif) müezzinler
+  // arasında hesaplanır. `operationalUsers` yalnızca role'e bakıyor —
+  // pasife alınmış bir müezzinin geçmiş ayki (o zaman aktifken biriken)
+  // aylikVakitSayisi'sı bu tabana dahil olursa, kimse hizmet vermiyorken
+  // bile bazı kartlarda bir "KADRO YÜKÜ PAYI" oranı oluşuyordu (bkz. kadro
+  // modülü veri denetimi).
+  const aktifOperasyonelUsers = React.useMemo(() => operationalUsers.filter((m) => m.aktif === true), [operationalUsers]);
+
   const archivedUsers = React.useMemo(() => muezzinler.filter((m) => m && m.arsivlendi === true), [muezzinler]);
 
   const displayedUsers = showArchived ? archivedUsers : activeUsers;
 
-  // Performans Sıralaması ve Maksimum Vakit Hesabı (Memoized)
-  const { maxVakit, sortedMuezzins } = React.useMemo(() => {
-    const maxVal = Math.max(...operationalUsers.map((x) => x.aylikVakitSayisi || 0), 1);
-    const sorted = [...operationalUsers].sort((a, b) => (b.aylikVakitSayisi || 0) - (a.aylikVakitSayisi || 0));
-    return { maxVakit: maxVal, sortedMuezzins: sorted };
-  }, [operationalUsers]);
+  // Sıralama ve Kadro Toplam Yükü Hesabı (Memoized). Toplam — "en yükseği
+  // 1 alıp diğerlerini ona oranlayan" eski yaklaşım DEĞİL — kullanılır:
+  // kadroda en çok yükü taşıyan kişi bu yüzden otomatik %100 almaz (o kişi
+  // sadece en çok payı almış olur), ve tek bir aktif müezzin varken de payı
+  // doğru şekilde %100 çıkar (işin tamamını fiilen o taşıyor demektir).
+  const { toplamVakit, sortedMuezzins } = React.useMemo(() => {
+    const toplam = aktifOperasyonelUsers.reduce((sum, x) => sum + (x.aylikVakitSayisi || 0), 0);
+    const sorted = [...aktifOperasyonelUsers].sort((a, b) => (b.aylikVakitSayisi || 0) - (a.aylikVakitSayisi || 0));
+    return { toplamVakit: toplam, sortedMuezzins: sorted };
+  }, [aktifOperasyonelUsers]);
 
   // Rules-of-Hooks: bu erken dönüş tüm hook çağrılarından SONRA gelmelidir
   // (bkz. src/pages/admin/AdminPanel.tsx'teki aynı sınıf düzeltme).
@@ -311,8 +323,13 @@ export default function MuezzinYonetimi() {
           {displayedUsers.length > 0 ? (
             displayedUsers.map((m, idx) => {
               const isOperationalMuezzin = m.role === 'muezzin';
-              const rank = isOperationalMuezzin ? sortedMuezzins.findIndex((x) => x.id === m.id) + 1 : 0;
-              const efficiency = isOperationalMuezzin ? Math.min(100, ((m.aylikVakitSayisi || 0) / maxVakit) * 100) : 0;
+              // KADRO YÜKÜ PAYI, aktif hizmet veren kadronun TOPLAM yüküne göre
+              // gerçek paydır ("en yükseğe göre %" DEĞİL — bkz. yukarıdaki
+              // toplamVakit notu) — pasif (aktif:false) bir müezzin şu an hizmet
+              // vermediği için bu orana hiç girmemeli.
+              const isAktifMuezzin = isOperationalMuezzin && m.aktif === true;
+              const rank = isAktifMuezzin ? sortedMuezzins.findIndex((x) => x.id === m.id) + 1 : 0;
+              const yukPayi = isAktifMuezzin && toplamVakit > 0 ? Math.min(100, ((m.aylikVakitSayisi || 0) / toplamVakit) * 100) : 0;
 
               return (
                 <motion.div
@@ -427,37 +444,30 @@ export default function MuezzinYonetimi() {
                         </p>
                       </div>
 
-                      {/* Full-width Relative Efficiency */}
+                      {/* Full-width Kadro Yükü Payı — "en yükseğe göre %" DEĞİL, kadronun
+                          TOPLAM yüküne göre gerçek pay (bkz. toplamVakit notu). Renk
+                          kasıtlı olarak nötr (dynamic-aura) — yüksek pay "iyi performans"
+                          değil, sadece "bu kişi kadronun daha büyük bir kısmını taşıyor"
+                          demektir; yeşil/kırmız "iyi/kötü" kodlaması yanıltıcıydı (bkz.
+                          kadro modülü veri denetimi). */}
                       <div className="col-span-2 space-y-2 border-t border-[var(--glass-border)] pt-3 mt-1">
                         <div className="flex justify-between items-center">
-                          <p className="premium-label !text-2xs !opacity-35 uppercase tracking-wide">HİZMET VERİMİ</p>
+                          <p className="premium-label !text-2xs !opacity-35 uppercase tracking-wide">KADRO YÜKÜ PAYI</p>
                           <span
                             className={`text-2xs font-bold tabular-nums ${
-                              !isOperationalMuezzin
-                                ? 'text-muted'
-                                : efficiency >= 70
-                                  ? 'text-emerald-500'
-                                  : efficiency >= 40
-                                    ? 'text-amber-500'
-                                    : 'text-rose-500'
+                              !isAktifMuezzin ? 'text-muted' : 'text-[var(--dynamic-aura,var(--aura-indigo))]'
                             }`}
                           >
-                            {isOperationalMuezzin ? `%${Math.round(efficiency)}` : 'Kadro dışı'}
+                            {isAktifMuezzin ? `%${Math.round(yukPayi)}` : isOperationalMuezzin ? 'Pasif' : 'Kadro dışı'}
                           </span>
                         </div>
                         <div className="w-full h-1.5 bg-[var(--text-primary)]/[0.05] rounded-full overflow-hidden border border-[var(--glass-border)]">
                           <motion.div
                             initial={{ width: 0 }}
-                            animate={{ width: `${efficiency}%` }}
+                            animate={{ width: `${yukPayi}%` }}
                             transition={{ duration: 1, ease: 'easeOut' }}
                             className={`h-full ${
-                              !isOperationalMuezzin
-                                ? 'bg-[var(--text-primary)]/10'
-                                : efficiency >= 70
-                                  ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.3)]'
-                                  : efficiency >= 40
-                                    ? 'bg-amber-500/60'
-                                    : 'bg-rose-500/60'
+                              !isAktifMuezzin ? 'bg-[var(--text-primary)]/10' : 'bg-[var(--dynamic-aura,var(--aura-indigo))]/60'
                             }`}
                           />
                         </div>
