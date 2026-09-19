@@ -16,8 +16,7 @@ import { GpsHelpModal } from '../components/GpsHelpModal';
 import { useGpsVakitStore } from '../store/useGpsVakitStore';
 import { gpsHataTuruBelirle, GpsHataTuru } from '../services/gpsVakitServisi';
 import { KiblePusulasiModal } from '../components/KiblePusulasiModal';
-import { useGelenVekaletler } from '../hooks/useGelenVekaletler';
-import { useBekleyenVekaletDevirleri } from '../hooks/useBekleyenVekaletDevirleri';
+import { useVekaletTalepleri } from '../hooks/useVekaletTalepleri';
 import { useHaftalikGorevOzeti } from '../hooks/useHaftalikGorevOzeti';
 import { useAktifSistemUyarisi } from '../hooks/useAktifSistemUyarisi';
 import { SistemUyarisiBanner } from '../components/SistemUyarisiBanner';
@@ -190,8 +189,9 @@ export default function MuezzinAnaEkran() {
     setViewingDuyuru(null);
   }, [viewingDuyuru, markAsRead, setViewingDuyuru]);
 
-  const gelenVekaletler = useGelenVekaletler(currentUser?.uid);
-  const bekleyenVekaletDevirleri = useBekleyenVekaletDevirleri(currentUser?.uid);
+  // TEK dinleyici: gelen teklifler ve bekleyen devirler aynı `onSnapshot`'tan
+  // türetilir (bkz. useVekaletTalepleri).
+  const { gelenVekaletler, bekleyenDevirler: bekleyenVekaletDevirleri } = useVekaletTalepleri(currentUser?.uid);
   const haftalikOzet = useHaftalikGorevOzeti(currentUser?.uid, bugunDate);
   const aktifSistemUyarisi = useAktifSistemUyarisi(currentUser?.uid);
   const siradakiGorev = React.useMemo(() => gorevler.find((g) => g.durum === 'bekliyor') || gorevler[0] || null, [gorevler]);
@@ -285,7 +285,7 @@ export default function MuezzinAnaEkran() {
                   className="w-full spatial-glass p-5 sm:p-6 border border-[var(--dynamic-aura,var(--aura-indigo))]/20 bg-[var(--dynamic-aura,var(--aura-indigo))]/[0.025] flex items-center justify-between gap-4 text-left cursor-pointer hover:bg-[var(--dynamic-aura,var(--aura-indigo))]/[0.045] transition-all"
                 >
                   <div className="flex items-center gap-4 min-w-0">
-                    <div className="w-12 h-12 rounded-[18px] bg-[var(--dynamic-aura,var(--aura-indigo))]/10 border border-[var(--dynamic-aura,var(--aura-indigo))]/20 text-[var(--dynamic-aura,var(--aura-indigo))] flex items-center justify-center shrink-0">
+                    <div className="w-12 h-12 rounded-panel bg-[var(--dynamic-aura,var(--aura-indigo))]/10 border border-[var(--dynamic-aura,var(--aura-indigo))]/20 text-[var(--dynamic-aura,var(--aura-indigo))] flex items-center justify-center shrink-0">
                       <ClipboardList size={20} strokeWidth={1.8} />
                     </div>
                     <div className="min-w-0">
@@ -648,7 +648,7 @@ export default function MuezzinAnaEkran() {
 
               {/* Kabul edilmiş ama scripts/vekaletDevirleriniIsle.ts tarafından henüz
       uygulanmamış devirler — "1000 ifade tavanı" kök neden çözümü sonrası
-      transfer artık anlık değil (~10-15 dk gecikmeli), bkz. useBekleyenVekaletDevirleri
+      transfer artık anlık değil (~10-15 dk gecikmeli), bkz. useVekaletTalepleri
       yorumu. Alıcı, kabul ettiği görevin planına henüz yansımadığını
       görebilsin diye. */}
               {bekleyenVekaletDevirleri.length > 0 && (

@@ -29,7 +29,7 @@ type VekaletTalebiData = {
   durum: 'beklemede' | 'kabul_edildi' | 'reddedildi';
   bildirimUygulandi?: boolean;
   /** `bildirimUygulandi` yalnızca "script bu talebi işledi mi" bilgisini
-   * taşır, SONUCUNU değil — istemci tarafı (useBekleyenVekaletDevirleri,
+   * taşır, SONUCUNU değil — istemci tarafı (useVekaletTalepleri,
    * "DEVİR İŞLENİYOR" banner'ı) hem başarı hem red durumunda bu alanı aynı
    * `true` değeriyle görüyordu, ikisini ayırt edemiyordu (bkz. mimari
    * denetim). */
