@@ -149,6 +149,15 @@ export const NotificationContainer: React.FC<{ children: React.ReactNode }> = ({
   // OfflineBanner de mobilde aynı üst bölgede (top-4) merkezde render oluyor —
   // çevrimdışıyken ikisi üst üste binmesin diye burada aşağı kaydırılıyor
   // (bkz. premium denetim, bölüm 5).
+  //
+  // `top-4`/`top-16` cihazın çentik/durum çubuğu alanını (safe-area-inset-top)
+  // hiç hesaba katmıyordu — PWA'nın standalone modunda (bkz. index.css'teki
+  // aynı desen, OfflineBanner.tsx, Layout.tsx'in alt safe-area kullanımı)
+  // toast'lar durum çubuğunun ARKASINDA/ALTINDA render olup görünmez hale
+  // geliyordu (bkz. kod denetimi). OfflineBanner.tsx'teki
+  // `top-[env(safe-area-inset-top,0px)]` + ayrı bir pt- boşluğu deseni yerine
+  // burada calc() ile TEK bir değere birleştirildi, çünkü mevcut kod zaten
+  // koşullu (online/offline) bir üst boşluk taşıyordu.
   const { isOnline } = useNetworkStatus();
   return (
     <div
@@ -156,7 +165,7 @@ export const NotificationContainer: React.FC<{ children: React.ReactNode }> = ({
       aria-live="polite"
       aria-atomic="false"
       aria-label="Bildirimler"
-      className={`fixed ${isOnline ? 'top-4' : 'top-16'} left-4 right-4 sm:top-6 sm:right-6 sm:left-auto z-[var(--z-toast)] flex flex-col gap-3 pointer-events-none items-center sm:items-end transition-[top] duration-300`}
+      className={`fixed ${isOnline ? 'top-[calc(env(safe-area-inset-top,0px)+1rem)]' : 'top-[calc(env(safe-area-inset-top,0px)+4rem)]'} left-4 right-4 sm:top-[calc(env(safe-area-inset-top,0px)+1.5rem)] sm:right-6 sm:left-auto z-[var(--z-toast)] flex flex-col gap-3 pointer-events-none items-center sm:items-end transition-[top] duration-300`}
     >
       <AnimatePresence mode="popLayout">{children}</AnimatePresence>
     </div>
