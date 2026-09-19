@@ -3,6 +3,9 @@ import { onAuthStateChanged, User } from 'firebase/auth';
 import { doc, onSnapshot, setDoc, deleteDoc, getDoc, getDocFromServer } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
 import { handleFirestoreError, OperationType } from '../lib/firestore-errors';
+import { telemetryService } from '../services/telemetryService';
+import { girisTanisiniCekVeTemizle } from '../lib/girisTanisi';
+import { AUTH_COLD_START_MS, ROL_SNAPSHOT_MS } from '../lib/authTimeouts';
 
 let _authInitStarted = false;
 
@@ -267,7 +270,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         // `onAuthStateChanged` bayrağı temizleyip normal akışa döndürür.
         set({ loading: false, initialized: true, authDogrulanamadi: true });
       }
-    }, 4500);
+    }, AUTH_COLD_START_MS);
 
     const handleAuthStateChange = (currentUser: User | null) => {
       if (authInitFailsafe) {
@@ -313,6 +316,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         return;
       }
 
+      // Oturum artık kesin var — giriş akışının OTURUMSUZ aşamasında (bkz.
+      // AuthGuard.tsx login()/getRedirectResult) telemetryService.logError
+      // çalışamadığı için localStorage'a biriktirilen giriş tanı kayıtlarını
+      // burada, ilk fırsatta Firestore'a yazdır. `error_logs` kuralları artık
+      // sağlanır (oturum var); flush edilmezse kayıtlar kalıcı olarak kaybolur.
+      const bekleyenGirisTanilari = girisTanisiniCekVeTemizle();
+      bekleyenGirisTanilari.forEach((kayit) => {
+        telemetryService.logError(new Error(`GIRIS_HATASI [${kayit.kod}] @${kayit.asama}`), JSON.stringify(kayit));
+      });
+
       // Failsafe: If snapshot doesn't arrive in 6 seconds, force-stop loading
       // This prevents being stuck on the splash screen indefinitely
       snapshotFailsafe = setTimeout(() => {
@@ -324,7 +337,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           // gösteriyordu (bkz. alanın tanımındaki gerekçe).
           set({ loading: false, initialized: true, rolDogrulanamadi: true });
         }
-      }, 6000);
+      }, ROL_SNAPSHOT_MS);
 
       // Bu snapshot callback'i ASENKRON (aşağıda config/bootstrap ve invites
       // okumaları için `await` var). `handleAuthStateChange` yeni bir auth

@@ -2,6 +2,10 @@ import { GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectRes
 import { auth } from '../lib/firebase';
 import { isFirebaseSdkError } from '../lib/firestore-errors';
 import { performLogout } from '../hooks/useFcmToken';
+import { telemetryService } from '../services/telemetryService';
+import { girisTanisiEkle, redirectBaslatildiIsaretle, redirectDamgasiniCekVeTemizle } from '../lib/girisTanisi';
+import { girisYoluSec, popupHatasiniDegerlendir, redirectSonucunuDegerlendir } from '../lib/girisStratejisi';
+import { LOADING_UYARI_MS, POPUP_MS } from '../lib/authTimeouts';
 import { useState, useEffect } from 'react';
 import React from 'react';
 import { SplashLoader } from './SplashLoader';
@@ -51,17 +55,45 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     // getRedirectResult bekleyen bir redirect yokken de ucuz şekilde
     // null'a çözülüyor, o yüzden koşulsuz her mount'ta çağırmak güvenli.
     const checkRedirect = async () => {
+      // Damga yalnızca `login()`'in `signInWithRedirect` çağırmadan hemen
+      // önce yazdığı bir işarettir — "bekleyen bir redirect gerçekten vardı"
+      // anlamına gelir. Damgasız bir `null` sonucu (ör. login ekranının ilk
+      // açılışı, hiç redirect başlatılmamışken) tamamen normaldir.
+      const bekleyenRedirectDamgasi = redirectDamgasiniCekVeTemizle();
       try {
         const result = await getRedirectResult(auth);
         if (result?.user) {
-          // Redirect login successful
+          telemetryService.addBreadcrumb('giris: redirect basarili', 'user_action');
+        } else if (bekleyenRedirectDamgasi) {
+          // Redirect başlatılmıştı ama ne bir kullanıcı ne de bir hata
+          // döndü — 3rd-party depolama/ITP engelinin tipik SESSİZ
+          // başarısızlık imzası (bkz. AuthGuard.tsx login()'deki aynı
+          // gerekçe, ve d0fffba'nın çözdüğü canlı arızanın kökü).
+          girisTanisiEkle({ asama: 'redirect-tamamlanmadi', kod: 'sessiz-basarisiz-sonuc-yok' });
+          setError("Google'dan geri dönüldü ama oturum kurulamadı. Tarayıcınız üçüncü taraf çerez/depolama erişimini kısıtlıyor olabilir.");
         }
       } catch (err: unknown) {
-        // Önceden hiç loglanmıyordu; console.error de kullanılmıyor —
-        // vite.config.ts esbuild.drop production build'de TÜM console
-        // çağrılarını siliyor (bkz. login()'deki aynı gerekçe). Kod
-        // doğrudan mesaja ekleniyor.
+        // vite.config.ts artık console.error'ı production'da SİLMİYOR (bkz.
+        // esbuild.pure) — bu yüzden burada console.error de bırakılabilir,
+        // ama asıl teşhis kanalı oturum kurulana kadar hayatta kalan
+        // girisTanisi kaydı: bu çağrı OTURUMSUZ aşamada olduğundan
+        // telemetryService.logError (auth.currentUser gerektirir) henüz
+        // çalışamaz.
         const kod = isFirebaseSdkError(err) ? err.code : 'bilinmeyen-hata';
+        console.error('getRedirectResult hatası:', kod, err);
+        girisTanisiEkle({ asama: 'redirect-sonuc', kod, mesaj: err instanceof Error ? err.message : undefined });
+
+        // Karar `girisStratejisi.ts`'teki saf fonksiyondan gelir (bkz.
+        // tests/unit/girisStratejisi.test.ts) — ağ sınıfı hatalar (offline,
+        // zaman aşımı) BİLGİ TAŞIMAZ: zaten oturumu geçerli, offline açılan
+        // bir PWA kullanıcısında bu hata atılabilir ve `error` dalı karar
+        // zincirinde `children`'dan ÖNCE geldiği için (bkz. render bloğu)
+        // kullanıcı yanlışlıkla hata ekranına düşürülüyordu — canlıda
+        // gözlemlenen bir arıza.
+        if (redirectSonucunuDegerlendir(kod) === 'sadece-logla') {
+          return;
+        }
+
         if (isFirebaseSdkError(err) && err.code === 'auth/unauthorized-domain') {
           setError('Bu alan adı (domain) henüz Firebase panelinde yetkilendirilmemiş. Lütfen yöneticiye başvurun.');
         } else {
@@ -88,7 +120,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       if (loading) {
         setLoadingTimeout(true);
       }
-    }, 4000); // 4 seconds is enough for a smooth splash, then we show retry/continue
+    }, LOADING_UYARI_MS);
     return () => clearTimeout(timer);
   }, [loading]);
 
@@ -105,6 +137,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     if (isLoginInProgress) return;
     setIsLoginInProgress(true);
     setError(null);
+    const isMobileTarayici = /android|iphone|ipad|ipod/i.test(navigator.userAgent);
 
     try {
       const provider = new GoogleAuthProvider();
@@ -112,64 +145,58 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
         prompt: 'select_account',
       });
 
-      // Mobil tarayıcılarda signInWithPopup sıkıkla NE HATA FİRLATIR NE
-      // DE SONUÇLANIR: hesap seçildikten sonra popup/sekme opener'a
-      // postMessage ile sonucu bildiremiyor ve promise sonsuza kadar
-      // "Kimlik Doğrulanıyor..." durumunda askıda kalıyor (bkz. canlı
-      // arıza: mobilde giriş takılıyor). Alttaki catch bloğu yalnızca
-      // FIRLATILAN hatalara baktığı için bu durumu hiç yakalayamıyor —
-      // bu yüzden mobilde popup'ı hiç denemeden doğrudan redirect'e geçiyoruz.
-      const isMobileTarayici = /android|iphone|ipad|ipod/i.test(navigator.userAgent);
-      if (isMobileTarayici) {
+      // Yol kararı `girisStratejisi.ts`'teki saf fonksiyondan gelir (bkz.
+      // tests/unit/girisStratejisi.test.ts). `authDomain` artık hosting ile
+      // aynı origin olduğundan (commit 4f39745) popup'ın tarihsel var oluş
+      // gerekçesi (3rd-party storage/ITP kısıtı) ortadan kalktı — bugün
+      // `girisYoluSec` her zaman 'redirect' döner (`POPUP_DENE=false`).
+      // Popup kodu SİLİNMEDİ: `POPUP_DENE=true` yapılırsa (masaüstü boot
+      // maliyeti kötü çıkarsa) aşağıdaki dal hemen devreye girer.
+      const yol = girisYoluSec(isMobileTarayici);
+
+      if (yol === 'redirect') {
+        telemetryService.addBreadcrumb(isMobileTarayici ? 'giris: mobil redirect baslatildi' : 'giris: redirect baslatildi', 'user_action');
+        redirectBaslatildiIsaretle();
         await signInWithRedirect(auth, provider);
         return;
       }
 
       // Try popup first (faster experience)
+      telemetryService.addBreadcrumb('giris: popup denendi', 'user_action');
       try {
         // Bazı taraytıcılarda (masaüstü Safari, Brave, sıkı gizlilik modundaki
         // Firefox) üçüncü taraf depolama engeli signInWithPopup'ın postMessage
         // el sıkışmasını NE HATA FIRLATACAK NE DE SONUÇLANACAK şekilde
-        // kırıyor — yukarıdaki mobil UA kontrolü yalnızca telefon tipi
-        // cihazları kapsıyor (ör. iPad varsayılan ayarda masaüstü UA'sı
-        // gönderir), bu yüzden hatasız-askıda-kalma ihtimaline karşı genel
+        // kırıyor — bu yüzden hatasız-askıda-kalma ihtimaline karşı genel
         // bir zaman aşımı şart. Süre dolunca popup hâlâ açık kalabilir
         // (kapatma referansımız yok) ama ana sekme redirect ile devam eder.
         await Promise.race([
           signInWithPopup(auth, provider),
-          new Promise((_resolve, reject) => setTimeout(() => reject({ code: 'auth/popup-timeout' }), 8000)),
+          new Promise((_resolve, reject) => setTimeout(() => reject({ code: 'auth/popup-timeout' }), POPUP_MS)),
         ]);
       } catch (popupErr: unknown) {
-        // If popup is blocked or fails, fallback to redirect.
-        // 'auth/internal-error' EKLENDİ: bu, popup + postMessage el sıkışması
-        // üçüncü taraf çerez/depolama erişimi gerektirdiğinden, tarayıcının
-        // (Chrome/Safari'nin giderek varsayılan hale gelen gizlilik
-        // kısıtlamaları) bunu engellediği durumda Firebase'in verdiği GENEL
-        // hata koduydu — canlıda "Giriş yapılamadı" olarak görünüyordu (bkz.
-        // premium denetim, login ekranı canlı arıza teşhisi). Redirect (tam
-        // sayfa yönlendirme) bu üçüncü taraf bağımlılığını taşımaz.
-        const popupYerineDeneRedirect =
-          isFirebaseSdkError(popupErr) &&
-          (popupErr.code === 'auth/popup-blocked' ||
-            popupErr.code === 'auth/cancelled-popup-request' ||
-            popupErr.code === 'auth/internal-error' ||
-            popupErr.code === 'auth/web-storage-unsupported' ||
-            popupErr.code === 'auth/popup-timeout');
-        if (popupYerineDeneRedirect) {
+        const popupKod = isFirebaseSdkError(popupErr) ? popupErr.code : 'bilinmeyen-hata';
+        // DENYLIST (allowlist DEĞİL, bkz. girisStratejisi.ts): yalnızca
+        // gerçek kullanıcı iptali ve config hatası redirect denemez —
+        // BİLİNMEYEN her hata kodu otomatik olarak redirect-fallback alır.
+        if (popupHatasiniDegerlendir(popupKod) === 'redirect-fallback') {
+          telemetryService.addBreadcrumb(`giris: popup hatasi ${popupKod}, redirect fallback`, 'user_action');
+          redirectBaslatildiIsaretle();
           await signInWithRedirect(auth, provider);
         } else {
           throw popupErr;
         }
       }
     } catch (e: unknown) {
-      // Önceden hiç loglanmıyordu — kullanıcıya gösterilen genel mesajın
-      // ARDINDAKİ gerçek Firebase hata kodu (auth/...) hiçbir yerde
-      // görünmüyordu (bkz. premium denetim, login ekranı incelemesi — canlı
-      // bir giriş arızası teşhis edilemez hale geliyordu). console.error
-      // KASITLI OLARAK kullanılmıyor: vite.config.ts esbuild.drop production
-      // build'de TÜM console çağrılarını siliyor, DevTools'ta hiç görünmez —
-      // bu yüzden kod doğrudan (geçici olarak) hata mesajının içine ekleniyor.
+      // vite.config.ts artık console.error'ı production'da SİLMİYOR (bkz.
+      // esbuild.pure) — ama asıl kalıcı teşhis kanalı, oturum kurulana kadar
+      // hayatta kalan girisTanisi kaydı: giriş bu aşamada henüz oturumsuz
+      // olduğundan telemetryService.logError (auth.currentUser gerektirir)
+      // burada hiç çalışamaz; kayıt useAuthStore'da oturum kurulunca flush
+      // edilir.
       const kod = isFirebaseSdkError(e) ? e.code : 'bilinmeyen-hata';
+      console.error('Giriş hatası:', kod, e);
+      girisTanisiEkle({ asama: isMobileTarayici ? 'redirect-baslat' : 'popup', kod, mesaj: e instanceof Error ? e.message : undefined });
       if (isFirebaseSdkError(e) && e.code === 'auth/unauthorized-domain') {
         setError('Bu alan adı (domain) yetkilendirilmemiş. Lütfen localhost veya kayıtlı alan adını kullanın.');
       } else if (!isFirebaseSdkError(e) || e.code !== 'auth/popup-closed-by-user') {

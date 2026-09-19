@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { WifiOff, Loader2 } from 'lucide-react';
+import { TaniKopyalaDugmesi } from './TaniKopyalaDugmesi';
 
 interface OturumBelirsizEkraniProps {
   /** `navigator.onLine` durumu — AuthGuard zaten izliyor, buraya geçiliyor. */
@@ -68,6 +69,7 @@ export function OturumBelirsizEkrani({ isOffline, girisEkraninaGec }: OturumBeli
           >
             GİRİŞ EKRANINA GEÇ
           </button>
+          <TaniKopyalaDugmesi error={isOffline ? 'Oturum belirsiz: çevrimdışı' : 'Oturum belirsiz: cold-start failsafe tetiklendi'} />
         </div>
       </motion.div>
     </div>

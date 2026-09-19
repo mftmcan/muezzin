@@ -31,6 +31,7 @@ export async function hostingSaglikKontrol(baseUrl: string, beklenenSha: string,
     return {
       status: yanit.status,
       tip: yanit.headers.get('content-type') ?? '',
+      csp: yanit.headers.get('content-security-policy') ?? '',
       govde: await yanit.text(),
     };
   };
@@ -66,6 +67,35 @@ export async function hostingSaglikKontrol(baseUrl: string, beklenenSha: string,
         sorunlar.push(`${eslesme[1]} HTTP ${js.status}, content-type "${js.tip || '(yok)'}"`);
       }
     }
+
+    // Google OAuth giriş akışının gerçekte gittiği origin'ler — bu liste
+    // firebase.json'daki CSP ile ELLE senkron tutuluyor (bkz.
+    // tests/unit/firebaseYapilandirmasi.test.ts, aynı origin'leri REPO
+    // dosyasında doğrular). Buradaki kontrol farklı bir katman: repo doğru
+    // olsa bile CDN/hosting'in DEPLOY EDİLMİŞ gerçek başlığı eskiyse (commit
+    // 4786c08'in yakaladığı sınıf arıza — CSP reCAPTCHA'yı sessizce
+    // blokluyordu) yalnızca bu canlı kontrol yakalar.
+    if (!index.csp) {
+      sorunlar.push('/ yanıtında Content-Security-Policy başlığı yok');
+    } else {
+      for (const origin of ['https://www.google.com', 'https://accounts.google.com', 'https://*.googleapis.com']) {
+        if (!index.csp.includes(origin)) {
+          sorunlar.push(`CSP başlığında '${origin}' eksik (Google OAuth/reCAPTCHA girişini bozar)`);
+        }
+      }
+    }
+  }
+
+  // `/__/auth/handler`, Firebase Hosting'in Auth SDK için ayırdığı özel bir
+  // yoldur (SPA rewrite'ın DIŞINDA, Firebase tarafından proxy'lenir).
+  // `authDomain` hosting ile aynı origin olduğundan (bkz. commit 4f39745)
+  // bu yol artık BU domain üzerinden servis edilir — 404/dönmemesi,
+  // authDomain'in Firebase Console'daki "Authorized domains" listesinden
+  // sessizce düşürüldüğünü veya hosting yapılandırmasının bozulduğunu
+  // gösterir.
+  const authHandler = await al('/__/auth/handler');
+  if (authHandler.status >= 500) {
+    sorunlar.push(`/__/auth/handler HTTP ${authHandler.status}`);
   }
 
   for (const [yol, beklenenTip] of [

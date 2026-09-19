@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { AlertCircle } from 'lucide-react';
+import { TaniKopyalaDugmesi } from './TaniKopyalaDugmesi';
 
 interface AuthErrorScreenProps {
   error: string;
@@ -48,6 +49,7 @@ export function AuthErrorScreen({ error, setError, setLoading, logout }: AuthErr
           >
             BAŞKA HESAP KULLAN
           </button>
+          <TaniKopyalaDugmesi error={error} />
         </div>
       </motion.div>
     </div>

@@ -38,7 +38,14 @@ export default defineConfig(({ mode }) => ({
     },
   },
   esbuild: {
-    drop: mode === 'production' ? ['console', 'debugger'] : [],
+    // `console.error`/`console.warn` KASITLI OLARAK drop dışında bırakılıyor:
+    // production'da TÜM console çağrılarının silinmesi, login/telemetri gibi
+    // kritik akışlarda gerçek hata kodunun DevTools'ta hiç görünmemesine yol
+    // açıyordu (bkz. AuthGuard.tsx login()/getRedirectResult — hata mesajının
+    // sonuna [kod] eklemek bunun geçici çözümüydü). `pure` ile yalnızca
+    // gürültü sayılan log/debug/info/trace çağrıları minify sırasında düşer.
+    drop: mode === 'production' ? ['debugger'] : [],
+    pure: mode === 'production' ? ['console.log', 'console.debug', 'console.info', 'console.trace'] : [],
   },
   define: {
     // package.json sürümü ve GERÇEK build zamanı, telemetride hata anının

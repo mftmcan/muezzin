@@ -267,3 +267,65 @@ yedek alındıktan SONRA oluşturulan belgeler etkilenmez, ama yedekteki bir
 belge o tarihten sonra değiştiyse değişiklik geri alınır. Kısmi/güncel bir
 felakette önce hangi koleksiyonun etkilendiğini belirleyip yalnızca onu
 `--koleksiyon` ile geri yükleyin.
+
+## 9. Google girişi (OAuth) sorun giderme
+
+Giriş SADECE Google OAuth ile yapılıyor (`src/components/AuthGuard.tsx`).
+7 ardışık commit (4786c08 → daha eskiler) bu akışı tek tek yamaladı — CSP'nin
+reCAPTCHA'yı bloklaması, mobilde redirect sonrası oturumun sessizce
+kurulmaması, `authDomain` değişikliği, popup'ın sessizce askıda kalması.
+Kalıcı çözüm iki katmanlı: (1) `src/lib/girisStratejisi.ts`'teki saf karar
+mantığı artık `tests/unit/girisStratejisi.test.ts` ile kilitli, (2) giriş
+hataları `src/lib/girisTanisi.ts` ile oturum kurulana kadar `localStorage`'da
+tutulup ilk başarılı girişte `error_logs`'a yazılıyor.
+
+### İlk teşhis adımları
+
+1. Admin panel → **Sistem Hataları** sekmesinde `GIRIS_HATASI [...]` imzalı
+   kayıt var mı bak (`telemetryService.ts` → `errorLogsAbone`). Bu kayıtlar
+   yalnızca kullanıcı SONUNDA başarılı giriş yaptıysa görünür — kalıcı
+   kilitlenmede (2)'ye geç.
+2. Kalıcı kilitlenme (kullanıcı hiç giriş yapamıyor): kullanıcıdan
+   `AuthErrorScreen`/`OturumBelirsizEkrani`'ndaki **"Tanı Bilgisini
+   Kopyala"** düğmesini kullanıp çıkan JSON'u (WhatsApp/e-posta ile)
+   iletmesini isteyin — `girisTanisi` ring-buffer'ı + UA/PWA/appVersion
+   bilgisini içerir.
+3. `scripts/hostingSaglikKontrolu.ts` (deploy sonrası CI'da otomatik
+   çalışır) artık `/` yanıtındaki canlı CSP başlığının gerekli origin'leri
+   (`https://www.google.com`, `https://accounts.google.com`,
+   `https://*.googleapis.com`) içerdiğini ve `/__/auth/handler`'ın 5xx
+   dönmediğini de doğruluyor — repo'daki `firebase.json` doğru olsa bile
+   CDN'in DEPLOY EDİLMİŞ başlığı eskiyse (4786c08 sınıfı arıza) burada
+   yakalanır. Elle çalıştırmak için:
+   ```bash
+   npx tsx scripts/hostingSaglikKontrolu.ts https://ezanmerkezi.web.app <beklenen-sha>
+   ```
+
+### Sürüm öncesi cihaz matrisi
+
+CI/emülatör bu satırların HİÇBİRİNİ gerçek biçimde simüle edemez (3rd-party
+storage partitioning, ITP, veri-tasarrufu proxy'leri) — bu yüzden test
+edilmiş gibi göstermek yerine dürüstçe elle doğrulanır. `AuthGuard.tsx`'te
+giriş stratejisine dokunan her PR'dan önce ve önemli bir tarayıcı sürüm
+güncellemesinden sonra bu matrisi gözden geçirin; "Son doğrulama" sütunu
+boşsa veya çok eskiyse matris güncelliğini yitirmiş demektir.
+
+| Ortam | Beklenen yol | Beklenen sonuç | Son doğrulama |
+|---|---|---|---|
+| Android Chrome (tarayıcı) | redirect | başarılı giriş | — |
+| Android Chrome (kurulu PWA, standalone) | redirect | başarılı giriş | — |
+| iOS Safari | redirect | başarılı giriş | — |
+| iOS kurulu PWA (standalone) | redirect | başarılı giriş **veya** "oturum kurulamadı" mesajı + Tanı Kopyala | — |
+| Opera Android (Veri Tasarrufu AÇIK) | redirect | başarılı giriş (bkz. d0fffba'nın düzelttiği arıza) | — |
+| Masaüstü Safari (ITP açık) | redirect | başarılı giriş | — |
+| Firefox (Strict Enhanced Tracking Protection) | redirect | başarılı giriş | — |
+| Brave (Shields yukarı) | redirect | başarılı giriş | — |
+
+Bir satır başarısız olursa: (a) tarayıcının konsol/ağ sekmesinde
+`accounts.google.com` veya `/__/auth/handler` isteklerinin engellenip
+engellenmediğine bakın, (b) kullanıcıdan Tanı Bilgisini Kopyala çıktısını
+alın, (c) `src/lib/girisStratejisi.ts`'teki `popupHatasiniDegerlendir`/
+`redirectSonucunuDegerlendir` denylist'lerinin yeni hata kodunu kapsayıp
+kapsamadığını kontrol edin — bilinmeyen bir kod zaten güvenli varsayılana
+(`redirect-fallback` / `hata-goster`) düşer, ama kullanıcıya gösterilen
+mesajın netliği için kod tabanına eklemek isteyebilirsiniz.
