@@ -96,6 +96,12 @@ for (const theme of ['light', 'dark'] as const) {
       await temaAyarla(page, theme);
       await girisYap(page, seed.tokenMuezzin);
       await page.goto('/profil');
+      // Profil.tsx'teki PersonalHistoryCard bölümü `IntersectionObserver` ile
+      // yalnızca viewport'a girince monte edilir (bkz. Profil.tsx LazySection
+      // yorumu) — scroll olmadan `.skeleton-shimmer` hiç kaybolmuyor ve
+      // `ekranHazirBekle` 20 sn'de zaman aşımına uğruyor. `visual.spec.ts`'teki
+      // profil testiyle aynı deterministik tetikleme (bkz. o dosyadaki gerekçe).
+      await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
       await ekranHazirBekle(page);
 
       const results = await taramaYap(page);
