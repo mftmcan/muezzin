@@ -33,5 +33,18 @@ export default [
       'react-hooks/refs': 'warn'
     }
   },
+  {
+    // Yalnızca src/ — scripts/ (cron'ların stdout logu, CI özetlerinde
+    // okunur) ve tests/ kasıtlı olarak dışarıda bırakıldı. `console.error`/
+    // `console.warn` (merkezi hata işleyicisi `handleFirestoreError` zaten
+    // bunları kullanıyor) serbest; yalnızca DEV/debug amaçlı `console.log`
+    // kalıntıları production'a sızmasın diye engellenir (bkz. kod denetimi,
+    // premium/kurumsal SaaS standardı analizi — üretimde 2 unutulmuş
+    // console.log bulundu).
+    files: ['src/**/*.ts', 'src/**/*.tsx'],
+    rules: {
+      'no-console': ['error', { allow: ['warn', 'error'] }]
+    }
+  },
   firebaseRulesPlugin.configs['flat/recommended']
 ];

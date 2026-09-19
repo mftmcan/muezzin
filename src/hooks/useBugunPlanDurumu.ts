@@ -13,6 +13,7 @@ import { selfHealingTetiklenmeliMi } from '../lib/planSelfHealing';
 // Vite build uyarısı: "dynamic import will not move module into another
 // chunk") — yalnızca gereksiz bir Promise sarmalaması ekliyordu.
 import { haftalikPlanOlustur } from '../services/planServisi';
+import { telemetryService } from '../services/telemetryService';
 import { Bildirim, Vakit } from '../types';
 
 function bildirimZamani(bildirim: Bildirim) {
@@ -76,9 +77,10 @@ export function useBugunPlanDurumu(planDateStr: string, vakitKeyForPlan: Vakit) 
       })
     ) {
       selfHealingFiredHaftaIdRef.current = haftaId;
-      if (import.meta.env.DEV) {
-        console.log(`[Self-Healing] Hafta planı bulunamadı (${haftaId}). Yönetici yetkisiyle otomatik oluşturuluyor...`);
-      }
+      // Self-healing'in ne sıklıkla tetiklendiği gerçek bir sinyaldir (cron'un
+      // kaçırdığı haftaları gösterir) — önceden yalnızca DEV konsoluna
+      // düşüyordu, production'da hiç görünmüyordu (bkz. kod denetimi).
+      telemetryService.addBreadcrumb(`Self-healing tetiklendi: ${haftaId}`, 'network', { haftaId });
       haftalikPlanOlustur(haftaId).catch((err) => {
         console.error('[Self-Healing] Otomatik plan oluşturma başarısız:', err);
         if (selfHealingFiredHaftaIdRef.current === haftaId) {

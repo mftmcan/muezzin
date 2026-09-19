@@ -98,7 +98,12 @@ export async function konumVakitleriniCek(latitude: number, longitude: number): 
     if (cachedVal) {
       try {
         return JSON.parse(cachedVal);
-      } catch {}
+      } catch {
+        // Bozuk önbellek kaydı — taze veriye düşülür (bilinçli). Aksi halde
+        // bu oturumun geri kalanında her çağrıda aynı bozuk değer tekrar
+        // parse edilip atılırdı.
+        if (typeof window !== 'undefined') sessionStorage.removeItem(cacheKey);
+      }
     }
     try {
       const geoUrl = `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=tr`;
@@ -220,7 +225,11 @@ export async function ilceKoordinatlariniCek(ilceAdi: string): Promise<{ lat: nu
     if (cached) {
       try {
         return JSON.parse(cached);
-      } catch {}
+      } catch {
+        // Bozuk önbellek kaydı — taze veriye düşülür (bilinçli), aynı
+        // gerekçeyle bkz. konumVakitleriniCek'teki ikiz desen.
+        sessionStorage.removeItem(cacheKey);
+      }
     }
   }
 

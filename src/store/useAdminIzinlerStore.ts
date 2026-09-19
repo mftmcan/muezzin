@@ -69,10 +69,19 @@ async function izinEtkilenenHaftalariYenile(izinId: string): Promise<void> {
         await haftalikPlanOlustur(haftaId);
       } catch (err) {
         console.warn(`İzin kararı sonrası plan yenilenemedi (${haftaId}):`, err);
+        // Davranış değişmedi (hata hâlâ yutulur, izin kararını engellemez) —
+        // yalnızca görünürlük eklendi. Öncesinde bu döngüde art arda
+        // başarısızlık olsa (ör. kişi haftalarca izinliyken nöbete atanmış
+        // kalmaya devam etse) hiçbir telemetri sinyali üretilmiyordu (bkz.
+        // kod denetimi, premium/kurumsal SaaS standardı analizi).
+        telemetryService.addBreadcrumb(`İzin sonrası plan yenilenemedi: ${haftaId}`, 'network', { izinId, haftaId });
+        telemetryService.logError(err instanceof Error ? err : new Error(String(err)), `izinEtkilenenHaftalariYenile @ ${haftaId}`);
       }
     }
   } catch (err) {
     console.warn('İzin kararı sonrası etkilenen haftalar hesaplanamadı:', err);
+    telemetryService.addBreadcrumb('İzin sonrası etkilenen haftalar hesaplanamadı', 'network', { izinId });
+    telemetryService.logError(err instanceof Error ? err : new Error(String(err)), 'izinEtkilenenHaftalariYenile');
   }
 }
 
