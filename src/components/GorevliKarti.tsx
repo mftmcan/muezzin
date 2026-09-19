@@ -137,10 +137,16 @@ export const GorevliKarti = React.memo(({ tip, isim, durum, isUser, izinde, isFr
       />
 
       <div className="flex flex-col gap-6 relative z-10">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
-          <div className="flex items-center gap-4 sm:gap-5">
+        {/* `sm:flex-wrap` + sol gruba `min-w-0`: önceden satır hiç sarmıyordu
+            ve sol grup (avatar+isim+rozet) daralmıyordu — uzun bir isimde
+            (ör. "Fakir Fikir") sağdaki durum rozeti ("BEKLEYİŞTE" vb.) kartın
+            dışına taşıp kartın `overflow-hidden`'ı tarafından yarım kesilerek
+            gösteriliyordu (bkz. kullanıcı ekran görüntüsü, kod denetimi).
+            Artık sığmadığında rozet aşağıya sarıyor, kırpılmıyor. */}
+        <div className="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center justify-between gap-5">
+          <div className="flex items-center gap-4 sm:gap-5 min-w-0">
             <PersonaAvatar name={isim || ''} isUser={!!isUser} colorClass={avatarColorClass} />
-            <div>
+            <div className="min-w-0">
               <div className="flex items-center gap-2 mb-2 sm:mb-2.5">
                 <div className="relative w-1.5 h-1.5 shrink-0">
                   <div className={`absolute inset-0 rounded-full ${dotColorClass}`} />
