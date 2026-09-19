@@ -118,7 +118,7 @@ export const NotificationToast: React.FC<NotificationToastProps> = ({
         {/* Text */}
         <div className="flex-1 min-w-0">
           <h4 className="text-xs font-medium text-[var(--text-primary)] mb-1 leading-none">{title}</h4>
-          <p className="text-xs font-light text-[var(--text-secondary)]/60 leading-relaxed">{message}</p>
+          <p className="text-xs font-light text-muted leading-relaxed">{message}</p>
           {action && (
             <button
               onClick={() => {
@@ -136,7 +136,7 @@ export const NotificationToast: React.FC<NotificationToastProps> = ({
         <button
           onClick={() => onClose(id)}
           aria-label="Kapat"
-          className="flex-shrink-0 p-1 rounded-lg transition-colors text-muted hover:text-[var(--text-secondary)]/60"
+          className="flex-shrink-0 p-1 rounded-lg transition-colors text-muted hover:text-[var(--text-secondary)]"
         >
           <X size={14} />
         </button>

@@ -74,7 +74,7 @@ export function NotificationHistoryPanel({ isOpen, onClose }: NotificationHistor
                           {formatDistanceToNow(entry.timestamp, { addSuffix: true, locale: tr })}
                         </span>
                       </div>
-                      <p className="text-xs text-[var(--text-secondary)]/60 leading-relaxed mt-1">{entry.message}</p>
+                      <p className="text-xs text-muted leading-relaxed mt-1">{entry.message}</p>
                     </div>
                   </motion.li>
                 );
