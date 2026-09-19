@@ -313,6 +313,64 @@ in a frame" görülürse doğrudan bu bölüme bak — CSP/X-Frame-Options
 `authDomain` same-origin olduğu için Firebase Auth'un kendi iframe'ini
 bloklamış demektir, üçüncü taraf depolama/ITP ile karıştırma.
 
+### Bilinen arıza (ASIL kök neden): service worker `/__/auth/*`'i ele geçiriyordu
+
+2026-09-19, yukarıdaki frame-ancestors düzeltmesi deploy edildikten SONRA
+bile masaüstünde giriş hâlâ başarısızdı — Google'dan authorization code
+alınıyordu (`code=...` URL'de görünüyordu) ama `getRedirectResult` yine
+sessizce boş dönüyordu, `signInWithIdp` isteği (Network sekmesi, filtre:
+`signInWithIdp`) **hiç yapılmıyordu**. Kullanıcı hâlâ uzun
+`/__/auth/handler?...` URL'sinde takılı kalıyordu.
+
+**Teşhis**: `https://ezanmerkezi.web.app/__/auth/handler`'a doğrudan
+gidildiğinde (Google parametreleri olmadan bile) tarayıcı sekmesinin
+başlığı **"Müezzin - Hizmet Dizgesi"** çıktı — yani bu path Firebase'in
+kendi (minimal, GAPI iframes tabanlı) auth handler sayfasını DEĞİL,
+**bizim SPA'mızı** gösteriyordu.
+
+**Kök neden**: `dist/sw.js`'te `vite-plugin-pwa`'nın `globPatterns`'a
+`html` dahil edildiğinde OTOMATİK eklediği
+`new NavigationRoute(createHandlerBoundToURL("index.html"))` — eşleşmeyen
+HER navigasyon isteğini `index.html`'e yönlendiren bir Workbox davranışı
+(SPA client-side routing için standart bir patern). Firebase Hosting
+`/__/auth/*`'i dokümante edilmiş şekilde REZERVE EDER ve kullanıcı
+rewrite kurallarından (bizim `** -> /index.html`'imiz dahil) ÖNCELİKLİDİR
+— AMA bu garanti yalnızca SUNUCU TARAFI routing için geçerlidir. Service
+worker TARAYICI TARAFINDA çalışır, bu garantiden habersizdir ve
+`/__/auth/handler`'a giden navigasyonu Firebase Hosting'in sunucusuna HİÇ
+ULAŞTIRMADAN kendi cache'inden `index.html`'i döndürüyordu. Google'dan
+dönen redirect, gerçek Firebase auth handler'a hiç gitmeden bizim React
+app'imizde "kayboluyordu".
+
+**Neden authDomain değişikliğinden (4f39745) SONRA ortaya çıktı**:
+`authDomain` `.firebaseapp.com` (FARKLI origin) iken, service worker
+(yalnızca KENDİ origin'inde — `ezanmerkezi.web.app` — kayıtlı, başka bir
+origin'in isteklerini asla göremez) `/__/auth/handler` isteklerini hiç
+göremiyordu. `authDomain` hosting ile AYNI origin'e taşınınca, bu path
+ilk kez service worker'ın kapsamına girdi ve navigation fallback onu
+yanlışlıkla ele geçirmeye başladı — masaüstünde (mobilde authDomain
+değişikliği ayrı bir arızayı çözmüştü, bkz. 4f39745) yeni bir arızaya yol
+açtı.
+
+**Çözüm** (`vite.config.ts`, `workbox.navigateFallbackDenylist: [/^\/__\//]`):
+Firebase'in rezerve ettiği `/__/` path'lerini navigation fallback'ten
+hariç tutar — bu path'lere giden istekler artık service worker'dan geçip
+Firebase Hosting'in sunucu tarafı routing'ine ulaşıyor.
+
+**ÖNEMLİ — deploy sonrası bile kullanıcılar hemen düzelmiş görmeyebilir**:
+Service worker değişikliği MEVCUT kullanıcıların tarayıcısında YÜKLÜ olan
+(bozuk) service worker'ı otomatik değiştirmez. `registerType: 'prompt'`
+olduğundan (bkz. main.tsx bildirimi) kullanıcı "yeni sürüm" bildirimini
+KABUL ETMELİ, ya da DevTools → Application → Service Workers → "Unregister"
++ sayfayı sert yenileme (Ctrl+Shift+R) yapmalı. Giriş yapamayan bir
+kullanıcı bu arızayla karşılaşıyorsa ve deploy zaten geçmişse, önce bu
+adımı önerin.
+
+**Bu sınıf arızayı gelecekte hızlı teşhis etmek için**: `https://<authDomain>/__/auth/handler`'a
+doğrudan gidip tarayıcı sekmesi BAŞLIĞININ uygulamanın kendi başlığı
+(Firebase'in değil) olup olmadığına bakın — buysa service worker'ın
+`/__/` path'lerini ele geçirdiğinin kesin kanıtıdır.
+
 ### İlk teşhis adımları
 
 1. Admin panel → **Sistem Hataları** sekmesinde `GIRIS_HATASI [...]` imzalı

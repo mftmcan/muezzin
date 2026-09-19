@@ -138,6 +138,22 @@ export default defineConfig(({ mode }) => ({
       },
       workbox: {
         globDirectory: 'dist',
+        // Firebase Hosting `/__/auth/*` ve `/__/firebase/*`'i REZERVE EDER —
+        // dokümante edilmiş garantisi, kullanıcı rewrite kurallarından (bizim
+        // `** -> /index.html`'imiz dahil) ÖNCELİKLİDİR, sunucu tarafında
+        // Firebase'in kendi auth handler script'ine gider. AMA service
+        // worker TARAYICI TARAFINDA çalışır ve bu garantiden habersizdir —
+        // workbox'ın otomatik `NavigationRoute`'u (globPatterns'a `html`
+        // dahil edildiğinde vite-plugin-pwa'nın varsayılan olarak eklediği,
+        // eşleşmeyen HER navigasyonu `index.html`'e yönlendiren davranış)
+        // `/__/auth/handler`'ı da yakalayıp Firebase Hosting'in sunucu
+        // tarafı routing'ine HİÇ ULAŞTIRMADAN bizim SPA'mızı döndürüyordu —
+        // Google'dan dönen redirect, gerçek Firebase auth handler'a hiç
+        // gitmeden bizim React app'imizde "kayboluyor", `getRedirectResult`
+        // sessizce boş dönüyordu (canlı arıza: authDomain hosting ile aynı
+        // origin'e taşındıktan SONRA ortaya çıktı — authDomain FARKLI bir
+        // origin iken bu path service worker'ın kapsamına hiç girmiyordu).
+        navigateFallbackDenylist: [/^\/__\//],
         // Fontlar artık self-host (bkz. src/index.css @fontsource import'ları) — woff2/woff
         // build çıktısına dahil olduğundan burada da precache edilmesi gerekiyor. Google
         // Fonts CDN runtimeCaching kuralları bu nedenle kaldırıldı (artık hiçbir istek
