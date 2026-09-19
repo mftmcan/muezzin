@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { CheckCircle2, AlertCircle, Clock, BookOpen } from 'lucide-react';
+import { CheckCircle2, AlertCircle, Clock, BookOpen, RotateCcw } from 'lucide-react';
 import { collection, query, where, getDocs, limit, orderBy } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { User as FirebaseUser } from 'firebase/auth';
@@ -8,6 +8,7 @@ import { format, parseISO } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { VAKIT_GORA_ISIMLERI, toTurkishUpperCase } from '../../lib/dateUtils';
 import { Vakit } from '../../types';
+import { handleFirestoreError, OperationType } from '../../lib/firestore-errors';
 
 interface PersonalHistoryCardProps {
   user: FirebaseUser | null;
@@ -24,11 +25,22 @@ interface TarihselGorev {
 export default function PersonalHistoryCard({ user }: PersonalHistoryCardProps) {
   const [history, setHistory] = useState<TarihselGorev[]>([]);
   const [loading, setLoading] = useState(true);
+  // Boş liste ile "yüklenemedi" durumu farklı kullanıcı mesajları gerektirir —
+  // aksi halde bir Firestore hatası, kullanıcıya "hiç görevin yok" diye
+  // yanlış bilgi olarak gösterilirdi (bkz. kod denetimi, premium standart
+  // analizi). `null` = hata yok, string = kullanıcıya gösterilecek mesaj.
+  const [hata, setHata] = useState<string | null>(null);
+  // "Tekrar dene" butonu bu sayacı artırıp effect'i yeniden tetikler —
+  // fetch mantığını effect'in DIŞINA (useCallback) taşımak yerine, çünkü
+  // dıştaki bir callback'i effect gövdesinden çağırmak eslint'in
+  // react-hooks/set-state-in-effect kuralını tetikliyor.
+  const [yenidenDeneSayaci, setYenidenDeneSayaci] = useState(0);
 
   useEffect(() => {
     if (!user) return;
     const fetchHistory = async () => {
       setLoading(true);
+      setHata(null);
       try {
         const q = query(
           collection(db, 'bildirimler'),
@@ -49,14 +61,15 @@ export default function PersonalHistoryCard({ user }: PersonalHistoryCardProps) 
 
         setHistory(data);
       } catch (err) {
-        console.error('Görev geçmişi yüklenirken hata:', err);
+        const kullaniciyaGosterilecek = handleFirestoreError(err, OperationType.LIST, 'bildirimler');
+        setHata(kullaniciyaGosterilecek.message);
       } finally {
         setLoading(false);
       }
     };
 
     fetchHistory();
-  }, [user]);
+  }, [user, yenidenDeneSayaci]);
 
   return (
     <motion.div
@@ -80,6 +93,19 @@ export default function PersonalHistoryCard({ user }: PersonalHistoryCardProps) 
         <div className="py-12 text-center">
           <div className="w-6 h-6 border-2 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin mx-auto mb-3" />
           <p className="premium-label !text-2xs !opacity-55 animate-pulse">HİZMET KÜTÜĞÜ SORGULANIYOR</p>
+        </div>
+      ) : hata ? (
+        <div className="py-12 text-center border border-dashed border-[var(--status-danger)]/20 rounded-3xl">
+          <AlertCircle className="text-[var(--status-danger)] mx-auto mb-4" size={32} strokeWidth={1.5} />
+          <p className="text-2xs text-[var(--status-danger)] font-light mb-4">{hata}</p>
+          <button
+            type="button"
+            onClick={() => setYenidenDeneSayaci((n) => n + 1)}
+            className="inline-flex items-center gap-1.5 text-2xs font-semibold text-muted hover:text-[var(--text-primary)] transition-colors"
+          >
+            <RotateCcw size={12} />
+            TEKRAR DENE
+          </button>
         </div>
       ) : history.length === 0 ? (
         <div className="py-12 text-center border border-dashed border-[var(--text-primary)]/5 rounded-3xl">
