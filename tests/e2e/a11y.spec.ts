@@ -3,6 +3,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { execFileSync } from 'child_process';
 import { fileURLToPath } from 'url';
 import path from 'path';
+import { ekranHazirBekle } from './ekranHazirBekle.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -71,13 +72,11 @@ for (const theme of ['light', 'dark'] as const) {
     test(`ana ekran (${theme})`, async ({ page }) => {
       await temaAyarla(page, theme);
       await girisYap(page, seed.tokenMuezzin);
-      // 'networkidle' Firestore'un kalıcı WebChannel bağlantısı yüzünden
-      // hiç tetiklenmiyor (gerçek zamanlı onSnapshot dinleyicileri ağı asla
-      // "boşta" bırakmıyor) — Layout.tsx'in her zaman render ettiği
-      // #main-content'i (bkz. P1.13 skip-link hedefi) bekleyip kısa bir
-      // yerleşme payı vermek daha güvenilir.
-      await page.waitForSelector('#main-content');
-      await page.waitForTimeout(1500);
+      // `ekranHazirBekle` (ortak, bkz. visual.spec.ts) 'networkidle'ın
+      // Firestore'un kalıcı WebChannel bağlantısı yüzünden hiç tetiklenmediği
+      // bu sayfalarda gerçek sinyallere (iskelet kaybı, font yükleme) bağlı
+      // bekler — önceden burada sabit bir `waitForTimeout(1500)` vardı.
+      await ekranHazirBekle(page);
 
       const results = await taramaYap(page);
       expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([]);
@@ -87,13 +86,7 @@ for (const theme of ['light', 'dark'] as const) {
       await temaAyarla(page, theme);
       await girisYap(page, seed.tokenMuezzin);
       await page.goto('/takvim');
-      // 'networkidle' Firestore'un kalıcı WebChannel bağlantısı yüzünden
-      // hiç tetiklenmiyor (gerçek zamanlı onSnapshot dinleyicileri ağı asla
-      // "boşta" bırakmıyor) — Layout.tsx'in her zaman render ettiği
-      // #main-content'i (bkz. P1.13 skip-link hedefi) bekleyip kısa bir
-      // yerleşme payı vermek daha güvenilir.
-      await page.waitForSelector('#main-content');
-      await page.waitForTimeout(1500);
+      await ekranHazirBekle(page);
 
       const results = await taramaYap(page);
       expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([]);
@@ -103,13 +96,7 @@ for (const theme of ['light', 'dark'] as const) {
       await temaAyarla(page, theme);
       await girisYap(page, seed.tokenMuezzin);
       await page.goto('/profil');
-      // 'networkidle' Firestore'un kalıcı WebChannel bağlantısı yüzünden
-      // hiç tetiklenmiyor (gerçek zamanlı onSnapshot dinleyicileri ağı asla
-      // "boşta" bırakmıyor) — Layout.tsx'in her zaman render ettiği
-      // #main-content'i (bkz. P1.13 skip-link hedefi) bekleyip kısa bir
-      // yerleşme payı vermek daha güvenilir.
-      await page.waitForSelector('#main-content');
-      await page.waitForTimeout(1500);
+      await ekranHazirBekle(page);
 
       const results = await taramaYap(page);
       expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([]);
@@ -119,13 +106,7 @@ for (const theme of ['light', 'dark'] as const) {
       await temaAyarla(page, theme);
       await girisYap(page, seed.tokenAdmin);
       await page.goto('/admin');
-      // 'networkidle' Firestore'un kalıcı WebChannel bağlantısı yüzünden
-      // hiç tetiklenmiyor (gerçek zamanlı onSnapshot dinleyicileri ağı asla
-      // "boşta" bırakmıyor) — Layout.tsx'in her zaman render ettiği
-      // #main-content'i (bkz. P1.13 skip-link hedefi) bekleyip kısa bir
-      // yerleşme payı vermek daha güvenilir.
-      await page.waitForSelector('#main-content');
-      await page.waitForTimeout(1500);
+      await ekranHazirBekle(page);
 
       const results = await taramaYap(page);
       expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([]);
