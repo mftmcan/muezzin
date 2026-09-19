@@ -38,11 +38,21 @@ export default defineConfig({
       // yok; ilgili değişikliklerin kendi birim/entegrasyon/rules testleri
       // ayrıca eklendi/güncellendi). `functions` eşiği 6 → 5.9'a çekildi;
       // diğer üçü mevcut ölçümün hâlâ altında olduğundan dokunulmadı.
+      //
+      // Kurumsal SaaS standardı denetimi (2026-09-19) sonrası yeniden ölçüm:
+      // lines 16.57%, statements 16.39%, functions 13.91%, branches 11.37%.
+      // Eşik önceki taban (%5-7) ile ölçülen gerçek durum (%11-16) arasında
+      // uzun süre güncellenmemiş, ratchet gevşemişti — aradaki her testsiz
+      // dosya (`tests/unit/dateUtils.test.ts`, `tests/unit/planHaftasi.test.ts`
+      // eklenmeden önce) sessizce geçebiliyordu. Eşikler yine ÖLÇÜMÜN
+      // ALTINA (üstüne değil) çekildi ki bir sonraki alakasız PR kırılmasın;
+      // amaç bugün daha yükseğe zorlamak değil, kapsamın buradan itibaren
+      // sessizce ERİMEMESİNİ garanti etmek.
       thresholds: {
-        lines: 7,
-        statements: 6.9,
-        functions: 5.9,
-        branches: 5,
+        lines: 16,
+        statements: 16,
+        functions: 13.5,
+        branches: 11,
       },
     },
   },

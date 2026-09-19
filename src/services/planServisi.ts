@@ -25,7 +25,8 @@ import {
   OnayliIzin,
   VAKITLER,
 } from '../lib/planlamaCekirdegi';
-import { korumaliSlotMu as korumaliSlotVerisiMi, guncelSlotBildirimleriniSec, SlotBildirimVerisi } from '../lib/slotKorumasi';
+import { korumaliSlotMu as korumaliSlotVerisiMi, guncelSlotBildirimleriniSec } from '../lib/slotKorumasi';
+import { haftaGunleri, bildirimlerParmakIzi, bildirimleriSlotlaraAyir, slotVerileri } from '../lib/planHaftasi';
 import { isFriday, getOncekiHafta, getTurkeyDateString, getTurkeyNow, oncekiGunTarihi, toTurkishUpperCase } from '../lib/dateUtils';
 import { mazeretSonBasvuruHesapla } from '../lib/mazeretKurallari';
 import { handleFirestoreError, OperationType } from '../lib/firestore-errors';
@@ -116,55 +117,10 @@ type BildirimQueryDoc = QueryDocumentSnapshot<DocumentData>;
 type BildirimDoc = BildirimQueryDoc | DocumentSnapshot<DocumentData>;
 type GunPlanMap = Record<string, Record<Vakit, VakitAtama>>;
 
-function haftaGunleri(haftaId: string) {
-  const startStr = haftaId.substring(1);
-  const [year, month, day] = startStr.split('-').map(Number);
-  const pazartesi = new Date(year, month - 1, day);
-
-  return Array.from({ length: 7 }, (_, index) => {
-    const gun = new Date(pazartesi);
-    gun.setDate(pazartesi.getDate() + index);
-    const y = gun.getFullYear();
-    const m = String(gun.getMonth() + 1).padStart(2, '0');
-    const d = String(gun.getDate()).padStart(2, '0');
-    return `${y}-${m}-${d}`;
-  });
-}
-
-// İyimser eşzamanlılık denetiminin (haftalikPlanOlusturTekSeferlik) tek
-// başına haftaPlanlari.sonGuncelleme'yi karşılaştırması yeterli değildi —
-// mazeretBildir/vekaletKabulEt kendi bildirimler yazımlarını YALNIZCA o
-// belgede yapar, haftaPlanlari'na hiç dokunmaz (bunu yalnızca ayrı,
-// asenkron bir uzlaştırma cron'u — mazeretDevirleriniIsle.ts/
-// vekaletDevirleriniIsle.ts — daha sonra yapar). Bu yüzden eskiBildirimler
-// okunduktan (T1) SONRA ama commit'ten (T2) ÖNCE bir müezzin mazeret
-// bildirirse, haftaPlanlari.sonGuncelleme değişmediğinden freshness
-// kontrolü çakışmayı hiç görmüyor, ve commit T1'deki BAYAT bildirim
-// durumuna göre hesaplanmış bir plan yazıp mazeretin az önce güncellediği
-// bildirim belgesini (delete+set ile) sessizce üzerine yazıyordu — mazeret
-// reddi ve varsa yedek terfisi kayboluyordu (bkz. code-review, dördüncü
-// denetim turu). Bu parmak izi haftaPlanlari.sonGuncelleme kontrolüne EK
-// olarak bildirimler koleksiyonunun da T1-T2 arasında değişmediğini
-// doğrular.
-function bildirimlerParmakIzi(docs: BildirimQueryDoc[]): string {
-  return docs
-    .map((d) => `${d.id}:${(d.data().sonGuncelleme as Timestamp | undefined)?.toMillis() ?? 'null'}`)
-    .sort()
-    .join('|');
-}
-
-function bildirimleriSlotlaraAyir(docs: BildirimQueryDoc[]) {
-  return docs.reduce(
-    (acc, bildirimDoc) => {
-      const data = bildirimDoc.data();
-      const key = `${data.tarih}_${data.vakit}`;
-      if (!acc[key]) acc[key] = [];
-      acc[key].push(bildirimDoc);
-      return acc;
-    },
-    {} as Record<string, BildirimQueryDoc[]>
-  );
-}
+// `haftaGunleri`, `bildirimlerParmakIzi`, `bildirimleriSlotlaraAyir` ve
+// `slotVerileri` saf (Firestore'dan bağımsız) oldukları ve birim testlenmeleri
+// gerektiği için src/lib/planHaftasi.ts'e taşındı — ayrıntılı gerekçeler
+// (özellikle parmak izinin hangi yarış koşulunu kapattığı) orada.
 
 // scripts/vekaletDevirleriniIsle.ts'teki `alarmVarMi` ile AYNI dedup
 // deseni. Gece cron'u (scripts/haftalikPlanOlustur.ts) bir haftanın
@@ -184,12 +140,6 @@ async function cozulmemisUyariVarMi(tip: string, tarih: string): Promise<boolean
     query(collection(db, 'adminUyarilari'), where('tip', '==', tip), where('tarih', '==', tarih), where('cozuldu', '==', false), limit(1))
   );
   return !snap.empty;
-}
-
-function slotVerileri(slotBildirimleri: BildirimDoc[]): SlotBildirimVerisi[] {
-  return slotBildirimleri
-    .map((bildirimDoc) => bildirimDoc.data() as SlotBildirimVerisi | undefined)
-    .filter((data): data is SlotBildirimVerisi => !!data);
 }
 
 /**
