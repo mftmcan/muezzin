@@ -136,13 +136,10 @@ describe('tasarım sistemi — kaynak taraması (görsel tasarım denetimi V7/V8
       }
     }
 
-    expect(
-      ihlaller,
-      `rounded-[NNpx] ihlali bulundu (bkz. CLAUDE.md "Köşe yarıçapı" bölümü):\n${ihlaller.join('\n')}`
-    ).toEqual([]);
+    expect(ihlaller, `rounded-[NNpx] ihlali bulundu (bkz. CLAUDE.md "Köşe yarıçapı" bölümü):\n${ihlaller.join('\n')}`).toEqual([]);
   });
 
-  it('yeni stiffness/damping/bounce fizik değeri src/lib/motion.ts token\'ları dışında eklenmez', () => {
+  it("yeni stiffness/damping/bounce fizik değeri src/lib/motion.ts token'ları dışında eklenmez", () => {
     // Kod denetimi (premium/kurumsal SaaS standardı analizi, 2026-09-19) 15
     // dosyada elle yazılmış stiffness/damping/bounce kombinasyonu buldu; sık
     // tekrarlananlar (`400/30`→SPRING.snappy, `320/28`→SPRING.sheet,
@@ -198,7 +195,9 @@ describe('tasarım sistemi — kaynak taraması (görsel tasarım denetimi V7/V8
         const satir = content.slice(0, match.index).split('\n').length;
         const anahtar = `${relPath(file)}:${satir}`;
         if (!IZINLI_TEKIL_DEGERLER.has(anahtar)) {
-          ihlaller.push(`${anahtar} → ${match[0]} (src/lib/motion.ts SPRING token'larından biri kullanılmalı ya da allowlist'e gerekçeyle eklenmeli)`);
+          ihlaller.push(
+            `${anahtar} → ${match[0]} (src/lib/motion.ts SPRING token'larından biri kullanılmalı ya da allowlist'e gerekçeyle eklenmeli)`
+          );
         }
       }
     }

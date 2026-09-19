@@ -86,7 +86,7 @@ describe('hata yutma — kaynak taraması', () => {
     // incelendi. Kategoriler: ses çalma (kozmetik), telemetri servisinin
     // kendi hata kaydı (özyinelemeyi önler), FCM push token / App Check /
     // SW güncelleme kontrolü (arka plan, kullanıcı eylemine bağlı değil),
-        // sessionStorage yazma/okuma (önbellek, fail-soft), ikincil audit-log
+    // sessionStorage yazma/okuma (önbellek, fail-soft), ikincil audit-log
     // yazımı (birincil işlem zaten tamamlanmış/bildirilmiş).
     const IZINLI_KONSOL_SADECE_CATCH = new Set([
       'src/App.tsx:40', // telemetryService.logError'ın KENDİSİ hata verirse — özyinelemeli çağrıyı önler

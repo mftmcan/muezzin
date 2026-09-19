@@ -233,11 +233,7 @@ export default function VacationRequestCard({ user }: VacationRequestCardProps) 
       await batch.commit();
     } catch (err) {
       console.error('İzin talebi iptal edilemedi:', err);
-      showNotification(
-        'Hata Oluştu',
-        'İzin talebi iptal edilirken dizgesel bir hata oluştu. Lütfen tekrar deneyin.',
-        'error',
-      );
+      showNotification('Hata Oluştu', 'İzin talebi iptal edilirken dizgesel bir hata oluştu. Lütfen tekrar deneyin.', 'error');
     }
   };
 
