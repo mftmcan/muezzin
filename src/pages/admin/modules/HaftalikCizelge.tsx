@@ -323,6 +323,18 @@ export default function HaftalikCizelge() {
 
   const renderedGrid = useMemo(() => {
     if (!plan) return null;
+    // `tarih_vakit_uid` → bildirim ön-hesabı: aşağıdaki 7×5 hücre ızgarası
+    // her hücrede `haftaBildirimleri.find(...)` ile lineer arama yapıyordu
+    // (bkz. kod denetimi, premium/kurumsal SaaS standardı analizi) — veri
+    // boyutu küçük olduğundan kritik değildi, ama Map ile O(1)'e inmesi
+    // bedava.
+    // `.find()`'ın "ilk eşleşme kazanır" davranışını korumak için, anahtar
+    // zaten varsa üzerine YAZMA (aksi halde son eşleşme kazanırdı).
+    const bildirimHaritasi = new Map<string, (typeof haftaBildirimleri)[number]>();
+    for (const b of haftaBildirimleri) {
+      const anahtar = `${b.tarih}_${b.vakit}_${b.uid}`;
+      if (!bildirimHaritasi.has(anahtar)) bildirimHaritasi.set(anahtar, b);
+    }
     return (
       <div className="flex flex-col gap-3 lg:gap-4">
         <AnimatePresence mode="popLayout">
@@ -379,7 +391,7 @@ export default function HaftalikCizelge() {
                   <div className="flex-1 grid grid-cols-1 min-[370px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-3 w-full">
                     {VAKITLER.map((vakit) => {
                       const atama = gunObj[vakit] || { asil: 'Sistem', yedek: 'Sistem' };
-                      const asilBildirim = haftaBildirimleri.find((b) => b.tarih === tarih && b.vakit === vakit && b.uid === atama?.asil);
+                      const asilBildirim = bildirimHaritasi.get(`${tarih}_${vakit}_${atama?.asil}`);
                       // "Sistem" (Dizge) bir gerçek kişi değil, henüz elle atama
                       // yapılmamış vakit için otomatik-atama yer tutucusudur — bir
                       // ismin yanında aynı nokta+düz metin kalıbıyla gösterilirse
