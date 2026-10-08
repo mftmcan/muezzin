@@ -3,7 +3,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { execFileSync } from 'child_process';
 import { fileURLToPath } from 'url';
 import path from 'path';
-import { ekranHazirBekle } from './ekranHazirBekle.ts';
+import { ekranHazirBekle, lazyBolumleriTetikle } from './ekranHazirBekle.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -98,10 +98,11 @@ for (const theme of ['light', 'dark'] as const) {
       await page.goto('/profil');
       // Profil.tsx'teki PersonalHistoryCard bölümü `IntersectionObserver` ile
       // yalnızca viewport'a girince monte edilir (bkz. Profil.tsx LazySection
-      // yorumu) — scroll olmadan `.skeleton-shimmer` hiç kaybolmuyor ve
-      // `ekranHazirBekle` 20 sn'de zaman aşımına uğruyor. `visual.spec.ts`'teki
-      // profil testiyle aynı deterministik tetikleme (bkz. o dosyadaki gerekçe).
-      await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+      // yorumu). Tek seferlik scroll, spinner→içerik büyüme yarışında erken
+      // kalırsa gözlemci HİÇ ateşlenmez; hedef-başlıklı poll-scroll tetikleyicisi
+      // iki yarışı da (boş sayfa, kısa sayfa) kapatır (bkz. ekranHazirBekle.ts
+      // `lazyBolumleriTetikle`).
+      await lazyBolumleriTetikle(page, page.getByText('KİŞİSEL HİZMET GÜNLÜĞÜ'));
       await ekranHazirBekle(page);
 
       const results = await taramaYap(page);

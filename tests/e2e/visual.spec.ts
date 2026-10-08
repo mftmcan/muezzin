@@ -3,7 +3,7 @@ import { execFileSync } from 'child_process';
 import { fileURLToPath } from 'url';
 import path from 'path';
 import { GORSEL_SABIT_TARIH } from './gorselSabitTarih.ts';
-import { ekranHazirBekle } from './ekranHazirBekle.ts';
+import { ekranHazirBekle, lazyBolumleriTetikle } from './ekranHazirBekle.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -222,8 +222,12 @@ for (const theme of ['light', 'dark'] as const) {
       // uğruyordu (bkz. 2026-09-17 baseline-yenileme koşusu). Gerçek
       // kullanıcı için sorun değil (fiilen scroll etmek observer'ı tetikler)
       // — burada yalnızca ekran görüntüsünden önce aynı tetiklemeyi elle
-      // (deterministik) yapıyoruz.
-      await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+      // (deterministik) yapıyoruz. TEK seferlik scroll yeterli değildi:
+      // hızlı yüklenişte spinner hiç görünmediğinden `toBeHidden` anında
+      // geçiyor, scroll içerik commit'inden önce koşup kısa/boş scrollHeight'e
+      // kenetlenebiliyordu; hedef-başlıklı poll-scroll tetikleyici (bkz.
+      // ekranHazirBekle.ts `lazyBolumleriTetikle`) iki yarışı da kapatır.
+      await lazyBolumleriTetikle(page, page.getByText('KİŞİSEL HİZMET GÜNLÜĞÜ'));
       await ekranHazirBekle(page);
       await expect(page).toHaveScreenshot(`profil-${theme}.png`, { ...SS_OPTS, fullPage: true });
     });

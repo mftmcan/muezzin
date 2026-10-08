@@ -13,6 +13,37 @@ import { expect, type Page } from '@playwright/test';
 export const YERLESME_PAYI_MS = 700;
 
 /**
+ * `IntersectionObserver`'la kademeli yüklenen bölümleri (bkz. Profil.tsx
+ * `LazySection`) DETERMİNİSTİK biçimde tetikler: hedef bölümün içeriği
+ * (ör. 'KİŞİSEL HİZMET GÜNLÜĞÜ' başlığı) DOM'a girene dek sayfanın altına
+ * tekrar tekrar scroll eder.
+ *
+ * Neden "skeleton kalmayınca çık" YANLIŞ, "hedef görünene dek sürdür"
+ * DOĞRU (bkz. 2026-10-08 CI koşusu 37830747078 ve teşhisi): profil sayfası
+ * "VERİLER SENKRONİZE EDİLİYOR" spinner'ından ~2400px'lik içeriğe büyür ve
+ * spinner-döneminde sayfa tamamen boşken `.skeleton-shimmer` sayısı ZATEN
+ * 0'dır — skeleton-0 koşulu boş sayfada anında geçer, yardımcı TEK scroll
+ * bile yapmadan çıkar; bölümler SONRA mount olur, gözlemci hiçbir zaman
+ * scroll görmez ve `ekranHazirBekle` 20 sn'de zaman aşımına düşer. Hedef
+ * başlık yalnızca lazy bölüm monte olup verisini istemeye başladığında
+ * görünür — o ana ulaşana dek sürmek iki yarışı da (boş sayfa, kısa sayfa)
+ * kapatır.
+ *
+ * Bu işlev kendisi bir "veri bekleme" DEĞİLDİR: verinin hazır olduğu yine
+ * `ekranHazirBekle`'nin sinyal-bağlı iddialarıyla doğrulanır. Hedef hiç
+ * görünmezse (gerçek bir hata) döngü biter ve `ekranHazirBekle` önceki gibi
+ * düşer — hata maskelenmez.
+ */
+export async function lazyBolumleriTetikle(page: Page, hedef: { count(): Promise<number> }, toplamSureMs = 20_000) {
+  const adimMs = 400;
+  for (let gecen = 0; gecen < toplamSureMs; gecen += adimMs) {
+    if ((await hedef.count()) > 0) return;
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await page.waitForTimeout(adimMs);
+  }
+}
+
+/**
  * "Ekran gerçekten yüklendi" beklemesi — keyfi süre YOK.
  *
  * `visual.spec.ts` ve `a11y.spec.ts` ORTAK bu fonksiyonu kullanır — önceden
