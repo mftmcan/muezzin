@@ -13,3 +13,4 @@ test-results/
 playwright-report/
 graphify-out/
 yedek/
+.claude/
