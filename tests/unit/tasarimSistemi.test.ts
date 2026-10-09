@@ -169,9 +169,11 @@ describe('tasarım sistemi — kaynak taraması (görsel tasarım denetimi V7/V8
       'src/components/Layout.tsx:148', // bounce:0.3/0.5s (121 ile eşleşen çift)
       'src/components/ui/Switch.tsx:51', // stiffness:500/damping:30 — bilinçli olarak daha kıvrak
       'src/pages/admin/AdminPanel.tsx:423', // stiffness:220/damping:30
-      'src/pages/admin/modules/ExecutiveHeroScreen.tsx:34', // HERO_SPRING dosya-yerel sabiti (stiffness:300/damping:24, 4 kullanım)
-      'src/pages/admin/modules/ExecutiveHeroScreen.tsx:194', // stiffness:280/damping:22 — HERO_SPRING'den FARKLI, aynı dosyada ayrı bir jest
-      'src/pages/admin/modules/ExecutiveHeroScreen.tsx:465', // stiffness:200/damping:25/delay
+      // Aşağıdaki üçü ExecutiveHeroScreen.tsx'ten FE-001 uzantısı bileşenle-
+      // mesiyle taşındı (JSX birebir; değerler değişmedi):
+      'src/pages/admin/components/HeroBentoGrid.tsx:6', // HERO_SPRING dosya-yerel sabiti (stiffness:300/damping:24, 4 kullanım)
+      'src/pages/admin/components/HeroBentoGrid.tsx:46', // stiffness:280/damping:22 — HERO_SPRING'den FARKLI, aynı ızgarada ayrı bir jest
+      'src/pages/admin/components/HizmetAkisiTablosu.tsx:108', // stiffness:200/damping:25/delay
       'src/pages/admin/modules/IzinMazeretHub.tsx:45', // stiffness:400/damping:35 — snappy'nin damping'i 30, burada 35
     ]);
 
