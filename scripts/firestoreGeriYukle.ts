@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { db } from './lib/firebaseAdminInit.ts';
 import { parcaliBatchUygula, type BatchIslemi } from './lib/firestoreBatch.ts';
 import { serilestirmeyiCoz, type SerilestirilmisDeger } from './lib/firestoreSerilestir.ts';
-import firebaseConfig from '../firebase-applet-config.json' assert { type: 'json' };
+import firebaseConfig from '../firebase-applet-config.json' with { type: 'json' };
 
 type YedekSatiri = { koleksiyon: string; id: string; data: SerilestirilmisDeger };
 
