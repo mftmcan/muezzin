@@ -406,6 +406,25 @@ başlatayım, yoksa (c) doğrulamayı CI'ya mı bırakayım. `curl -s -o
 yüklenir). Yeni bir Firebase alt-paketi eklersen bu ayrımı bozmadan (yani hangi
 chunk'a düşeceğini bilerek) ekle.
 
+## TypeScript 7 — bilinçli ertelemeyi otomatik izleyen kapı
+
+TS 7 (tsgo native) yükseltmesi **upstream engellidir** ve bu engel
+**`.github/workflows/ts7-izleme.yml`** tarafından haftalık izlenir — destek
+gelince otomatik bir yükseltme issue'su açılır; engeli elle takip etmeye
+gerek yok. Engel ve ampirik durum (2026-10-09, TS 7.0.2 probe'undan):
+
+- `typescript-eslint` peer aralığı `typescript <6.1.0`; `npm run lint`
+  MODÜL YÜKLEME ANINDA çöker: `typescript-eslint does not support TS 7.0`
+  (uyarı değil, sert kapanma). Kök neden: TS 7.0 bir JS API göndermiyor
+  (API TS 7.1'de gelecek) — bkz. typescript-eslint#10940, PR #12803.
+- Kod tabanı kendisi TS 7'ye HAZIR: `typecheck` + `typecheck:scripts`
+  TS 7.0.2 altında yeşil (tek gereken göç — `import ... assert { type:
+  'json' }` → `with` — yapıldı, TS 5.8 ile geriye uyumlu). `test:unit` ve
+  `build` TS sürümünden bağımsız (esbuild/oxc).
+- **`typescript` paketini TS 7'ye yükseltmeyi deneme** — lint kapısı kırılır;
+  izleme issue'su gelene dek bekle. TS 7 yükseltmesi `vite 8` sonrası
+  kalan tek major'dur (bkz. DEVOPS-001, commit 6671fb9/8ab1e1d).
+
 ## Model Seçimi (Claude Pro — verimli kullanım)
 
 Varsayılan Sonnet. Basit arama/keşif işlerinde Haiku yeterli — ama `model: "haiku"`'yu

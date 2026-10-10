@@ -1,0 +1,93 @@
+﻿name: TypeScript 7 Desteği İzleme
+
+# DEVOPS-001'in bilinçli ertelediği TS 7 yükseltmesinin UPSTREAM engelini
+# izler: typescript-eslint, TS 7 (tsgo native) 7.1 API'si gelene kadar
+# destek vermiyor (bkz. typescript-eslint#10940, PR #12803). Bu workflow
+# haftada bir GERÇEK kapıyı sınar: latest typescript-eslint + TS 7'yi
+# kuru bir tmp dizinine kurup require eder — destek geldiğinde require
+# sessizce geçer, gelmediğinde "typescript-eslint does not support TS
+# 7.0" çöküşünü üretir. Peer-range metnini ayrıştırmaya güvenmez; 2026-10-09'da
+# yerelde birebir bu şekilde doğrulandı.
+#
+# Destek geldiğinde YÜKSELTME İŞİNİ AÇAN tekil bir issue üretir — ertelenmiş
+# engel artık elle takip edilmez, görünür olur.
+#
+# En-az-ayrıcalık: checkout gerekmediğinden contents YOK; issues: write
+# yalnızca desteğin GELDİĞİ koşulda açılacak tekil izleme issue'su için.
+# main'e yazma/commit/push YOK — kök otomasyon ayarlarındaki soft-deny
+# listesine (deploy/yazan tetikleyiciler) girmez.
+permissions:
+  issues: write
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Haftada bir, Pazartesi 06:00 UTC (Türkiye 09:00) — destek gelene
+    # kadar geçerli bir engel; günlük sorgu gereksiz gürültü.
+    - cron: '0 6 * * 1'
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  ts7-destegi-kontrol:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Gerçek kapıyı sına (require typescript-eslint @ TS 7)
+        id: kapi
+        run: |
+          mkdir -p "$RUNNER_TEMP/ts7kapi" && cd "$RUNNER_TEMP/ts7kapi"
+          npm init -y >/dev/null 2>&1
+          # --legacy-peer-deps ŞART (yerelde 2026-10-09'da doğrulandı): destek
+          # gelene dek peer aralığı ERESOLVE ile kurulumu reddediyor; bizim
+          # karar vermek istediğimiz şey kurulum DEĞİL, require anındaki
+          # sürüm kapısı. Destek geldiğinde ERESOLVE de kaybolur ama kararı
+          # yine require verir — iki sinyal aynı anda döner.
+          npm install --legacy-peer-deps --no-audit --no-fund typescript-eslint@latest typescript@7 >/dev/null 2>&1
+          if node -e "require('typescript-eslint'); console.log('OK')" 2>/tmp/ts7err; then
+            echo "destek=var" >> "$GITHUB_OUTPUT"
+          else
+            # Destek yok — bunun BİR upstream çöküşü olduğundan emin ol;
+            # ağ hatası gibi alakasız başarısızlıkların kararı saptırmasın
+            # diye kurulumun kendisinin başarılı olduğunu doğrula.
+            if node -e "require('typescript')"; then
+              echo "typescript-eslint hâlâ TS 7'yi desteklemiyor (beklenen):" && head -3 /tmp/ts7err
+              echo "destek=yok" >> "$GITHUB_OUTPUT"
+            else
+              echo "Kurulum kendisi başarısız — ağ/altyapı sorunu, karar verilemez." >&2
+              exit 1
+            fi
+          fi
+
+      - name: Yükseltme işi için issue aç
+        if: steps.kapi.outputs.destek == 'var'
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const body = [
+              '## TypeScript 7 yükseltme engeli KALKTI',
+              '',
+              '`typescript-eslint@latest` TS 7 altında `require` ile yükleniyor — modül yükleme çöküşü yok.',
+              '',
+              'Ampirik olarak doğrulanan önceki durum (2026-10-09):',
+              '- `typecheck` + `typecheck:scripts`: TS 7.0.2 altında YEŞİLDİ (import attribute göçü `assert` → `with` o gün yapıldı).',
+              '- `lint`: `typescript-eslint does not support TS 7.0` — MODÜL YÜKLEME ANINDA çökerdi (uyarı değil).',
+              '- `test:unit` (408/408) + `build`: TS sürümünden bağımsız (esbuild/oxc), yeşildi.',
+              '',
+              '### Yükseltme adımları',
+              '1. `npm install -D typescript@^7`',
+              '2. `npm run test:all` (typecheck ×2, lint, unit, rules, integration dahil)',
+              '3. `npm run test:e2e:fonksiyonel` — izole emülatörde',
+              '4. Yeşilse commit + push; CI zaten aynı zinciri koşar.',
+              '',
+              'Bu issue `ts7-izleme.yml` tarafından otomatik açıldı.'
+            ].join('\n');
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: 'TypeScript 7 yükseltme: typescript-eslint desteği geldi',
+              body,
+              labels: ['dependencies', 'enhancement'],
+            });
