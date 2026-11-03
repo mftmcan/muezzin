@@ -2,20 +2,25 @@ import { initializeApp } from 'firebase/app';
 import { initializeAppCheck, ReCaptchaEnterpriseProvider } from 'firebase/app-check';
 import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, connectFirestoreEmulator } from 'firebase/firestore';
 import { getAuth, connectAuthEmulator, signInWithCustomToken } from 'firebase/auth';
-import firebaseConfig from '../../firebase-applet-config.json';
+import committedFirebaseConfig from '../../firebase-applet-config.json';
+import { firebaseConfigCoz } from './firebaseConfig';
+
+const firebaseConfig = firebaseConfigCoz(import.meta.env.VITE_FIREBASE_CONFIG_JSON, committedFirebaseConfig);
 
 export const app = initializeApp(firebaseConfig);
 
 // App Check: istemcinin GERÇEK uygulama olduğunu doğrulayan katman (bkz.
-// premium denetim P2.7). VITE_RECAPTCHA_SITE_KEY tanımsızsa (yerel
-// geliştirme, PR preview vb.) bu blok atlanır — App Check pasif kalır.
-// Emülatör modunda BİLEREK başlatılmaz. try/catch ile sarılı: site key'in
+// premium denetim P2.7). Yalnızca production build'de başlatılır; `vite`
+// geliştirme sunucusunda production site key'i localhost için geçersizdir
+// ve Auth/RTDB'nin her isteğinde yanıltıcı `recaptcha-error` uyarısı üretir.
+// VITE_RECAPTCHA_SITE_KEY tanımsızsa veya emülatör modundaysa bu blok
+// atlanır — App Check pasif kalır. try/catch ile sarılı: site key'in
 // yanlış domain için kayıtlı olması gibi bir sorun App Check'i pasif
 // bırakır, üstteki initializeApp/getAuth'u (ve dolayısıyla girişi) BİR
 // DAHA kırmaz — bkz. 2026-09-04 geri alma notu, ilk deploy'da bu blok
 // try/catch'siz olduğu için tüm uygulamayı çökertmişti.
 const recaptchaSiteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
-if (recaptchaSiteKey && import.meta.env.VITE_USE_EMULATOR !== '1') {
+if (import.meta.env.PROD && recaptchaSiteKey && import.meta.env.VITE_USE_EMULATOR !== '1') {
   try {
     initializeAppCheck(app, {
       provider: new ReCaptchaEnterpriseProvider(recaptchaSiteKey),

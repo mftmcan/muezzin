@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { collection, doc, onSnapshot, query, orderBy, updateDoc } from 'firebase/firestore';
+import { collection, doc, onSnapshot, query, orderBy, writeBatch } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { AdminUyarisi } from '../types';
 import { handleFirestoreError, OperationType } from '../lib/firestore-errors';
@@ -71,9 +71,13 @@ export const useKrizAlarmlariStore = create<KrizAlarmlariState>((set, get) => ({
         // `initialized:true` YAZILMAZ (bkz. useAdminIzinlerStore.ts'teki AYNI
         // düzeltme, premium hata analizi HS-O1) — dinleyici hata sonrası
         // kalıcı öldüğünden, bunu yazmak store'u oturum boyunca kilitliyordu.
-        set({ loading: false, initializing: false, error: friendly.message });
+        // Hata ilk başarılı snapshot'tan sonra da gelebilir. initialized
+        // true kalırsa retry guard'a takılır ve alarm sayacı sessizce bayat
+        // kalır. Fail-closed olarak çözülmemiş sayıyı koruyoruz, fakat canlı
+        // veri durumunu yeniden kurulabilir hale getiriyoruz.
+        set({ loading: false, initializing: false, initialized: false, error: friendly.message });
         setTimeout(() => {
-          if (!get().initialized) get().init();
+          if (!get().initialized && !get().initializing) get().init();
         }, 15000);
       }
     );
@@ -84,8 +88,11 @@ export const useKrizAlarmlariStore = create<KrizAlarmlariState>((set, get) => ({
   alarmCoz: async (id, auditBaslik, auditDetay) => {
     const path = `adminUyarilari/${id}`;
     try {
-      await updateDoc(doc(db, 'adminUyarilari', id), { cozuldu: true, cozulmeTarihi: new Date() });
-      await telemetryService.logAudit(auditBaslik, id, auditDetay);
+      const batch = writeBatch(db);
+      const audit = telemetryService.auditKaydiHazirla(auditBaslik, id, auditDetay);
+      batch.update(doc(db, 'adminUyarilari', id), { cozuldu: true, cozulmeTarihi: new Date() });
+      batch.set(audit.ref, audit.data);
+      await batch.commit();
     } catch (err) {
       throw handleFirestoreError(err, OperationType.UPDATE, path);
     }

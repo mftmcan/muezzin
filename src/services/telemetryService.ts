@@ -10,6 +10,7 @@ import {
   onSnapshot,
   orderBy,
   query,
+  serverTimestamp,
   type FirestoreError,
 } from 'firebase/firestore';
 import { useAuthStore } from '../store/useAuthStore';
@@ -24,10 +25,15 @@ export interface TelemetryEvent {
 export interface Breadcrumb {
   action: string;
   category: 'navigation' | 'user_action' | 'network' | 'system';
+  /** Yeni kayıtlarda serbest harita yerine boyutu sınırlı JSON özeti. */
+  dataSummary?: string;
+  /** Eski Firestore kayıtlarını yönetim ekranında gösterebilmek için. */
   data?: Record<string, unknown>;
   timestamp: number; // performance.now()
   wallTime: string; // ISO tarih
 }
+
+type BreadcrumbInput = Pick<Breadcrumb, 'action' | 'category'> & { data?: Record<string, unknown> };
 
 /** Hata anındaki uygulama durum fotoğrafı */
 export interface StateSnapshot {
@@ -97,12 +103,25 @@ type BackedUpTelemetryEvent = Omit<QueuedTelemetryEvent, 'timestamp'> & {
 };
 
 // ─── Breadcrumb Halka Tamponu ─────────────────────────────────────────────────
-const MAX_BREADCRUMBS = 25;
+// Firestore Rules her öğeyi derin doğrularken 10 öğe dahi 1000 ifade tavanını
+// aşıyordu. Son 5 eylem tanı için temel bağlamı korurken hem kural
+// bütçesine hem Spark belge/depolama kotasına güvenli pay bırakır.
+const MAX_BREADCRUMBS = 5;
 const breadcrumbBuffer: Breadcrumb[] = [];
 
-function pushBreadcrumb(crumb: Omit<Breadcrumb, 'timestamp' | 'wallTime'>) {
+function pushBreadcrumb(crumb: BreadcrumbInput) {
+  let dataSummary: string | undefined;
+  if (crumb.data && Object.keys(crumb.data).length > 0) {
+    try {
+      dataSummary = JSON.stringify(crumb.data).slice(0, 500);
+    } catch {
+      dataSummary = '[Serileştirilemeyen ek veri]';
+    }
+  }
   breadcrumbBuffer.push({
-    ...crumb,
+    action: crumb.action.slice(0, 500),
+    category: crumb.category,
+    ...(dataSummary ? { dataSummary } : {}),
     timestamp: Math.round(performance.now()),
     wallTime: new Date().toISOString(),
   });
@@ -200,8 +219,8 @@ async function captureStateSnapshot(): Promise<StateSnapshot> {
     isOnline: navigator.onLine,
     swVersion: swInfo.version,
     swState: swInfo.state,
-    appVersion: __APP_VERSION__,
-    buildTimestamp: __BUILD_TIMESTAMP__,
+    appVersion: typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'bilinmeyen',
+    buildTimestamp: typeof __BUILD_TIMESTAMP__ !== 'undefined' ? __BUILD_TIMESTAMP__ : new Date().toISOString(),
     networkType: net.type,
     networkRtt: net.rtt,
     memoryUsedMb: getMemoryMb(),
@@ -210,7 +229,9 @@ async function captureStateSnapshot(): Promise<StateSnapshot> {
 
 // ─── TelemetryService Sınıfı ─────────────────────────────────────────────────
 class TelemetryService {
-  private isEnabled: boolean = true;
+  // Ürün analitiği açık rıza gerektirir. Kayıt bulunmaması "kabul" sayılmaz;
+  // yeni kullanıcı ve yeni cihazlarda varsayılan kapalıdır.
+  private isEnabled: boolean = false;
   private eventQueue: QueuedTelemetryEvent[] = [];
   private flushTimeout: ReturnType<typeof setTimeout> | null = null;
   private readonly BATCH_SIZE = 5;
@@ -231,7 +252,7 @@ class TelemetryService {
 
   constructor() {
     const savedConsent = localStorage.getItem('muezzin-telemetry-consent');
-    this.isEnabled = savedConsent !== 'false';
+    this.isEnabled = savedConsent === 'true';
 
     if (typeof window !== 'undefined') {
       // Bir önceki oturumdan kalan yedeği kurtar ve gönder
@@ -359,7 +380,7 @@ class TelemetryService {
   /**
    * Bir breadcrumb kırıntısı ekle (dışarıdan çağrılabilir)
    */
-  addBreadcrumb(action: string, category: Breadcrumb['category'], data?: Breadcrumb['data']) {
+  addBreadcrumb(action: string, category: Breadcrumb['category'], data?: Record<string, unknown>) {
     pushBreadcrumb({ action, category, data });
   }
 
@@ -573,24 +594,41 @@ class TelemetryService {
   }
 
   /** Yönetici işlem denetim izi */
-  async logAudit(actionType: string, targetName: string, details: string) {
-    try {
-      const currentUser = auth.currentUser;
-      if (!currentUser) return;
+  auditKaydiHazirla(actionType: string, targetName: string, details: string) {
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+      throw new Error('Denetim kaydı için doğrulanmış kullanıcı bulunamadı.');
+    }
 
-      pushBreadcrumb({
-        action: `Admin: ${actionType} — ${targetName}`,
-        category: 'user_action',
-        data: { details },
-      });
-      await addDoc(collection(db, 'audit_logs'), {
+    pushBreadcrumb({
+      action: `Admin: ${actionType} — ${targetName}`,
+      category: 'user_action',
+      data: { details },
+    });
+
+    return {
+      ref: doc(collection(db, 'audit_logs')),
+      data: {
         actionType,
         targetName,
         details,
         userId: currentUser.uid,
         userDisplayName: currentUser.displayName || currentUser.email || 'Bilinmeyen Admin',
-        timestamp: Timestamp.now(),
-      });
+        // Sunucu zamanı: istemci saatinin geri/ileri alınması denetim
+        // sırasını değiştiremez. firestore.rules bunu request.time ile
+        // eşitlik üzerinden zorlar.
+        timestamp: serverTimestamp(),
+      },
+    };
+  }
+
+  /** Yönetici işlem denetim izi — bağımsız olaylar için fail-soft yazım. */
+  async logAudit(actionType: string, targetName: string, details: string) {
+    try {
+      const audit = this.auditKaydiHazirla(actionType, targetName, details);
+      const batch = writeBatch(db);
+      batch.set(audit.ref, audit.data);
+      await batch.commit();
     } catch (err) {
       console.warn('Audit log write error:', err);
     }

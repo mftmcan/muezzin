@@ -30,6 +30,7 @@ export default function PersonelHub() {
           ariaLabel="Personel yönetimi sekmeleri"
           idPrefix="personel"
           variant="pill"
+          mobileEqualWidth
         />
       </div>
 

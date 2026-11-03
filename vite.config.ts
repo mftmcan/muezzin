@@ -29,7 +29,7 @@ function versionJson(): Plugin {
   };
 }
 
-export default defineConfig(({ mode }) => ({
+export default defineConfig(() => ({
   server: {
     port: 3000,
     strictPort: true, // Port kaymasını engelle (Firebase Auth için kritik)
@@ -37,16 +37,12 @@ export default defineConfig(({ mode }) => ({
       'Cross-Origin-Opener-Policy': 'unsafe-none',
     },
   },
-  esbuild: {
-    // `console.error`/`console.warn` KASITLI OLARAK drop dışında bırakılıyor:
-    // production'da TÜM console çağrılarının silinmesi, login/telemetri gibi
-    // kritik akışlarda gerçek hata kodunun DevTools'ta hiç görünmemesine yol
-    // açıyordu (bkz. AuthGuard.tsx login()/getRedirectResult — hata mesajının
-    // sonuna [kod] eklemek bunun geçici çözümüydü). `pure` ile yalnızca
-    // gürültü sayılan log/debug/info/trace çağrıları minify sırasında düşer.
-    drop: mode === 'production' ? ['debugger'] : [],
-    pure: mode === 'production' ? ['console.log', 'console.debug', 'console.info', 'console.trace'] : [],
-  },
+  // Vite 8 istemci dönüşümünü Oxc ile yapar. Eski `esbuild.drop/pure`
+  // seçenekleri artık uygulanmıyor ve her production build'inde açıkça
+  // "ignored" uyarısı üretiyordu. Uygulama kaynaklarında console.log/debug/
+  // info/trace bulunmaması tasarım-sistemi kaynak testinde korunur;
+  // console.warn/error ise giriş ve telemetri arızalarının cihaz üstünde
+  // teşhis edilebilmesi için bilinçli olarak bırakılır.
   define: {
     // package.json sürümü ve GERÇEK build zamanı, telemetride hata anının
     // değil derleme anının bilgisini taşısın diye derleme zamanında gömülür
@@ -68,15 +64,21 @@ export default defineConfig(({ mode }) => ({
       registerType: 'prompt',
       injectRegister: 'auto',
       devOptions: {
-        enabled: true,
+        // E2E/görsel koşumunda dev SW önceki normal-dev uygulama kabuğunu
+        // önbellekten servis ederse VITE_USE_EMULATOR=1 ile dönüştürülen
+        // firebase modülü hiç yüklenmez; window.__testSignIn oluşmadığı için
+        // tüm authenticated testler login ekranında kilitlenir. Emülatör
+        // modu SW davranışını test etmez, bu yüzden yalnız o modda kapalıdır.
+        // Normal `npm run dev` ve production PWA davranışı değişmez.
+        enabled: process.env.VITE_USE_EMULATOR !== '1',
         type: 'module',
-        suppressWarnings: true
+        suppressWarnings: true,
       },
       includeAssets: ['favicon.svg', 'pwa-192x192.svg', 'pwa-512x512.svg', 'pwa-192x192.png', 'pwa-512x512.png'],
       manifest: {
-        name: "Müezzin - Hizmet Dizgesi",
-        short_name: "Müezzin Dizgesi",
-        description: "Cami ve Din Görevlileri Hizmet Planlama Sistemi",
+        name: 'Müezzin - Hizmet Dizgesi',
+        short_name: 'Müezzin Dizgesi',
+        description: 'Cami ve Din Görevlileri Hizmet Planlama Sistemi',
         // index.html'deki FOUC injector'ın varsayılan teması 'dark' (kayıtlı
         // tercih yoksa ve sistem açık moda ayarlı değilse) — manifest statik
         // olduğundan (yüklenme/splash anında, JS henüz çalışmadan okunur;
@@ -86,33 +88,33 @@ export default defineConfig(({ mode }) => ({
         // yükleme splash'i ve Android görev değiştirici bu üçüncü, hiçbir
         // temaya ait olmayan renkte görünüyordu (bkz. görsel tasarım
         // denetimi V11).
-        theme_color: "#08080A",
-        background_color: "#08080A",
-        display: "standalone",
-        id: "/",
-        orientation: "portrait",
-        scope: "/",
-        start_url: "/",
-        lang: "tr",
-        categories: ["productivity", "utilities"],
+        theme_color: '#08080A',
+        background_color: '#08080A',
+        display: 'standalone',
+        id: '/',
+        orientation: 'portrait',
+        scope: '/',
+        start_url: '/',
+        lang: 'tr',
+        categories: ['productivity', 'utilities'],
         icons: [
           {
             src: '/pwa-192x192.svg?v=3',
             sizes: '192x192',
             type: 'image/svg+xml',
-            purpose: 'any'
+            purpose: 'any',
           },
           {
             src: '/pwa-512x512.svg?v=3',
             sizes: '512x512',
             type: 'image/svg+xml',
-            purpose: 'any'
+            purpose: 'any',
           },
           {
             src: '/pwa-512x512.svg?v=3',
             sizes: '512x512',
             type: 'image/svg+xml',
-            purpose: 'maskable'
+            purpose: 'maskable',
           },
           // PNG varyantları: bazı Android launcher'ları/OS entegrasyonları
           // SVG manifest ikonlarını desteklemez.
@@ -120,21 +122,21 @@ export default defineConfig(({ mode }) => ({
             src: '/pwa-192x192.png?v=3',
             sizes: '192x192',
             type: 'image/png',
-            purpose: 'any'
+            purpose: 'any',
           },
           {
             src: '/pwa-512x512.png?v=3',
             sizes: '512x512',
             type: 'image/png',
-            purpose: 'any'
+            purpose: 'any',
           },
           {
             src: '/pwa-512x512.png?v=3',
             sizes: '512x512',
             type: 'image/png',
-            purpose: 'maskable'
-          }
-        ]
+            purpose: 'maskable',
+          },
+        ],
       },
       workbox: {
         globDirectory: 'dist',
@@ -198,9 +200,9 @@ export default defineConfig(({ mode }) => ({
         // runtime unicode-range davranışına dokunmuyor, bu yüzden işlevsel bir risk
         // taşımıyor.
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
-        importScripts: ['/firebase-messaging-sw.js']
-      }
-    })
+        importScripts: ['/firebase-messaging-sw.js'],
+      },
+    }),
   ],
   build: {
     outDir: 'dist',
@@ -255,12 +257,7 @@ export default defineConfig(({ mode }) => ({
           if (!id.includes('node_modules')) return;
 
           // 1. Core Framework (strictly isolated — must not share with others)
-          if (
-            id.includes('/react/') ||
-            id.includes('/react-dom/') ||
-            id.includes('/scheduler/') ||
-            id.includes('/object-assign/')
-          ) {
+          if (id.includes('/react/') || id.includes('/react-dom/') || id.includes('/scheduler/') || id.includes('/object-assign/')) {
             return 'vendor-react';
           }
 
@@ -274,8 +271,10 @@ export default defineConfig(({ mode }) => ({
           // boot (login gate), kept separate from Firestore so the login
           // screen doesn't wait on the larger Firestore bundle to parse.
           if (
-            id.includes('firebase/auth') || id.includes('@firebase/auth') ||
-            id.includes('firebase/app-check') || id.includes('@firebase/app-check')
+            id.includes('firebase/auth') ||
+            id.includes('@firebase/auth') ||
+            id.includes('firebase/app-check') ||
+            id.includes('@firebase/app-check')
           ) {
             return 'vendor-firebase-auth';
           }
@@ -324,8 +323,8 @@ export default defineConfig(({ mode }) => ({
 
           // 11. Everything else
           return 'vendor-utils';
-        }
-      }
-    }
-  }
+        },
+      },
+    },
+  },
 }));

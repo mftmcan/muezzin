@@ -12,6 +12,7 @@ import { useNotificationStore, NOTIFICATION_HISTORY_LIMIT } from '../store/useNo
 import { NotificationHistoryPanel } from './NotificationHistoryPanel';
 import { NotificationPrimingModal } from './NotificationPrimingModal';
 import { Switch } from './ui/Switch';
+import { telemetryService } from '../services/telemetryService';
 
 interface NotificationSettingsProps {
   userData: Muezzin | null;
@@ -23,6 +24,7 @@ export default function NotificationSettings({ userData, user }: NotificationSet
   const [uiMessage, setUiMessage] = useState<string | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [primingModalOpen, setPrimingModalOpen] = useState(false);
+  const [telemetryEnabled, setTelemetryEnabled] = useState(() => telemetryService.getConsentState());
   const { theme, toggleTheme } = useThemeStore();
   const { ttsEnabled, setTtsEnabled } = useNotificationStore();
 
@@ -275,6 +277,17 @@ export default function NotificationSettings({ userData, user }: NotificationSet
           onChange={() => setTtsEnabled(!ttsEnabled)}
           label="Sesli Bildirim Okuma"
           description="Açıldığında, gelen bildirimler ekran okuyucu sesiyle yüksek sesle okunur. Varsayılan olarak kapalıdır."
+        />
+
+        <Switch
+          checked={telemetryEnabled}
+          onChange={() => {
+            const next = !telemetryEnabled;
+            telemetryService.setConsent(next);
+            setTelemetryEnabled(next);
+          }}
+          label="İsteğe Bağlı Kullanım Analitiği"
+          description="Sayfa kullanımı, cihaz türü ve hata tanı bilgilerini hizmeti iyileştirmek için paylaşır. Varsayılan olarak kapalıdır; dilediğiniz zaman değiştirebilirsiniz."
         />
 
         {/* Bildirim Geçmişi */}

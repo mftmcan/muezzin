@@ -8,10 +8,13 @@ import {
   doc,
   getDoc,
   getDocs,
+  query,
   runTransaction,
+  serverTimestamp,
   setDoc,
   Timestamp,
   updateDoc,
+  where,
   writeBatch,
 } from 'firebase/firestore';
 import { TestCase, testUser } from './ortak.ts';
@@ -259,10 +262,12 @@ export const tests: TestCase[] = [
     },
   },
   {
-    name: 'izin_detaylari yalnizca admin tarafindan listelenebilir',
+    name: 'izin_detaylari sahibi yalniz kendi uid filtresiyle, admin ise tumunu listeleyebilir',
     run: async (env) => {
       const db = testUser(env, 'muezzin1').firestore();
       await assertFails(getDocs(collection(db, 'izin_detaylari')));
+      await assertFails(getDocs(query(collection(db, 'izin_detaylari'), where('uid', '==', 'muezzin2'))));
+      await assertSucceeds(getDocs(query(collection(db, 'izin_detaylari'), where('uid', '==', 'muezzin1'))));
 
       const adminDb = testUser(env, 'admin').firestore();
       await assertSucceeds(getDocs(collection(adminDb, 'izin_detaylari')));
@@ -395,6 +400,35 @@ export const tests: TestCase[] = [
       const ref = doc(db, 'izinler/kararBekleyen');
 
       await assertSucceeds(updateDoc(ref, { durum: 'onaylandi', bildirimGonderildi: false }));
+    },
+  },
+  {
+    name: 'admin izin kararini denetim kaydiyla atomik tamamlayabilir',
+    run: async (env) => {
+      await env.withSecurityRulesDisabled(async (context) => {
+        const db = context.firestore();
+        await setDoc(doc(db, 'izinler/atomikKararBekleyen'), {
+          uid: 'muezzin1',
+          baslangic: '2026-05-18',
+          bitis: '2026-05-19',
+          tip: 'mazeret',
+          durum: 'onay_bekliyor',
+          olusturmaTarihi: Timestamp.now(),
+        });
+      });
+
+      const db = testUser(env, 'admin').firestore();
+      const batch = writeBatch(db);
+      batch.update(doc(db, 'izinler/atomikKararBekleyen'), { durum: 'reddedildi', bildirimGonderildi: false });
+      batch.set(doc(db, 'audit_logs/atomikIzinKarari'), {
+        actionType: 'İzin Talebi Kararı',
+        targetName: 'atomikKararBekleyen',
+        details: 'Talep durumu reddedildi olarak güncellendi.',
+        userId: 'admin',
+        userDisplayName: 'Admin',
+        timestamp: serverTimestamp(),
+      });
+      await assertSucceeds(batch.commit());
     },
   },
   {

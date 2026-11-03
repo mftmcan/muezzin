@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/no-noninteractive-tabindex -- Geniş performans tablosunun kaydırılabilir bölgesi klavye odağı almalıdır. */
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence, type Variants } from 'motion/react';
 import { Activity, Download, Gauge } from 'lucide-react';
@@ -557,43 +558,86 @@ export default function SistemAnalitigi() {
               size="md"
             />
           ) : (
-            // Dar ekranlarda yatay kaydırılabilir hale geliyor — klavye
-            // kullanıcısının fare olmadan kaydırabilmesi için tabIndex+role
-            // gerekiyor (bkz. AnaEkranHero'daki sticky-hero ile aynı gerekçe,
-            // axe-core scrollable-region-focusable).
-            // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
-            <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="Kişi bazlı performans özeti tablosu">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-[var(--glass-border)]">
-                    <th className="pb-3 authority-title !text-2xs opacity-40 font-bold">Personel</th>
-                    <th className="pb-3 authority-title !text-2xs opacity-40 font-bold text-right">Tamamlanan</th>
-                    <th className="pb-3 authority-title !text-2xs opacity-40 font-bold text-right">Reddedilen</th>
-                    <th className="pb-3 authority-title !text-2xs opacity-40 font-bold text-right">Toplam</th>
-                    <th className="pb-3 authority-title !text-2xs opacity-40 font-bold text-right">Oran</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {personnelStats.map((p) => (
-                    <tr key={p.uid} className="border-b border-[var(--glass-border)] last:border-0">
-                      <td className="py-3 text-xs text-[var(--text-primary)] font-medium">{p.displayName}</td>
-                      <td className="py-3 text-xs text-[var(--text-secondary)] text-right">{p.completed}</td>
-                      <td className="py-3 text-xs text-right">
-                        <span className={p.rejected > 0 ? 'text-rose-500' : 'text-[var(--text-secondary)]'}>{p.rejected}</span>
-                      </td>
-                      <td className="py-3 text-xs text-[var(--text-secondary)] text-right">{p.total}</td>
-                      <td
-                        className={`py-3 text-xs font-bold text-right ${
-                          p.rate >= 80 ? 'text-emerald-500' : p.rate >= 60 ? 'text-amber-500' : 'text-rose-500'
-                        }`}
-                      >
-                        %{p.rate}
-                      </td>
+            <>
+              {/* Telefonda beş sütunu sıkıştırmak veya kullanıcıyı gizli bir
+                  yatay kaydırmaya zorlamak yerine her personeli gerçek bir
+                  özet kartı olarak göster. Masaüstünde karşılaştırma için
+                  tablo görünümü korunur. */}
+              <div className="sm:hidden space-y-3" aria-label="Kişi bazlı performans özeti">
+                {personnelStats.map((p) => (
+                  <section key={p.uid} className="rounded-panel border border-[var(--glass-border)] bg-[var(--surface-low)] p-4">
+                    <h3 className="text-sm font-semibold text-[var(--text-primary)]">{p.displayName}</h3>
+                    <dl className="mt-4 grid grid-cols-2 gap-x-5 gap-y-3">
+                      <div>
+                        <dt className="label-tertiary authority-title !text-2xs">Tamamlanan</dt>
+                        <dd className="mt-1 text-sm tabular-nums text-[var(--text-primary)]">{p.completed}</dd>
+                      </div>
+                      <div>
+                        <dt className="label-tertiary authority-title !text-2xs">Reddedilen</dt>
+                        <dd className={`mt-1 text-sm tabular-nums ${p.rejected > 0 ? 'text-rose-500' : 'text-[var(--text-primary)]'}`}>
+                          {p.rejected}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="label-tertiary authority-title !text-2xs">Toplam</dt>
+                        <dd className="mt-1 text-sm tabular-nums text-[var(--text-primary)]">{p.total}</dd>
+                      </div>
+                      <div>
+                        <dt className="label-tertiary authority-title !text-2xs">Başarı oranı</dt>
+                        <dd
+                          className={`mt-1 text-sm font-bold tabular-nums ${
+                            p.rate >= 80 ? 'text-emerald-500' : p.rate >= 60 ? 'text-amber-500' : 'text-rose-500'
+                          }`}
+                        >
+                          %{p.rate}
+                        </dd>
+                      </div>
+                    </dl>
+                  </section>
+                ))}
+              </div>
+
+              {/* `sm` genişliğinde tablo en dar kapsayıcıdan büyük olabilir;
+                  focusable region klavye kullanıcılarının yatay kaydırmasına
+                  izin verir. */}
+              <div
+                tabIndex={0}
+                className="hidden sm:block overflow-x-auto overscroll-x-contain"
+                role="region"
+                aria-label="Kişi bazlı performans özeti tablosu"
+              >
+                <table className="w-full min-w-[640px] text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-[var(--glass-border)]">
+                      <th className="min-w-[180px] pb-3 pr-4 authority-title !text-2xs opacity-40 font-bold">Personel</th>
+                      <th className="min-w-[110px] px-3 pb-3 authority-title !text-2xs opacity-40 font-bold text-right">Tamamlanan</th>
+                      <th className="min-w-[100px] px-3 pb-3 authority-title !text-2xs opacity-40 font-bold text-right">Reddedilen</th>
+                      <th className="min-w-[80px] px-3 pb-3 authority-title !text-2xs opacity-40 font-bold text-right">Toplam</th>
+                      <th className="min-w-[70px] pl-3 pb-3 authority-title !text-2xs opacity-40 font-bold text-right">Oran</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {personnelStats.map((p) => (
+                      <tr key={p.uid} className="border-b border-[var(--glass-border)] last:border-0">
+                        <td className="py-3 pr-4 text-xs text-[var(--text-primary)] font-medium">{p.displayName}</td>
+                        <td className="px-3 py-3 text-xs text-[var(--text-secondary)] text-right">{p.completed}</td>
+                        <td className="px-3 py-3 text-xs text-right">
+                          <span className={p.rejected > 0 ? 'text-rose-500' : 'text-[var(--text-secondary)]'}>{p.rejected}</span>
+                        </td>
+                        <td className="px-3 py-3 text-xs text-[var(--text-secondary)] text-right">{p.total}</td>
+                        <td
+                          className={`py-3 pl-3 text-xs font-bold text-right ${
+                            p.rate >= 80 ? 'text-emerald-500' : p.rate >= 60 ? 'text-amber-500' : 'text-rose-500'
+                          }`}
+                        >
+                          %{p.rate}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </motion.div>
       </div>

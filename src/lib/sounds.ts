@@ -4,7 +4,7 @@
  * 100% offline-friendly, 0KB asset footprint, and Spark/Free Tier compatible.
  */
 
-import { hapticLight, hapticSuccess, hapticWarning } from './haptic';
+import { hapticLight, hapticSuccess, hapticWarning, kullaniciEtkilesimiVarMi } from './haptic';
 
 // Lazily initialized global AudioContext
 let audioCtx: AudioContext | null = null;
@@ -18,6 +18,7 @@ export const getAudioContext = (): AudioContext | null => {
     audioCtx = null;
   }
   if (!audioCtx) {
+    if (!kullaniciEtkilesimiVarMi()) return null;
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
     if (AudioContextClass) {
       audioCtx = new AudioContextClass();
@@ -25,6 +26,7 @@ export const getAudioContext = (): AudioContext | null => {
   }
   // Try to resume if it was suspended by browser autoplay policy
   if (audioCtx && audioCtx.state === 'suspended') {
+    if (!kullaniciEtkilesimiVarMi()) return null;
     audioCtx.resume().catch(() => {});
   }
   return audioCtx;

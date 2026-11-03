@@ -1,8 +1,9 @@
 import { create } from 'zustand';
-import { doc, onSnapshot, setDoc } from 'firebase/firestore';
+import { doc, onSnapshot, writeBatch } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { SystemSettings } from '../types';
 import { handleFirestoreError, OperationType } from '../lib/firestore-errors';
+import { telemetryService } from '../services/telemetryService';
 
 interface SystemSettingsState {
   settings: SystemSettings;
@@ -59,7 +60,15 @@ export const useSystemSettingsStore = create<SystemSettingsState>((set, get) => 
   updateSettings: async (newSettings) => {
     try {
       const merged = { ...get().settings, ...newSettings };
-      await setDoc(doc(db, 'settings', 'system'), merged, { merge: true });
+      const batch = writeBatch(db);
+      const audit = telemetryService.auditKaydiHazirla(
+        'Dizge Ayarı Güncelleme',
+        'Vakit Bölgesi',
+        `Diyanet İlçe Kodu: ${merged.ilceId}, İlçe Adı: ${merged.ilceAdi}, Hicri Düzeltme: ${merged.hicriDuzeltme}`
+      );
+      batch.set(doc(db, 'settings', 'system'), merged, { merge: true });
+      batch.set(audit.ref, audit.data);
+      await batch.commit();
       // Global offset YAZIMDAN SONRA güncellenir — önceden yazımdan ÖNCE
       // mutasyona uğruyordu, yani setDoc reddedilirse (permission-denied)
       // global hâlâ hiç kaydedilmemiş değerde kalıyordu; sunucudaki gerçek

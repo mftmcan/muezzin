@@ -153,4 +153,24 @@ describe('useAdminIzinlerStore — izin_detaylari dinleyicisi', () => {
     vi.advanceTimersByTime(60000);
     expect(detayCagrilari()).toHaveLength(1);
   });
+
+  it('ana dinleyici basarili snapshot sonrasinda koparsa tek abonelik ciftiyle yeniden kurulur', () => {
+    temizle = useAdminIzinlerStore.getState().init();
+    const ana = cagrilar().find((c) => c.hedef === 'izinler')!;
+    const detay = detayCagrilari()[0];
+
+    ana.veri(snapshotIle({ i1: { uid: 'u1', durum: 'onay_bekliyor' } }));
+    expect(useAdminIzinlerStore.getState().initialized).toBe(true);
+
+    // Detay retry'si beklerken ana dinleyici de koparsa eski detay timer'ı
+    // iptal edilmeli; aksi halde ana retry ile birlikte iki detay aboneliği
+    // daha açılır ve Spark okuma maliyeti katlanır.
+    detay.hata(new Error('unavailable'));
+    ana.hata(new Error('unavailable'));
+    expect(useAdminIzinlerStore.getState().initialized).toBe(false);
+
+    vi.advanceTimersByTime(15000);
+    expect(cagrilar().filter((c) => c.hedef === 'izinler')).toHaveLength(2);
+    expect(detayCagrilari()).toHaveLength(2);
+  });
 });

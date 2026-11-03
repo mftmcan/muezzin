@@ -89,8 +89,10 @@ function BreadcrumbTrail({ breadcrumbs }: { breadcrumbs: Breadcrumb[] }) {
                     })
                   : `+${crumb.timestamp}ms`}
               </span>
-              {crumb.data && Object.keys(crumb.data).length > 0 && (
-                <span className="text-2xs font-mono text-muted truncate">{JSON.stringify(crumb.data).slice(0, 60)}</span>
+              {(crumb.dataSummary || (crumb.data && Object.keys(crumb.data).length > 0)) && (
+                <span className="text-2xs font-mono text-muted truncate">
+                  {(crumb.dataSummary || JSON.stringify(crumb.data)).slice(0, 60)}
+                </span>
               )}
             </div>
           </div>

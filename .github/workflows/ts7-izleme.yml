@@ -1,4 +1,4 @@
-﻿name: TypeScript 7 Desteği İzleme
+name: TypeScript 7 Desteği İzleme
 
 # DEVOPS-001'in bilinçli ertelediği TS 7 yükseltmesinin UPSTREAM engelini
 # izler: typescript-eslint, TS 7 (tsgo native) 7.1 API'si gelene kadar
@@ -63,7 +63,7 @@ jobs:
 
       - name: Yükseltme işi için issue aç
         if: steps.kapi.outputs.destek == 'var'
-        uses: actions/github-script@v8
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         with:
           script: |
             const body = [

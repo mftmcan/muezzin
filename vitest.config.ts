@@ -1,7 +1,12 @@
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vitest/config';
+import pkg from './package.json' with { type: 'json' };
 
 export default defineConfig({
+  define: {
+    __APP_VERSION__: JSON.stringify(pkg.version),
+    __BUILD_TIMESTAMP__: JSON.stringify(new Date().toISOString()),
+  },
   plugins: [react()],
   test: {
     environment: 'jsdom',
@@ -49,10 +54,13 @@ export default defineConfig({
       // amaç bugün daha yükseğe zorlamak değil, kapsamın buradan itibaren
       // sessizce ERİMEMESİNİ garanti etmek.
       thresholds: {
-        lines: 16,
-        statements: 16,
-        functions: 13.5,
-        branches: 11,
+        // 2026-10-31 ölçümü: lines 23.11, statements 22.58,
+        // functions 17.28, branches 15.52. Gerçek tabanın hemen altında
+        // ratchet; yeni kapsamsız kodun oranı sessizce eritmesini engeller.
+        lines: 22.8,
+        statements: 22.2,
+        functions: 17,
+        branches: 15.2,
       },
     },
   },

@@ -18,9 +18,19 @@ interface SegmentedTabsProps {
   /** Used to namespace aria ids (`${idPrefix}-tab-${id}` / `${idPrefix}-panel-${id}`) and motion layoutIds */
   idPrefix: string;
   variant?: 'pill' | 'segmented' | 'underline';
+  /** Pill varyantını mobilde kaydırmak yerine eşit genişlikli sütunlara böler. */
+  mobileEqualWidth?: boolean;
 }
 
-export function SegmentedTabs({ items, activeId, onChange, ariaLabel, idPrefix, variant = 'pill' }: SegmentedTabsProps) {
+export function SegmentedTabs({
+  items,
+  activeId,
+  onChange,
+  ariaLabel,
+  idPrefix,
+  variant = 'pill',
+  mobileEqualWidth = false,
+}: SegmentedTabsProps) {
   const pillLayoutId = `${idPrefix}-pill`;
   const indicatorLayoutId = `${idPrefix}-indicator`;
 
@@ -165,7 +175,15 @@ export function SegmentedTabs({ items, activeId, onChange, ariaLabel, idPrefix, 
 
   // 'pill' variant (default) — sticky sub-page navigation style
   return (
-    <div role="tablist" aria-label={ariaLabel} className="flex items-center gap-3 overflow-x-auto pb-4 no-scrollbar">
+    <div
+      role="tablist"
+      aria-label={ariaLabel}
+      className={
+        mobileEqualWidth
+          ? 'grid grid-cols-2 gap-2 pb-4 sm:flex sm:items-center sm:gap-3'
+          : 'flex items-center gap-3 overflow-x-auto pb-4 no-scrollbar'
+      }
+    >
       {items.map((item) => {
         const isActive = activeId === item.id;
         return (
@@ -181,7 +199,7 @@ export function SegmentedTabs({ items, activeId, onChange, ariaLabel, idPrefix, 
             whileTap={{ scale: 0.97 }}
             onClick={() => onChange(item.id)}
             onKeyDown={(e) => handleTabKeyDown(e, item.id)}
-            className={`px-8 py-3.5 rounded-control transition-all duration-500 whitespace-nowrap text-2xs font-bold uppercase tracking-wide relative group ${
+            className={`${mobileEqualWidth ? 'min-w-0 min-h-12 px-3 whitespace-normal leading-tight text-center sm:px-8 sm:whitespace-nowrap' : 'px-8 whitespace-nowrap'} py-3.5 rounded-control transition-all duration-500 text-2xs font-bold uppercase tracking-wide relative group ${
               isActive
                 ? 'text-[var(--text-primary)]'
                 : 'text-subtle hover:text-[var(--text-primary)]/50 hover:bg-[var(--text-primary)]/[0.02]'

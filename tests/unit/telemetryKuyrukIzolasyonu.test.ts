@@ -10,8 +10,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
  * yabancı olayların elendiğini doğrular.
  */
 
-const { authMock, batchSetMock, commitMock } = vi.hoisted(() => ({
+const { authMock, addDocMock, batchSetMock, commitMock } = vi.hoisted(() => ({
   authMock: { currentUser: null as { uid: string } | null },
+  addDocMock: vi.fn(async (_collection: unknown, _payload: unknown) => ({ id: 'x' })),
   batchSetMock: vi.fn(),
   commitMock: vi.fn(async () => {}),
 }));
@@ -25,7 +26,7 @@ vi.mock('../../src/store/useAuthStore', () => ({
 vi.mock('firebase/firestore', () => ({
   collection: (_db: unknown, name: string) => ({ name }),
   doc: () => ({ id: 'x' }),
-  addDoc: vi.fn(async () => ({ id: 'x' })),
+  addDoc: addDocMock,
   getDocs: vi.fn(async () => ({ docs: [] })),
   writeBatch: () => ({ set: batchSetMock, commit: commitMock }),
   onSnapshot: vi.fn(() => () => {}),
@@ -33,6 +34,7 @@ vi.mock('firebase/firestore', () => ({
   query: vi.fn(),
   limit: vi.fn(),
   Timestamp: { now: () => ({ seconds: 1, nanoseconds: 0 }) },
+  serverTimestamp: () => ({ __serverTimestamp: true }),
 }));
 
 // jsdom'da yok — getDeviceMetadata (PWA modu tespiti) çağırıyor.
@@ -51,12 +53,65 @@ type YazilanOlay = { userId: string; eventName: string };
 const yazilanOlaylar = () => batchSetMock.mock.calls.map((c) => c[1] as YazilanOlay);
 
 beforeEach(() => {
+  addDocMock.mockClear();
   batchSetMock.mockClear();
   commitMock.mockClear();
+  telemetryService.clearBreadcrumbs();
   telemetryService.clearQueue();
+  authMock.currentUser = null;
+  telemetryService.setConsent(true);
 });
 
 describe('telemetryService kuyruk izolasyonu', () => {
+  it('atomik işlem için sunucu zamanlı ve oturum sahibine bağlı audit kaydı hazırlar', () => {
+    authMock.currentUser = { uid: 'adminA', displayName: 'Yönetici A' } as never;
+
+    const audit = telemetryService.auditKaydiHazirla('Duyuru Yayınlama', 'Başlık', 'Açıklama');
+
+    expect(audit.data).toMatchObject({
+      actionType: 'Duyuru Yayınlama',
+      targetName: 'Başlık',
+      details: 'Açıklama',
+      userId: 'adminA',
+      userDisplayName: 'Yönetici A',
+      timestamp: { __serverTimestamp: true },
+    });
+  });
+
+  it('oturum yokken atomik audit hazırlamayı fail-closed reddeder', () => {
+    expect(() => telemetryService.auditKaydiHazirla('Silme', 'Hedef', 'Açıklama')).toThrow('doğrulanmış kullanıcı');
+  });
+
+  it('kullanıcı rızayı kapattığında yeni analitik olay üretmez', () => {
+    authMock.currentUser = { uid: 'kullaniciA' };
+    telemetryService.setConsent(false);
+    telemetryService.logEvent({ eventType: 'page_view', eventName: 'IZINSIZ_SAYFA' });
+
+    expect(telemetryService.getConsentState()).toBe(false);
+    expect(batchSetMock).not.toHaveBeenCalled();
+  });
+
+  it('hata kaydında yalnızca son 5 breadcrumb ve sınırlı veri özeti taşır', async () => {
+    authMock.currentUser = { uid: 'kullaniciA' };
+
+    for (let i = 0; i < 7; i++) {
+      telemetryService.addBreadcrumb(`Eylem ${i}`, 'user_action', {
+        sira: i,
+        uzunDeger: 'x'.repeat(700),
+      });
+    }
+
+    await telemetryService.logError(new Error('Örnek hata'));
+
+    expect(addDocMock).toHaveBeenCalledTimes(1);
+    const payload = addDocMock.mock.calls[0]?.[1] as {
+      breadcrumbs: Array<{ action: string; data?: unknown; dataSummary?: string }>;
+    };
+    expect(payload.breadcrumbs.map((crumb) => crumb.action)).toEqual(['Eylem 2', 'Eylem 3', 'Eylem 4', 'Eylem 5', 'Eylem 6']);
+    expect(payload.breadcrumbs.every((crumb) => crumb.data === undefined)).toBe(true);
+    expect(payload.breadcrumbs.every((crumb) => (crumb.dataSummary?.length ?? 0) <= 500)).toBe(true);
+  });
+
   it("önceki kullanıcının kuyrukta kalan olaylarını yeni kullanıcının batch'ine karıştırmaz", () => {
     // Kullanıcı A bir olay üretir (çıkış YAPMADAN sekme kapanır senaryosu:
     // olay kuyrukta kalır, BATCH_SIZE'a ulaşmadığı için gönderilmemiştir).

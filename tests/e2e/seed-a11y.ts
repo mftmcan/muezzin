@@ -11,6 +11,7 @@ import { initializeApp, getApps } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { getAuth } from 'firebase-admin/auth';
 import firebaseConfig from '../../firebase-applet-config.json' with { type: 'json' };
+import { GORSEL_SABIT_TARIH } from './gorselSabitTarih.ts';
 
 process.env.FIRESTORE_EMULATOR_HOST = process.env.FIRESTORE_EMULATOR_HOST || '127.0.0.1:8080';
 process.env.FIREBASE_AUTH_EMULATOR_HOST = process.env.FIREBASE_AUTH_EMULATOR_HOST || '127.0.0.1:9099';
@@ -21,6 +22,18 @@ const auth = getAuth(app);
 
 const ADMIN_UID = 'muezzin_e2e_a11y_admin';
 const MUEZZIN_UID = 'muezzin_e2e_a11y_muezzin';
+const ILCE_ID = '9148';
+const A11Y_YARIN = '2026-01-15';
+
+const sabitVakitler = {
+  imsak: '04:35',
+  sabah: '05:05',
+  gunes: '06:30',
+  ogle: '13:02',
+  ikindi: '16:38',
+  aksam: '19:42',
+  yatsi: '21:05',
+};
 
 async function ensureUser(uid: string, displayName: string, role: 'admin' | 'muezzin') {
   try {
@@ -55,6 +68,23 @@ async function ensureUser(uid: string, displayName: string, role: 'admin' | 'mue
 async function seed() {
   await ensureUser(ADMIN_UID, 'A11y Admin', 'admin');
   await ensureUser(MUEZZIN_UID, 'A11y Muezzin', 'muezzin');
+
+  // A11y suite'i sabit tarihe bağlıdır; bugün + yarın eksiksiz seed edilmezse
+  // useVakitStore dış API fallback'ine geçer ve test sırası/ağ durumuna göre
+  // konsol uyarısı üretir. Admin SDK ile yazım Spark/emulator uyumludur.
+  await db.collection('settings').doc('system').set({ ilceId: ILCE_ID, ilceAdi: 'Ceyhan', hicriDuzeltme: 0 });
+  await db
+    .collection('vakitler')
+    .doc(`${ILCE_ID}_${GORSEL_SABIT_TARIH.slice(0, 7)}`)
+    .set({
+      ilceId: ILCE_ID,
+      kaynakApi: 'diyanet',
+      guncellenmeTarihi: new Date(),
+      gunler: {
+        [GORSEL_SABIT_TARIH]: sabitVakitler,
+        [A11Y_YARIN]: sabitVakitler,
+      },
+    });
 
   const tokenAdmin = await auth.createCustomToken(ADMIN_UID);
   const tokenMuezzin = await auth.createCustomToken(MUEZZIN_UID);

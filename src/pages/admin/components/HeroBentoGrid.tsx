@@ -169,28 +169,28 @@ export function HeroBentoGrid({
         </motion.div>
 
         {/* Leave & Announcements Row */}
-        <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 flex-1">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 flex-1">
           <motion.div
             whileHover={{ y: -4, scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             transition={HERO_SPRING}
             onClick={() => setActiveTab('ekip', 'mazeretler')}
-            className="flex-1 spatial-glass !rounded-card p-6 relative overflow-hidden flex flex-col justify-between transition-all duration-200 cursor-pointer min-h-[140px] shimmer-trigger"
+            className="spatial-glass !rounded-card p-5 relative overflow-hidden flex flex-col justify-between transition-all duration-200 cursor-pointer min-h-[160px] shimmer-trigger"
           >
             <div className="kinetic-sheen" />
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col items-start gap-4">
               <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-500 border border-amber-500/20 shadow-elev2 flex items-center justify-center">
                 <CalendarClock size={18} strokeWidth={1.5} />
               </div>
-              <div className="text-right">
+              <div className="w-full min-w-0 text-left">
                 {statsLoading ? (
-                  <Skeleton className="w-8 h-8 ml-auto" />
+                  <Skeleton className="w-8 h-8" />
                 ) : (
                   <div className="text-3xl font-light text-[var(--text-primary)] tracking-tighter leading-none tabular-nums">
                     {pendingIzinler}
                   </div>
                 )}
-                <span className="authority-title !text-2xs opacity-40 mt-2 font-medium tracking-wide">BEKLEYEN İZİN</span>
+                <span className="authority-title !text-2xs opacity-40 mt-2 block font-medium tracking-wide">BEKLEYEN İZİN</span>
               </div>
             </div>
             <div className="mt-4 pt-4 border-t border-[var(--glass-border)]">
@@ -203,20 +203,20 @@ export function HeroBentoGrid({
             whileTap={{ scale: 0.98 }}
             transition={HERO_SPRING}
             onClick={() => setActiveTab('planlama')}
-            className="flex-1 spatial-glass !rounded-card p-6 relative overflow-hidden flex flex-col justify-between transition-all duration-200 cursor-pointer min-h-[140px] shimmer-trigger"
+            className="spatial-glass !rounded-card p-5 relative overflow-hidden flex flex-col justify-between transition-all duration-200 cursor-pointer min-h-[160px] shimmer-trigger"
           >
             <div className="kinetic-sheen" />
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col items-start gap-4">
               <div className="w-10 h-10 rounded-2xl bg-[var(--dynamic-aura,var(--aura-indigo))]/10 text-[var(--dynamic-aura,var(--aura-indigo))] border border-[var(--dynamic-aura,var(--aura-indigo))]/20 shadow-elev2 flex items-center justify-center">
                 <ClipboardCheck size={18} strokeWidth={1.5} />
               </div>
-              <div className="text-right">
+              <div className="w-full min-w-0 text-left">
                 <div
-                  className={`text-2xl font-light tracking-tight leading-none tabular-nums ${!planHazir ? 'text-rose-500' : bekleyenOnaySayisi > 0 ? 'text-amber-500' : 'text-[var(--text-primary)]'}`}
+                  className={`text-xl font-light tracking-tight leading-tight break-words tabular-nums ${!planHazir ? 'text-rose-500' : bekleyenOnaySayisi > 0 ? 'text-amber-500' : 'text-[var(--text-primary)]'}`}
                 >
                   {planStatusLabel}
                 </div>
-                <span className="authority-title !text-2xs opacity-40 mt-2 font-medium tracking-wide">HAFTALIK PLAN</span>
+                <span className="authority-title !text-2xs opacity-40 mt-2 block font-medium tracking-wide">HAFTALIK PLAN</span>
               </div>
             </div>
             <div className="mt-4 pt-4 border-t border-[var(--glass-border)]">
@@ -239,16 +239,18 @@ export function HeroBentoGrid({
             whileTap={{ scale: 0.98 }}
             transition={HERO_SPRING}
             onClick={() => onOpenDrawer('duyurular')}
-            className="flex-1 spatial-glass !rounded-card p-6 relative overflow-hidden flex flex-col justify-between transition-all duration-200 cursor-pointer min-h-[140px] shimmer-trigger"
+            className="spatial-glass !rounded-card p-5 relative overflow-hidden flex flex-col justify-between transition-all duration-200 cursor-pointer min-h-[160px] shimmer-trigger"
           >
             <div className="kinetic-sheen" />
-            <div className="flex items-center justify-between">
-              <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 shadow-elev2 flex items-center justify-center">
-                <Megaphone size={18} strokeWidth={1.5} />
+            <div className="flex flex-col items-start gap-4">
+              <div className="w-full flex items-center justify-between gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 shadow-elev2 flex items-center justify-center">
+                  <Megaphone size={18} strokeWidth={1.5} />
+                </div>
+                <ChevronRight size={18} className="text-[var(--text-primary)]/25" />
               </div>
-              <div className="text-right">
-                <ChevronRight size={18} className="text-[var(--text-primary)]/25 ml-auto" />
-                <span className="authority-title !text-2xs opacity-40 mt-2 font-medium tracking-wide">DUYURULAR</span>
+              <div className="w-full min-w-0 text-left">
+                <span className="authority-title !text-2xs opacity-40 block font-medium tracking-wide">DUYURULAR</span>
               </div>
             </div>
             <div className="mt-4 pt-4 border-t border-[var(--glass-border)]">

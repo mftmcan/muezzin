@@ -267,7 +267,13 @@ vi.mock('../../src/lib/firestore-errors', () => ({
   OperationType: { GET: 'GET', WRITE: 'WRITE' },
 }));
 vi.mock('../../src/services/telemetryService', () => ({
-  telemetryService: { logAudit: vi.fn() },
+  telemetryService: {
+    logAudit: vi.fn(),
+    auditKaydiHazirla: vi.fn(() => ({
+      ref: { path: 'audit_logs/manuel-atama' },
+      data: { actionType: 'Manuel Görev Atama', userId: 'admin' },
+    })),
+  },
 }));
 
 import { haftalikPlanOlustur, vakitAtamasiniGuncelle } from '../../src/services/planServisi';
@@ -541,6 +547,7 @@ describe('vakitAtamasiniGuncelle (admin elle atama)', () => {
 
     await expect(vakitAtamasiniGuncelle(params)).resolves.toBe('protected');
     expect(fstore.transactionIslemleri.length).toBe(0);
+    expect(telemetryService.auditKaydiHazirla).not.toHaveBeenCalled();
     expect(telemetryService.logAudit).not.toHaveBeenCalled();
   });
 
@@ -562,15 +569,19 @@ describe('vakitAtamasiniGuncelle (admin elle atama)', () => {
     const guncellemeVerisi = islemVerisi(planGuncelleme!);
     expect(guncellemeVerisi[`gunler.${params.tarih}.${params.vakit}`]).toEqual({ asil: 'a', yedek: 'b' });
 
-    expect(telemetryService.logAudit).toHaveBeenCalledTimes(1);
+    const auditSet = setler.find((s) => s.yol === 'audit_logs/manuel-atama');
+    expect(auditSet).toBeDefined();
+    expect(telemetryService.auditKaydiHazirla).toHaveBeenCalledTimes(1);
+    expect(telemetryService.logAudit).not.toHaveBeenCalled();
   });
 
   it("'Sistem' birime bildirim yazmaz — yalnız gerçek kişiler belge alır", async () => {
     await expect(vakitAtamasiniGuncelle({ ...params, asilUid: 'Sistem', yedekUid: 'Sistem' })).resolves.toBe('updated');
 
     const setler = fstore.transactionIslemleri.filter((i) => i.op === 'set');
-    expect(setler.length).toBe(0);
+    expect(setler.map((s) => s.yol)).toEqual(['audit_logs/manuel-atama']);
     expect(fstore.transactionIslemleri.some((i) => i.op === 'update' && i.yol === `haftaPlanlari/${params.haftaId}`)).toBe(true);
-    expect(telemetryService.logAudit).toHaveBeenCalledTimes(1);
+    expect(telemetryService.auditKaydiHazirla).toHaveBeenCalledTimes(1);
+    expect(telemetryService.logAudit).not.toHaveBeenCalled();
   });
 });

@@ -16,6 +16,7 @@ import {
   davetSil,
 } from '../../../services/muezzinServisi';
 import { useOneShotAnimation } from '../../../hooks/useOneShotAnimation';
+import { useAuthStore } from '../../../store/useAuthStore';
 
 type PendingUser = ({ isInvite: false } & Muezzin & { id: string }) | ({ isInvite: true; isOnay: false } & Invite & { id: string });
 
@@ -25,6 +26,7 @@ export default function MuezzinYonetimi() {
   // ATOMIC ZUSTAND SELECTORS - (Engeller gereksiz renderları)
   const muezzinler = useMuezzinStore((state) => state.muezzinler);
   const loading = useMuezzinStore((state) => state.loading);
+  const isSuperAdmin = useAuthStore((state) => state.isSuperAdmin);
 
   const [invites, setInvites] = useState<(Invite & { id: string })[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
@@ -277,8 +279,10 @@ export default function MuezzinYonetimi() {
                       whileHover={{ scale: 1.1, backgroundColor: 'rgba(16,185,129,0.15)' }}
                       whileTap={{ scale: 0.9 }}
                       onClick={() => handleApprove(m)}
+                      disabled={m.role === 'admin' && !isSuperAdmin}
                       aria-label="Personeli onayla"
-                      className="p-3 bg-emerald-500/10 text-emerald-500 rounded-xl border border-emerald-500/20 shadow-elev1"
+                      title={m.role === 'admin' && !isSuperAdmin ? 'Yönetici hesabını yalnızca baş yönetici onaylayabilir.' : undefined}
+                      className="p-3 bg-emerald-500/10 text-emerald-500 rounded-xl border border-emerald-500/20 shadow-elev1 disabled:cursor-not-allowed disabled:text-subtle"
                     >
                       <CheckCircle2 size={16} />
                     </motion.button>
@@ -291,12 +295,14 @@ export default function MuezzinYonetimi() {
                     whileHover={{ scale: 1.1, backgroundColor: 'rgba(244,63,94,0.15)' }}
                     whileTap={{ scale: 0.9 }}
                     onClick={() => (m.isInvite ? executeDeleteInvite(m.id) : setConfirmAction({ type: 'delete', data: m }))}
+                    disabled={m.role === 'admin' && !isSuperAdmin}
                     // Davet (isInvite) dalı GERÇEKTEN siler (davetSil -> deleteDoc); bekleyen
                     // bir müezzin kaydı (isInvite:false) dalı ise arşivler (bkz. yukarıdaki
                     // ana liste butonundaki AYNI düzeltme) — statik "Sil" etiketi ikinci
                     // durumda yanıltıcıydı.
                     aria-label={m.isInvite ? 'Daveti sil' : 'Personeli arşive al'}
-                    className="p-3 bg-[var(--text-primary)]/5 text-muted rounded-xl border border-[var(--text-primary)]/5 hover:text-rose-500 hover:border-rose-500/20 transition-all shadow-elev1"
+                    title={m.role === 'admin' && !isSuperAdmin ? 'Yönetici kaydını yalnızca baş yönetici değiştirebilir.' : undefined}
+                    className="p-3 bg-[var(--text-primary)]/5 text-muted rounded-xl border border-[var(--text-primary)]/5 hover:text-rose-500 hover:border-rose-500/20 transition-all shadow-elev1 disabled:cursor-not-allowed disabled:text-subtle"
                   >
                     <Trash2 size={16} />
                   </motion.button>
@@ -494,8 +500,12 @@ export default function MuezzinYonetimi() {
                             whileHover={{ scale: 1.1, backgroundColor: 'rgba(16,185,129,0.1)' }}
                             whileTap={{ scale: 0.9 }}
                             onClick={() => setConfirmAction({ type: 'restore', data: m })}
+                            disabled={m.role === 'admin' && !isSuperAdmin}
                             aria-label="Arşivden geri yükle"
-                            className="p-2.5 sm:p-3 bg-[var(--text-primary)]/[0.03] text-emerald-400 hover:text-emerald-500 rounded-xl sm:rounded-2xl border border-[var(--glass-border)] hover:border-emerald-500/30 transition-all shadow-elev2 cursor-pointer"
+                            title={
+                              m.role === 'admin' && !isSuperAdmin ? 'Yönetici hesabını yalnızca baş yönetici değiştirebilir.' : undefined
+                            }
+                            className="p-2.5 sm:p-3 bg-[var(--text-primary)]/[0.03] text-emerald-400 hover:text-emerald-500 rounded-xl sm:rounded-2xl border border-[var(--glass-border)] hover:border-emerald-500/30 transition-all shadow-elev2 cursor-pointer disabled:cursor-not-allowed disabled:text-subtle"
                           >
                             <RotateCcw className="w-[14px] h-[14px] sm:w-4 sm:h-4" strokeWidth={1.5} />
                           </motion.button>
@@ -505,8 +515,12 @@ export default function MuezzinYonetimi() {
                               whileHover={{ scale: 1.1, backgroundColor: 'var(--surface-medium)' }}
                               whileTap={{ scale: 0.9 }}
                               onClick={() => openEdit(m)}
+                              disabled={m.role === 'admin' && !isSuperAdmin}
                               aria-label="Personeli düzenle"
-                              className="p-2.5 sm:p-3 bg-[var(--text-primary)]/[0.03] text-muted hover:text-[var(--text-primary)] rounded-xl sm:rounded-2xl border border-[var(--glass-border)] transition-all shadow-elev2 cursor-pointer"
+                              title={
+                                m.role === 'admin' && !isSuperAdmin ? 'Yönetici hesabını yalnızca baş yönetici değiştirebilir.' : undefined
+                              }
+                              className="p-2.5 sm:p-3 bg-[var(--text-primary)]/[0.03] text-muted hover:text-[var(--text-primary)] rounded-xl sm:rounded-2xl border border-[var(--glass-border)] transition-all shadow-elev2 cursor-pointer disabled:cursor-not-allowed disabled:text-subtle"
                             >
                               <Edit2 className="w-[14px] h-[14px] sm:w-4 sm:h-4" strokeWidth={1.5} />
                             </motion.button>
@@ -514,10 +528,14 @@ export default function MuezzinYonetimi() {
                               whileHover={{ scale: 1.1, backgroundColor: m.aktif ? 'rgba(244,63,94,0.1)' : 'rgba(16,185,129,0.1)' }}
                               whileTap={{ scale: 0.9 }}
                               onClick={() => setConfirmAction({ type: 'toggle', data: m })}
+                              disabled={m.role === 'admin' && !isSuperAdmin}
                               aria-label={m.aktif ? 'Personeli pasife al' : 'Personeli aktife al'}
+                              title={
+                                m.role === 'admin' && !isSuperAdmin ? 'Yönetici hesabını yalnızca baş yönetici değiştirebilir.' : undefined
+                              }
                               className={`p-2.5 sm:p-3 bg-[var(--text-primary)]/[0.03] rounded-xl sm:rounded-2xl border border-[var(--glass-border)] transition-all shadow-elev2 cursor-pointer ${
                                 m.aktif ? 'text-rose-400 hover:border-rose-400/30' : 'text-emerald-400 hover:border-emerald-400/30'
-                              }`}
+                              } disabled:cursor-not-allowed disabled:text-subtle`}
                             >
                               <Power className="w-[14px] h-[14px] sm:w-4 sm:h-4" strokeWidth={1.5} />
                             </motion.button>
@@ -525,6 +543,7 @@ export default function MuezzinYonetimi() {
                               whileHover={{ scale: 1.1, backgroundColor: 'rgba(244,63,94,0.1)' }}
                               whileTap={{ scale: 0.9 }}
                               onClick={() => setConfirmAction({ type: 'delete', data: m })}
+                              disabled={m.role === 'admin' && !isSuperAdmin}
                               // "sil" DEĞİL "arşive al" — bu aksiyon gerçekte hiçbir şeyi silmiyor
                               // (bkz. runConfirmedAction -> archiveUser -> personelArsivle), yalnızca
                               // arşivliyor; aria-label önceden "Personeli sil" diyip ekran okuyucu
@@ -532,7 +551,10 @@ export default function MuezzinYonetimi() {
                               // başlığı ("ARŞİVE AL") ve metniyle çelişiyordu (bkz. kod denetimi
                               // bulgusu).
                               aria-label="Personeli arşive al"
-                              className="p-2.5 sm:p-3 bg-[var(--text-primary)]/[0.03] text-muted hover:text-rose-500 rounded-xl sm:rounded-2xl border border-[var(--glass-border)] hover:border-rose-500/30 transition-all shadow-elev2 cursor-pointer"
+                              title={
+                                m.role === 'admin' && !isSuperAdmin ? 'Yönetici hesabını yalnızca baş yönetici değiştirebilir.' : undefined
+                              }
+                              className="p-2.5 sm:p-3 bg-[var(--text-primary)]/[0.03] text-muted hover:text-rose-500 rounded-xl sm:rounded-2xl border border-[var(--glass-border)] hover:border-rose-500/30 transition-all shadow-elev2 cursor-pointer disabled:cursor-not-allowed disabled:text-subtle"
                             >
                               <Trash2 className="w-[14px] h-[14px] sm:w-4 sm:h-4" strokeWidth={1.5} />
                             </motion.button>

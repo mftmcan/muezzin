@@ -9,7 +9,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /**
  * Görsel tasarım denetiminin (bkz. plan V14) beklediği görsel regresyon
- * kapsamı: 5 ekran × 2 tema. `!important` kaldırma (V20) gibi CSS-seviyesi
+ * kapsamı: 7 ekran × 2 tema. `!important` kaldırma (V20) gibi CSS-seviyesi
  * değişikliklerin "121 kullanım noktasından biri sessizce bozuldu" türü
  * regresyonları CI'da YAKALAMASI için — önceden bu sınıf bir hata (spatial-
  * glass'ın override'ları sessizce eziyor olması) yalnızca elle canlı DOM
@@ -97,6 +97,10 @@ async function girisYap(page: Page, token: string) {
   await page.goto('/');
   await page.waitForFunction(() => window.__testSignIn !== undefined, { timeout: 15000 });
   await page.evaluate((t) => window.__testSignIn!(t), token);
+  // Auth tokenından sonra rol snapshot'ı da çözülmeden tam sayfa route
+  // navigasyonuna geçme; aksi halde IndexedDB geri yüklemesi rol failsafe'i
+  // ile yarışıp authenticated ekranları login/skeleton durumunda bırakabilir.
+  await expect(page.locator('#main-content')).toBeVisible({ timeout: 15_000 });
 }
 
 function saniyeMaskeleri(page: Page) {
@@ -263,6 +267,28 @@ for (const theme of ['light', 'dark'] as const) {
         fullPage: true,
         mask: saniyeMaskeleri(page),
       });
+    });
+
+    test(`kadro yönetimi (${theme})`, async ({ page }) => {
+      await temaAyarla(page, theme);
+      await saatiSabitle(page);
+      await girisYap(page, seed.tokenAdmin);
+      await page.goto('/admin?tab=ekip&subtab=kadro');
+      await expect(page.getByRole('heading', { name: 'Kadro Yönetimi', level: 2 })).toBeVisible({ timeout: 15_000 });
+      await ekranHazirBekle(page);
+      await expect(page).toHaveScreenshot(`kadro-yonetimi-${theme}.png`, { ...SS_OPTS, fullPage: true });
+    });
+
+    test(`yeni personel modalı (${theme})`, async ({ page }) => {
+      await temaAyarla(page, theme);
+      await saatiSabitle(page);
+      await girisYap(page, seed.tokenAdmin);
+      await page.goto('/admin?tab=ekip&subtab=kadro');
+      await expect(page.getByRole('heading', { name: 'Kadro Yönetimi', level: 2 })).toBeVisible({ timeout: 15_000 });
+      await ekranHazirBekle(page);
+      await page.getByRole('button', { name: 'YENİ PERSONEL TANIMLA' }).click();
+      await expect(page.getByRole('dialog', { name: 'Yeni Personel Tanımı' })).toBeVisible();
+      await expect(page).toHaveScreenshot(`yeni-personel-modali-${theme}.png`, SS_OPTS);
     });
   });
 }

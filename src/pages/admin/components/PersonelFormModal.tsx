@@ -7,6 +7,7 @@ import { Muezzin } from '../../../types';
 import { useMuezzinStore } from '../../../store/useMuezzinStore';
 import { personelKaydet } from '../../../services/muezzinServisi';
 import { useNotificationStore } from '../../../store/useNotificationStore';
+import { useAuthStore } from '../../../store/useAuthStore';
 import { personelFormSemasi } from '../../../lib/validation';
 
 interface Props {
@@ -27,6 +28,7 @@ export const PersonelFormModal = React.memo(({ isOpen, onClose, editingUser }: P
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [emailError, setEmailError] = useState<string | null>(null);
   const showNotification = useNotificationStore((s) => s.showNotification);
+  const isSuperAdmin = useAuthStore((s) => s.isSuperAdmin);
 
   useEffect(() => {
     if (isOpen) {
@@ -66,6 +68,11 @@ export const PersonelFormModal = React.memo(({ isOpen, onClose, editingUser }: P
       } else {
         showNotification('Form Geçersiz', ilkHata.message, 'error');
       }
+      return;
+    }
+
+    if (!isSuperAdmin && (formData.role === 'admin' || editingUser?.role === 'admin')) {
+      showNotification('Baş Yönetici Gerekli', 'Yönetici rolü yalnızca baş yönetici tarafından atanabilir veya değiştirilebilir.', 'error');
       return;
     }
 
@@ -117,9 +124,38 @@ export const PersonelFormModal = React.memo(({ isOpen, onClose, editingUser }: P
     }
   };
 
+  const modalFooter = (
+    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 sm:gap-6">
+      <motion.button
+        whileHover={{
+          y: -3,
+          scale: 1.01,
+          boxShadow: '0 15px 30px color-mix(in srgb, var(--dynamic-aura, var(--aura-indigo)) 20%, transparent)',
+        }}
+        whileTap={{ scale: 0.98 }}
+        type="submit"
+        form="personel-form"
+        disabled={isSubmitting}
+        className="min-w-0 bg-[var(--dynamic-aura,var(--aura-indigo))] text-[var(--app-bg)] text-2xs font-bold uppercase tracking-wide py-4 sm:py-5 px-3 rounded-2xl shadow-lg shadow-[var(--dynamic-aura,var(--aura-indigo))]/10 transition-all disabled:opacity-50"
+      >
+        {isSubmitting ? 'İŞLENİYOR...' : editingUser ? 'PROFİLİ GÜNCELLE' : 'PERSONELİ DİZGEYE EKLE'}
+      </motion.button>
+      <motion.button
+        whileHover={{ backgroundColor: 'var(--surface-medium)' }}
+        whileTap={{ scale: 0.95 }}
+        type="button"
+        onClick={onClose}
+        disabled={isSubmitting}
+        className="px-4 sm:px-8 py-4 sm:py-5 text-2xs font-bold uppercase tracking-wide text-muted hover:text-[var(--text-primary)] transition-all border border-[var(--text-primary)]/5 rounded-2xl"
+      >
+        İPTAL
+      </motion.button>
+    </div>
+  );
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={editingUser ? 'Profil Güncelleme' : 'Yeni Personel Tanımı'}>
-      <form onSubmit={handleSubmit} className="space-y-8 py-4">
+    <Modal isOpen={isOpen} onClose={onClose} title={editingUser ? 'Profil Güncelleme' : 'Yeni Personel Tanımı'} footer={modalFooter}>
+      <form id="personel-form" onSubmit={handleSubmit} className="space-y-8 py-4">
         <FormField
           label="ERİŞİM E-POSTASI"
           htmlFor="personel-email"
@@ -196,10 +232,11 @@ export const PersonelFormModal = React.memo(({ isOpen, onClose, editingUser }: P
                 <button
                   key={role.value}
                   type="button"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || (role.value === 'admin' && !isSuperAdmin)}
                   aria-pressed={formData.role === role.value}
                   onClick={() => setFormData({ ...formData, role: role.value })}
-                  className={`p-3.5 rounded-2xl flex flex-col items-center justify-center text-center transition-all border outline-none ${
+                  title={role.value === 'admin' && !isSuperAdmin ? 'Yönetici rolünü yalnızca baş yönetici atayabilir.' : undefined}
+                  className={`p-3.5 rounded-2xl flex flex-col items-center justify-center text-center transition-all border outline-none disabled:cursor-not-allowed disabled:text-subtle ${
                     formData.role === role.value
                       ? 'bg-[var(--dynamic-aura,var(--aura-indigo))] text-[var(--app-bg)] border-[var(--dynamic-aura,var(--aura-indigo))]/60 shadow-[0_10px_20px_color-mix(in_srgb,var(--dynamic-aura,var(--aura-indigo))_25%,transparent)]'
                       : 'bg-[var(--text-primary)]/[0.02] text-[var(--text-secondary)] border-[var(--text-primary)]/5 hover:border-[var(--text-primary)]/10 focus:border-[var(--text-primary)]/10'
@@ -210,6 +247,7 @@ export const PersonelFormModal = React.memo(({ isOpen, onClose, editingUser }: P
                 </button>
               ))}
             </div>
+            {!isSuperAdmin && <p className="text-xs leading-relaxed text-muted">Yönetici rolünü yalnızca baş yönetici atayabilir.</p>}
           </div>
 
           <div className="col-span-2 md:col-span-1 space-y-4">
@@ -249,32 +287,6 @@ export const PersonelFormModal = React.memo(({ isOpen, onClose, editingUser }: P
               })}
             </div>
           </div>
-        </div>
-
-        <div className="pt-10 flex items-center gap-6">
-          <motion.button
-            whileHover={{
-              y: -3,
-              scale: 1.01,
-              boxShadow: '0 15px 30px color-mix(in srgb, var(--dynamic-aura, var(--aura-indigo)) 20%, transparent)',
-            }}
-            whileTap={{ scale: 0.98 }}
-            type="submit"
-            disabled={isSubmitting}
-            className="flex-1 bg-[var(--dynamic-aura,var(--aura-indigo))] text-[var(--app-bg)] text-2xs font-bold uppercase tracking-wide py-5 rounded-2xl shadow-lg shadow-[var(--dynamic-aura,var(--aura-indigo))]/10 transition-all disabled:opacity-50"
-          >
-            {isSubmitting ? 'İŞLENİYOR...' : editingUser ? 'PROFİLİ GÜNCELLE' : 'PERSONELİ DİZGEYE EKLE'}
-          </motion.button>
-          <motion.button
-            whileHover={{ backgroundColor: 'var(--surface-medium)' }}
-            whileTap={{ scale: 0.95 }}
-            type="button"
-            onClick={onClose}
-            disabled={isSubmitting}
-            className="px-8 py-5 text-2xs font-bold uppercase tracking-wide text-[var(--text-secondary)] opacity-40 hover:opacity-100 transition-all border border-[var(--text-primary)]/5 rounded-2xl"
-          >
-            İPTAL
-          </motion.button>
         </div>
       </form>
     </Modal>

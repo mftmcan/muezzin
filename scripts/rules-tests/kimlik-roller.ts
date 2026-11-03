@@ -3,7 +3,21 @@
 // config/bootstrap admin listesi ve P1.5 (gozlemci) / P1.6 (super-admin)
 // rol sinirlari.
 import { assertFails, assertSucceeds } from '@firebase/rules-unit-testing';
-import { collection, deleteDoc, doc, getDoc, getDocs, limit, orderBy, query, setDoc, Timestamp, updateDoc } from 'firebase/firestore';
+import {
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  limit,
+  orderBy,
+  query,
+  serverTimestamp,
+  setDoc,
+  Timestamp,
+  updateDoc,
+  writeBatch,
+} from 'firebase/firestore';
 import { TestCase, testUser, mazeretRetBatch, PENCERE_ACIK } from './ortak.ts';
 
 export const tests: TestCase[] = [
@@ -56,6 +70,23 @@ export const tests: TestCase[] = [
     },
   },
   {
+    name: 'muezzin profil guncellemesini kendi denetim kaydiyla atomik tamamlayabilir',
+    run: async (env) => {
+      const db = testUser(env, 'muezzin1').firestore();
+      const batch = writeBatch(db);
+      batch.update(doc(db, 'muezzins/muezzin1'), { displayName: 'Muezzin One Updated' });
+      batch.set(doc(db, 'audit_logs/atomikProfilGuncelleme'), {
+        actionType: 'Profil Güncelleme',
+        targetName: 'muezzin1',
+        details: 'Kullanıcı kendi görünen adını güncelledi.',
+        userId: 'muezzin1',
+        userDisplayName: 'Muezzin One',
+        timestamp: serverTimestamp(),
+      });
+      await assertSucceeds(batch.commit());
+    },
+  },
+  {
     name: 'muezzin kendi fcm token haritasini guncelleyebilir',
     run: async (env) => {
       const db = testUser(env, 'muezzin1').firestore();
@@ -78,6 +109,23 @@ export const tests: TestCase[] = [
       await assertFails(
         updateDoc(doc(db, 'muezzins/muezzin1'), {
           privateNote: 'Kurallarda tanimli olmayan alan',
+        })
+      );
+    },
+  },
+  {
+    name: 'muezzin profilinde asiri buyuk fcm token veya avatar URL yazamaz',
+    run: async (env) => {
+      const db = testUser(env, 'muezzin1').firestore();
+
+      await assertFails(
+        updateDoc(doc(db, 'muezzins/muezzin1'), {
+          fcmToken: 't'.repeat(4097),
+        })
+      );
+      await assertFails(
+        updateDoc(doc(db, 'muezzins/muezzin1'), {
+          photoURL: `https://example.test/${'a'.repeat(2048)}`,
         })
       );
     },
@@ -465,12 +513,13 @@ export const tests: TestCase[] = [
   },
   {
     // veriSifirlamaServisi'nin sildigi DIGER koleksiyonlar (bildirimler,
-    // haftaPlanlari, izinler, vekalet_talepleri, adminUyarilari, duyurular)
+    // haftaPlanlari, izinler, vekalet_talepleri, duyurular)
     // BILINCLI olarak isAdmin()'de birakildi: bunlarin delete izni normal
     // admin is akislarinin (tekil bildirim silme, plan yeniden uretimi, izin
     // reddi temizligi) ayrilmaz parcasi ve Firestore kurallarinda "tekil
     // silme" ile "toplu silme" ayrilamaz. Bu test o kararin bilincli
-    // oldugunu ve kazara daraltilmadigini kilitler.
+    // oldugunu ve kazara daraltilmadigini kilitler. adminUyarilari ise
+    // istemcide yalnızca çözülür; silme süper-admin'e daraltılmıştır.
     name: 'P1.6: siradan admin operasyonel koleksiyonlarda tekil silmeye devam edebilir',
     run: async (env) => {
       const db = testUser(env, 'admin').firestore();

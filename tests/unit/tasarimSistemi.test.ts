@@ -24,7 +24,17 @@ function walkTsxFiles(dir: string, out: string[] = []): string[] {
   return out;
 }
 
+function walkSourceFiles(dir: string, out: string[] = []): string[] {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) walkSourceFiles(full, out);
+    else if (entry.name.endsWith('.ts') || entry.name.endsWith('.tsx')) out.push(full);
+  }
+  return out;
+}
+
 const tsxFiles = walkTsxFiles(SRC_DIR);
+const sourceFiles = walkSourceFiles(SRC_DIR);
 const indexCss = fs.readFileSync(INDEX_CSS_PATH, 'utf8');
 
 function relPath(absPath: string): string {
@@ -32,6 +42,25 @@ function relPath(absPath: string): string {
 }
 
 describe('tasarım sistemi — kaynak taraması (görsel tasarım denetimi V7/V8/V9)', () => {
+  it('production kaynaklarına gürültülü console çağrısı eklenmez', () => {
+    const ihlaller: string[] = [];
+    const regex = /console\.(?:log|debug|info|trace)\s*\(/g;
+
+    for (const file of sourceFiles) {
+      const content = fs.readFileSync(file, 'utf8');
+      let match: RegExpExecArray | null;
+      while ((match = regex.exec(content))) {
+        const satir = content.slice(0, match.index).split('\n').length;
+        ihlaller.push(`${relPath(file)}:${satir} → ${match[0]}`);
+      }
+    }
+
+    expect(
+      ihlaller,
+      `Vite 8/Oxc seçili console metotlarını minify ayarıyla ayıklamıyor; kaynakta şu gürültülü çağrılar bulundu:\n${ihlaller.join('\n')}`
+    ).toEqual([]);
+  });
+
   it('geçersiz Tailwind opaklık basamağı (V9) içermez', () => {
     // Tailwind'in standart opaklık ölçeği 5'in katlarıdır (0,5,10,…,100).
     // `opacity-8` gibi bir değer sessizce HİÇBİR kural üretmez — sınıf
@@ -105,9 +134,9 @@ describe('tasarım sistemi — kaynak taraması (görsel tasarım denetimi V7/V8
     // aynı dosyada aynı değerin birden çok kullanımı (ör. bir logonun üst
     // üste binen katmanları) dosya-yerel bir sabittir, token DEĞİL.
     const IZINLI_TEK_SEFERLIK = new Set([
-      'src/components/auth/LoginScreen.tsx:70', // 36px — logo katmanı 1/3
-      'src/components/auth/LoginScreen.tsx:71', // 36px — logo katmanı 2/3
-      'src/components/auth/LoginScreen.tsx:72', // 36px — logo katmanı 3/3
+      'src/components/auth/LoginScreen.tsx:75', // 36px — logo katmanı 1/3
+      'src/components/auth/LoginScreen.tsx:76', // 36px — logo katmanı 2/3
+      'src/components/auth/LoginScreen.tsx:77', // 36px — logo katmanı 3/3
       'src/components/ChunkErrorFallback.tsx:105', // 30px — hata ikonu kutusu 1/2
       'src/components/ChunkErrorFallback.tsx:146', // 30px — hata ikonu kutusu 2/2
       'src/components/Muezzinler.tsx:122', // 32px

@@ -11,9 +11,10 @@ interface ModalProps {
   children: React.ReactNode;
   className?: string;
   contentClassName?: string;
+  footer?: React.ReactNode;
 }
 
-export function Modal({ isOpen, onClose, title, children, className = '', contentClassName = '' }: ModalProps) {
+export function Modal({ isOpen, onClose, title, children, className = '', contentClassName = '', footer }: ModalProps) {
   const titleId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
@@ -118,7 +119,7 @@ export function Modal({ isOpen, onClose, title, children, className = '', conten
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 150 }}
             transition={{ ...SPRING.sheet, mass: 1 }}
-            className={`spatial-glass phi-padding w-full sm:max-w-2xl max-h-[85dvh] sm:max-h-[90dvh] flex flex-col overflow-hidden relative z-10 shadow-[var(--spatial-shadow)] mt-auto sm:mt-0 rounded-t-card rounded-b-none sm:rounded-card outline-none ${contentClassName}`}
+            className={`spatial-glass phi-padding w-full sm:max-w-2xl max-h-[85dvh] sm:max-h-[90dvh] ${footer ? 'h-[85dvh] sm:h-[90dvh]' : ''} flex flex-col overflow-hidden relative z-10 shadow-[var(--spatial-shadow)] mt-auto sm:mt-0 rounded-t-card rounded-b-none sm:rounded-card outline-none ${contentClassName}`}
             style={{
               paddingBottom: 'max(var(--phi-space), env(safe-area-inset-bottom, 0px))',
               ...(viewportMaxHeight ? { maxHeight: Math.round(viewportMaxHeight * 0.92) } : {}),
@@ -149,6 +150,7 @@ export function Modal({ isOpen, onClose, title, children, className = '', conten
               </button>
             </div>
             <div className="overflow-y-auto flex-1 no-scrollbar pr-1">{children}</div>
+            {footer && <div className="shrink-0 border-t border-[var(--glass-border)] pt-4 sm:pt-5 mt-4 sm:mt-5">{footer}</div>}
           </motion.div>
         </div>
       )}

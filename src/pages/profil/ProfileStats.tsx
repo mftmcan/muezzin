@@ -77,18 +77,18 @@ export default function ProfileStats({ userData }: ProfileStatsProps) {
         <div className="divide-y divide-[var(--glass-border)] relative z-10">
           {menuItems.map((item, idx) => (
             <div key={idx} className="flex items-center justify-between py-6 first:pt-0 last:pb-0 group transition-all">
-              <div className="flex items-center gap-6">
+              <div className="flex min-w-0 w-full items-center gap-4 sm:gap-6">
                 <div
-                  className={`w-12 h-12 rounded-2xl ${item.bg} ${item.color} flex items-center justify-center transition-all shadow-elev1`}
+                  className={`w-12 h-12 shrink-0 rounded-2xl ${item.bg} ${item.color} flex items-center justify-center transition-all shadow-elev1`}
                 >
                   {React.cloneElement(item.icon as React.ReactElement<{ size?: number; strokeWidth?: number }>, {
                     size: 20,
                     strokeWidth: 1.5,
                   })}
                 </div>
-                <div>
+                <div className="min-w-0 flex-1">
                   <p className="premium-label !text-2xs !opacity-55 mb-1.5 leading-tight tracking-wide">{item.label}</p>
-                  <p className="text-lg font-light text-[var(--text-primary)] tracking-tight leading-tight transition-all duration-500">
+                  <p className="text-lg font-light text-[var(--text-primary)] tracking-tight leading-tight break-words [overflow-wrap:anywhere] transition-all duration-500">
                     {item.value}
                   </p>
                 </div>

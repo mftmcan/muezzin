@@ -118,7 +118,10 @@ service cloud.firestore {
     // kullanılırsa reddedilmesin diye şemaya izinli alan olarak dahil edildi.
     function isValidDuyuru(data) {
       return data.keys().hasAll(['baslik', 'icerik', 'tip', 'tarih']) &&
-             data.keys().hasOnly(['baslik', 'icerik', 'tip', 'tarih', 'yazar', 'bildirimGonderildi']) &&
+             data.keys().hasOnly([
+               'baslik', 'icerik', 'tip', 'tarih', 'yazar',
+               'bildirimGonderildi', 'bildirimGonderimBaslangici'
+             ]) &&
              data.baslik is string && data.baslik.size() > 0 && data.baslik.size() <= 200 &&
              data.icerik is string && data.icerik.size() > 0 && data.icerik.size() <= 5000 &&
              data.tip in ['onemli', 'bilgi', 'duyuru'] &&
@@ -183,8 +186,14 @@ service cloud.firestore {
              data.role in ['admin', 'muezzin', 'gozlemci'] &&
              (!data.keys().hasAny(['email']) || (data.email is string && data.email.size() <= 100)) &&
              data.aktif is bool &&
-             (!data.keys().hasAny(['photoURL']) || data.photoURL is string) &&
-             (!data.keys().hasAny(['fcmToken']) || data.fcmToken is string || data.fcmToken == null) &&
+             // Bu üç alanı kullanıcı kendi profilinde yazabilir. Yalnızca tip
+             // kontrolü bırakıldığında tek bir hesap Firestore'un belge
+             // tavanına kadar gereksiz veri basabiliyordu; Spark kotasında bu
+             // aynı zamanda maliyet/kapasite korumasıdır. 4096 karakter FCM
+             // token rotasyonları, 2048 karakter URL ise sağlayıcı avatarları
+             // için geniş bir üst sınırdır.
+             (!data.keys().hasAny(['photoURL']) || (data.photoURL is string && data.photoURL.size() <= 2048)) &&
+             (!data.keys().hasAny(['fcmToken']) || data.fcmToken == null || (data.fcmToken is string && data.fcmToken.size() <= 4096)) &&
              (!data.keys().hasAny(['fcmTokens']) || isValidFcmTokens(data.fcmTokens)) &&
              (!data.keys().hasAny(['aylikVakitSayisi']) || (data.aylikVakitSayisi is int && data.aylikVakitSayisi >= 0)) &&
              (!data.keys().hasAny(['aylikCumaSayisi']) || (data.aylikCumaSayisi is int && data.aylikCumaSayisi >= 0)) &&
@@ -206,7 +215,7 @@ service cloud.firestore {
              (!data.keys().hasAny(['haftalikIzinGunu']) || (data.haftalikIzinGunu is int && data.haftalikIzinGunu >= 0 && data.haftalikIzinGunu <= 7 && data.haftalikIzinGunu != 5)) &&
              (!data.keys().hasAny(['notificationSettings']) || isValidNotificationSettings(data.notificationSettings)) &&
              (!data.keys().hasAny(['onayBekliyor']) || data.onayBekliyor is bool) &&
-             (!data.keys().hasAny(['kayitTarihi']) || data.kayitTarihi is string) &&
+             (!data.keys().hasAny(['kayitTarihi']) || (data.kayitTarihi is string && data.kayitTarihi.size() <= 40)) &&
              (!data.keys().hasAny(['arsivlendi']) || data.arsivlendi is bool) &&
              (!data.keys().hasAny(['arsivTarihi']) || data.arsivTarihi == null || data.arsivTarihi is timestamp);
     }
@@ -241,10 +250,22 @@ service cloud.firestore {
 
     match /muezzins/{uid} {
       allow get, list: if isSignedIn();
-      allow create: if isValidMuezzin(incoming()) && (isAdmin() || isInvitedSelfMuezzinCreate(uid));
-      allow delete: if isAdmin();
+      // Sıradan bir admin yeni admin üretemez veya başka bir admin hesabını
+      // değiştiremez. Aksi halde bootstrap ile tanımlanan süper-admin ayrımı
+      // yalnızca birkaç silme düğmesinde kalan kozmetik bir ayrım olurdu:
+      // sıradan admin ikinci bir admin oluşturup yetkili hesap havuzunu
+      // sınırsız genişletebilirdi. Davetli kullanıcının KENDİ profilini
+      // oluşturma dalı ayrı tutulur; admin davetini zaten yalnız süper-admin
+      // oluşturabilir (invites kuralı aşağıda).
+      allow create: if isValidMuezzin(incoming()) &&
+                       ((isAdmin() && (incoming().role != 'admin' || isSuperAdmin())) ||
+                        isInvitedSelfMuezzinCreate(uid));
+      // Ürün akışı personeli silmez, arşivler. Kalıcı personel silme normal
+      // admin görevlerinin parçası değildir ve geri alınamaz; yalnızca
+      // config/bootstrap listesindeki süper-admin'e bırakılır.
+      allow delete: if isSuperAdmin();
       allow update: if isSignedIn() && isValidMuezzin(incoming()) && (
-        isAdmin() || (
+        (isAdmin() && (isSuperAdmin() || (existing().role != 'admin' && incoming().role != 'admin'))) || (
             request.auth.uid == uid && 
             incoming().email == existing().email && 
             incoming().role == existing().role &&
@@ -265,6 +286,7 @@ service cloud.firestore {
              data.email is string && data.email.size() <= 100 &&
              data.role in ['admin', 'muezzin', 'gozlemci'] &&
              (!data.keys().hasAny(['displayName']) || (data.displayName is string && data.displayName.size() <= 100)) &&
+             (!data.keys().hasAny(['olusturmaTarihi']) || data.olusturmaTarihi is timestamp) &&
              // isValidMuezzin ile aynı Cuma (5) hariç tutması — bu alan
              // kabul edilecek daveti self-registration'da doğrudan
              // muezzins doc'una kopyalanır (bkz. useAuthStore.ts).
@@ -274,15 +296,21 @@ service cloud.firestore {
     match /invites/{emailId} {
       allow list: if isAdmin();
       allow get: if isSignedIn() && (isAdmin() || request.auth.token.email.lower() == emailId.lower());
-      allow create, update: if isAdmin() && isValidInvite(incoming()) && incoming().email.lower() == emailId.lower();
-      allow delete: if isAdmin() || (isSignedIn() && request.auth.token.email.lower() == emailId.lower());
+      allow create: if isAdmin() && isValidInvite(incoming()) && incoming().email.lower() == emailId.lower() &&
+                       (incoming().role != 'admin' || isSuperAdmin());
+      allow update: if isAdmin() && isValidInvite(incoming()) && incoming().email.lower() == emailId.lower() &&
+                       (isSuperAdmin() || (existing().role != 'admin' && incoming().role != 'admin'));
+      allow delete: if (isAdmin() && (existing().role != 'admin' || isSuperAdmin())) ||
+                       (isSignedIn() && request.auth.token.email.lower() == emailId.lower());
     }
 
     // ---------------------------------------------------------
     // ENTITY: Vakitler
     // ---------------------------------------------------------
-    function isValidVakitCache(data) {
-      return data.keys().hasAll(['ilceId', 'gunler', 'kaynakApi', 'guncellenmeTarihi']) &&
+    function isValidVakitCache(docId, data) {
+      return docId.matches('^[0-9]{3,8}_[0-9]{4}-(0[1-9]|1[0-2])$') &&
+             docId.split('_')[0] == data.ilceId &&
+             data.keys().hasAll(['ilceId', 'gunler', 'kaynakApi', 'guncellenmeTarihi']) &&
              data.keys().hasOnly(['ilceId', 'gunler', 'kaynakApi', 'guncellenmeTarihi']) &&
              data.ilceId is string && data.ilceId.size() >= 3 && data.ilceId.size() <= 8 &&
              data.ilceId.matches('^[0-9]+$') &&
@@ -303,17 +331,38 @@ service cloud.firestore {
 
     match /vakitler/{docId} {
       allow get, list: if isSignedIn();
-      allow write: if isAdmin() && isValidVakitCache(incoming());
+      allow write: if isAdmin() && isValidVakitCache(docId, incoming());
     }
 
     // ---------------------------------------------------------
     // ENTITY: Hafta Planları
     // ---------------------------------------------------------
+    // Plan belgeleri istemci self-healing yolu tarafından da yazılabildiği
+    // için yalnızca "admin mi?" kontrolü yeterli değildir: hatalı bir UI
+    // payload'ı kalıcı plan önbelleğine keyfi alan/tip sızdırmamalıdır.
+    // `gunler` anahtarları tarih, alt anahtarları vakit olduğu için Rules
+    // dilinde bunların tümünü dinamik olarak dolaşmak mümkün değildir; burada
+    // güvenle zorlanabilen üst seviye sözleşme ve haftanın azami 7 günü
+    // doğrulanır. Asıl/yedek iş kuralları bildirim belgelerinde ve planlama
+    // çekirdeğinde ayrıca uygulanmaya devam eder.
+    function isValidHaftaPlani(docId, data) {
+      return docId.matches('^W[0-9]{4}-[0-9]{2}-[0-9]{2}$') &&
+             data.keys().hasAll(['haftaBaslangic', 'haftaBitis', 'durum', 'olusturmaTarihi', 'gunler']) &&
+             data.keys().hasOnly(['haftaBaslangic', 'haftaBitis', 'durum', 'olusturmaTarihi', 'sonGuncelleme', 'gunler']) &&
+             data.haftaBaslangic is string && data.haftaBaslangic.size() == 10 &&
+             data.haftaBitis is string && data.haftaBitis.size() == 10 &&
+             data.durum in ['yayinda', 'arsiv'] &&
+             data.olusturmaTarihi is timestamp &&
+             (!data.keys().hasAny(['sonGuncelleme']) || data.sonGuncelleme is timestamp) &&
+             data.gunler is map && data.gunler.size() >= 1 && data.gunler.size() <= 7;
+    }
+
     match /haftaPlanlari/{docId} {
       allow read, list: if isSignedIn();
-      allow create, delete: if isAdmin();
+      allow create: if isAdmin() && isValidHaftaPlani(docId, incoming());
+      allow delete: if isAdmin();
       // Only admins can update the plan. Swaps should be handled via a secure process.
-      allow update: if isAdmin(); 
+      allow update: if isAdmin() && isValidHaftaPlani(docId, incoming());
     }
 
     // ---------------------------------------------------------
@@ -897,13 +946,40 @@ service cloud.firestore {
     // ---------------------------------------------------------
     // ENTITY: Admin Uyarilari
     // ---------------------------------------------------------
+    function isValidClientAdminUyariCreate(data) {
+      return data.keys().hasAll(['tip', 'mesaj', 'tarih', 'vakit', 'cozuldu', 'olusturmaTarihi']) &&
+             data.keys().hasOnly(['tip', 'mesaj', 'tarih', 'vakit', 'cozuldu', 'olusturmaTarihi']) &&
+             // İstemci yalnızca görev/plan kapsama krizlerini üretir. Kota,
+             // API, hata patlaması ve otomasyon uyarıları Admin SDK cronlarına
+             // aittir; kuralları atlayan güvenilir sunucu yolları etkilenmez.
+             data.tip in ['zincirTukendi', 'planOlusturulamadi'] &&
+             data.mesaj is string && data.mesaj.size() > 0 && data.mesaj.size() <= 1000 &&
+             data.tarih is string && data.tarih.size() == 10 &&
+             (data.vakit == null || data.vakit in ['sabah', 'ogle', 'ikindi', 'aksam', 'yatsi']) &&
+             data.cozuldu == false &&
+             data.olusturmaTarihi is timestamp;
+    }
+
+    function isValidAdminUyariResolve() {
+      let changed = incoming().diff(existing()).affectedKeys();
+      return existing().cozuldu == false &&
+             incoming().cozuldu == true &&
+             incoming().cozulmeTarihi is timestamp &&
+             changed.hasOnly(['cozuldu', 'cozulmeTarihi']);
+    }
+
     match /adminUyarilari/{docId} {
       // Admin her belgeyi görür/yazar. Oturum açmış müezzinler ise yalnızca
       // ÇÖZÜLMEMİŞ uyarıları görebilir (bkz. tasarım denetimi: saha müezzini
       // sistem arızasından tamamen habersiz kalıyordu) — çözüm notları ve
       // geçmiş kayıtlar admin'e özel kalır.
       allow read: if isAdmin() || (isSignedIn() && existing().cozuldu == false);
-      allow write: if isAdmin();
+      allow create: if isAdmin() && isValidClientAdminUyariCreate(incoming());
+      allow update: if isAdmin() && isValidAdminUyariResolve();
+      // Operasyonel veri sıfırlama geri alınamaz bir toplu silmedir; istemci
+      // UI'ı zaten süper-admin kapılıdır, gerçek güvenlik sınırı da burada
+      // aynı seviyeye çekilir. Admin SDK bakım scriptleri kuralları atlar.
+      allow delete: if isSuperAdmin();
     }
 
     // ---------------------------------------------------------
@@ -912,6 +988,63 @@ service cloud.firestore {
     // Alan/boyut sınırları, tek bir bozuk/kötü niyetli istemcinin sınırsız
     // büyüyen belgelerle günlük Firestore yazma kotasını (Spark plan) veya
     // 1 GB depolama sınırını tüketmesini engeller.
+    function isValidTelemetryDevice(data) {
+      return data is map &&
+             data.keys().hasOnly(['os', 'browser', 'screenSize', 'pwaMode', 'language']) &&
+             (!data.keys().hasAny(['os']) || (data.os is string && data.os.size() <= 120)) &&
+             (!data.keys().hasAny(['browser']) || (data.browser is string && data.browser.size() <= 80)) &&
+             (!data.keys().hasAny(['screenSize']) || (data.screenSize is string && data.screenSize.size() <= 40)) &&
+             (!data.keys().hasAny(['pwaMode']) || data.pwaMode is bool) &&
+             (!data.keys().hasAny(['language']) || (data.language is string && data.language.size() <= 40));
+    }
+
+    function isValidStateSnapshot(data) {
+      return data is map &&
+             data.keys().hasOnly([
+               'authUid', 'authRole', 'currentPath', 'theme', 'gpsEnabled',
+               'isOnline', 'swVersion', 'swState', 'appVersion',
+               'buildTimestamp', 'networkType', 'networkRtt', 'memoryUsedMb'
+             ]) &&
+             (!data.keys().hasAny(['authUid']) || data.authUid == null || (data.authUid is string && data.authUid.size() <= 128)) &&
+             (!data.keys().hasAny(['authRole']) || data.authRole == null || data.authRole in ['admin', 'muezzin', 'gozlemci']) &&
+             (!data.keys().hasAny(['currentPath']) || (data.currentPath is string && data.currentPath.size() <= 500)) &&
+             (!data.keys().hasAny(['theme']) || data.theme == null || (data.theme is string && data.theme.size() <= 40)) &&
+             (!data.keys().hasAny(['gpsEnabled']) || data.gpsEnabled is bool) &&
+             (!data.keys().hasAny(['isOnline']) || data.isOnline is bool) &&
+             (!data.keys().hasAny(['swVersion']) || data.swVersion == null || (data.swVersion is string && data.swVersion.size() <= 120)) &&
+             (!data.keys().hasAny(['swState']) || data.swState == null || (data.swState is string && data.swState.size() <= 40)) &&
+             (!data.keys().hasAny(['appVersion']) || (data.appVersion is string && data.appVersion.size() <= 40)) &&
+             (!data.keys().hasAny(['buildTimestamp']) || (data.buildTimestamp is string && data.buildTimestamp.size() <= 40)) &&
+             (!data.keys().hasAny(['networkType']) || (data.networkType is string && data.networkType.size() <= 40)) &&
+             (!data.keys().hasAny(['networkRtt']) || data.networkRtt == null || data.networkRtt is int || data.networkRtt is float) &&
+             (!data.keys().hasAny(['memoryUsedMb']) || data.memoryUsedMb == null || data.memoryUsedMb is int || data.memoryUsedMb is float);
+    }
+
+    function isValidBreadcrumb(data) {
+      return data is map &&
+             data.keys().hasAll(['action', 'category', 'timestamp', 'wallTime']) &&
+             data.keys().hasOnly(['action', 'category', 'dataSummary', 'timestamp', 'wallTime']) &&
+             data.action is string && data.action.size() > 0 && data.action.size() <= 500 &&
+             data.category in ['navigation', 'user_action', 'network', 'system'] &&
+             (!data.keys().hasAny(['dataSummary']) || (data.dataSummary is string && data.dataSummary.size() <= 500)) &&
+             data.timestamp is int &&
+             data.wallTime is string && data.wallTime.size() <= 40;
+    }
+
+    // Rules dilinde liste döngüsü yoktur. İstemci tamponu sabit 5 olduğundan
+    // her olası indeks kısa-devreli olarak doğrulanır; liste daha kısaysa o
+    // indekse erişilmez.
+    function isValidBreadcrumbAt(data, index) {
+      return data.size() <= index || isValidBreadcrumb(data[index]);
+    }
+
+    function isValidBreadcrumbs(data) {
+      return data is list && data.size() <= 5 &&
+             isValidBreadcrumbAt(data, 0) && isValidBreadcrumbAt(data, 1) &&
+             isValidBreadcrumbAt(data, 2) && isValidBreadcrumbAt(data, 3) &&
+             isValidBreadcrumbAt(data, 4);
+    }
+
     function isValidErrorLog(data) {
       return data.keys().hasAll(['errorMessage', 'errorStack', 'componentStack', 'userId', 'device', 'breadcrumbs', 'stateSnapshot', 'timestamp']) &&
              // hasOnly eksikti — istemci bilinen alanların yanına keyfi
@@ -922,9 +1055,9 @@ service cloud.firestore {
              data.errorMessage is string && data.errorMessage.size() <= 2000 &&
              data.errorStack is string && data.errorStack.size() <= 8000 &&
              data.componentStack is string && data.componentStack.size() <= 8000 &&
-             data.device is map &&
-             data.breadcrumbs is list && data.breadcrumbs.size() <= 30 &&
-             data.stateSnapshot is map &&
+             isValidTelemetryDevice(data.device) &&
+             isValidBreadcrumbs(data.breadcrumbs) &&
+             isValidStateSnapshot(data.stateSnapshot) &&
              data.timestamp is timestamp;
     }
 
@@ -955,13 +1088,27 @@ service cloud.firestore {
              // isValidTelemetryLog) aksine bu değişmez denetim kaydına
              // keyfi (string/number) bir değer yazılabiliyordu (premium hata
              // analizi FR-O1).
-             data.timestamp is timestamp;
+             data.timestamp is timestamp &&
+             // İstemci kendi saatini kullanarak denetim kaydını geçmişe/
+             // geleceğe taşıyamaz. `serverTimestamp()` request.time'a
+             // çözülür; Admin SDK yazımları kuralları zaten atlar.
+             data.timestamp == request.time;
     }
 
     match /audit_logs/{docId} {
       allow get, list: if isAdmin();
       allow create: if isSignedIn() && isValidAuditLog(incoming());
       allow update, delete: if false;
+    }
+
+    function isValidTelemetryMetadata(data) {
+      return data is map &&
+             data.keys().hasOnly(['device', 'path', 'tarih', 'vakit', 'consentState']) &&
+             (!data.keys().hasAny(['device']) || isValidTelemetryDevice(data.device)) &&
+             (!data.keys().hasAny(['path']) || (data.path is string && data.path.size() <= 500)) &&
+             (!data.keys().hasAny(['tarih']) || (data.tarih is string && data.tarih.size() == 10)) &&
+             (!data.keys().hasAny(['vakit']) || data.vakit in ['sabah', 'ogle', 'ikindi', 'aksam', 'yatsi']) &&
+             (!data.keys().hasAny(['consentState']) || data.consentState is bool);
     }
 
     function isValidTelemetryLog(data) {
@@ -971,7 +1118,7 @@ service cloud.firestore {
              data.userId == request.auth.uid &&
              data.eventType in ['page_view', 'click', 'error', 'performance'] &&
              data.eventName is string && data.eventName.size() <= 200 &&
-             data.metadata is map &&
+             isValidTelemetryMetadata(data.metadata) &&
              data.timestamp is timestamp;
     }
 
@@ -1144,7 +1291,10 @@ service cloud.firestore {
 
     match /izin_detaylari/{izinId} {
       allow get: if isAdmin() || (isSignedIn() && resource.data.uid == request.auth.uid);
-      allow list: if isAdmin();
+      // Sahip yalnız kendi uid'iyle sınırlandırılmış sorguyu çalıştırabilir.
+      // Firestore sorguyu kurala göre kanıtladığından, filtresiz veya başka
+      // uid'ye yönelik listeleme yine fail-closed reddedilir.
+      allow list: if isAdmin() || (isSignedIn() && resource.data.uid == request.auth.uid);
       // mazeret_detaylari'nin aksine karşılık gelen `izinler` belgesinin
       // uid'ini get() ile ÇAPRAZ DOĞRULAMAZ — o kontrol orada
       // DETERMİNİSTİK (haftaId_tarih_vakit_tip, tahmin edilebilir) ID'lere

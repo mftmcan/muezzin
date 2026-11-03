@@ -11,36 +11,41 @@ interface LoginScreenProps {
 
 export function LoginScreen({ login, isLoginInProgress }: LoginScreenProps) {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[var(--app-bg)] p-6 relative overflow-hidden transition-colors duration-[3000ms]">
-      {/* Animated Ambient Aura */}
-      <motion.div
-        animate={{
-          scale: [1, 1.15, 1],
-          opacity: [0.12, 0.2, 0.12],
-          x: [0, 30, 0],
-          y: [0, -20, 0],
-        }}
-        className="pointer-events-none fixed top-[-15%] left-[-10%] w-[60vw] h-[60vw] rounded-full"
-        style={{ background: 'radial-gradient(circle, var(--aura-indigo) 0%, transparent 60%)' }}
-      />
-      <motion.div
-        animate={{
-          scale: [1, 1.2, 1],
-          opacity: [0.08, 0.15, 0.08],
-          x: [0, -20, 0],
-          y: [0, 30, 0],
-        }}
-        className="pointer-events-none fixed bottom-[-20%] right-[-10%] w-[50vw] h-[50vw] rounded-full"
-        style={{ background: 'radial-gradient(circle, var(--aura-ruby) 0%, transparent 60%)' }}
-      />
-      <motion.div
-        animate={{
-          scale: [1, 1.1, 1],
-          opacity: [0.06, 0.12, 0.06],
-        }}
-        className="pointer-events-none fixed top-[40%] right-[20%] w-[35vw] h-[35vw] rounded-full"
-        style={{ background: 'radial-gradient(circle, var(--aura-amber) 0%, transparent 60%)' }}
-      />
+    <div className="flex flex-col items-center justify-center min-h-dvh bg-[var(--app-bg)] p-4 sm:p-6 relative overflow-x-hidden overflow-y-auto transition-colors duration-[3000ms]">
+      {/* Animated Ambient Aura — negatif viewport ofsetleri doğrudan `fixed`
+          elemanlarda kullanıldığında görünür alan kırpılsa bile document
+          scrollWidth büyüyordu. Tek, viewport-sınırlı kap dekorasyonu aynı
+          yerde tutarken gerçek yatay kaydırmayı engeller. */}
+      <div className="pointer-events-none fixed inset-0 overflow-hidden" aria-hidden="true">
+        <motion.div
+          animate={{
+            scale: [1, 1.15, 1],
+            opacity: [0.12, 0.2, 0.12],
+            x: [0, 30, 0],
+            y: [0, -20, 0],
+          }}
+          className="absolute top-[-15%] left-[-10%] w-[60vw] h-[60vw] rounded-full"
+          style={{ background: 'radial-gradient(circle, var(--aura-indigo) 0%, transparent 60%)' }}
+        />
+        <motion.div
+          animate={{
+            scale: [1, 1.2, 1],
+            opacity: [0.08, 0.15, 0.08],
+            x: [0, -20, 0],
+            y: [0, 30, 0],
+          }}
+          className="absolute bottom-[-20%] right-[-10%] w-[50vw] h-[50vw] rounded-full"
+          style={{ background: 'radial-gradient(circle, var(--aura-ruby) 0%, transparent 60%)' }}
+        />
+        <motion.div
+          animate={{
+            scale: [1, 1.1, 1],
+            opacity: [0.06, 0.12, 0.06],
+          }}
+          className="absolute top-[40%] right-[20%] w-[35vw] h-[35vw] rounded-full"
+          style={{ background: 'radial-gradient(circle, var(--aura-amber) 0%, transparent 60%)' }}
+        />
+      </div>
 
       <motion.div
         initial={{ opacity: 0, y: 24, scale: 0.98 }}
@@ -65,7 +70,7 @@ export function LoginScreen({ login, isLoginInProgress }: LoginScreenProps) {
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ delay: 0.2, ...SPRING.gentle }}
-          className="relative mt-4 mb-12"
+          className="relative mt-4 mb-10"
         >
           <div className="w-28 h-28 bg-[var(--text-primary)]/[0.03] backdrop-blur-2xl rounded-[36px] flex items-center justify-center mx-auto shadow-[var(--spatial-shadow)] ring-1 ring-[var(--glass-border)] relative group/logo">
             <div className="absolute inset-0 rounded-[36px] bg-gradient-to-br from-[var(--aura-indigo)]/15 via-transparent to-[var(--aura-ruby)]/10" />
@@ -91,14 +96,14 @@ export function LoginScreen({ login, isLoginInProgress }: LoginScreenProps) {
           <h1 className="text-4xl lg:text-5xl font-light mb-3 text-[var(--text-primary)] tracking-tighter leading-none apple-thin">
             Müezzin <span className="text-[var(--aura-indigo)] font-light">Hizmet Dizgesi</span>
           </h1>
-          <p className="text-muted mb-14 font-bold tracking-wide uppercase text-2xs">CAMİ VE DİN GÖREVLİLERİ HİZMET PLANLAMA DİZGESİ</p>
+          <p className="text-muted mb-10 font-bold tracking-wide uppercase text-2xs">CAMİ VE DİN GÖREVLİLERİ HİZMET PLANLAMA DİZGESİ</p>
         </motion.div>
 
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5, duration: 0.6 }}
-          className="flex flex-col gap-5 mb-12 relative z-10"
+          className="flex flex-col gap-5 mb-10 relative z-10"
         >
           <motion.button
             whileHover={{ y: -3, scale: 1.01, boxShadow: '0 25px 50px -12px rgba(0,0,0,0.4)' }}
@@ -132,7 +137,7 @@ export function LoginScreen({ login, isLoginInProgress }: LoginScreenProps) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.7 }}
-          className="relative z-10 pt-10 border-t border-[var(--glass-border)]"
+          className="relative z-10 pt-8 border-t border-[var(--glass-border)]"
         >
           <div className="flex items-center justify-center gap-6 mb-4">
             <div className="h-px w-8 bg-gradient-to-r from-transparent to-[var(--glass-border)]" />
@@ -140,13 +145,11 @@ export function LoginScreen({ login, isLoginInProgress }: LoginScreenProps) {
             <div className="h-px w-8 bg-gradient-to-l from-transparent to-[var(--glass-border)]" />
           </div>
           <p className="text-2xs text-muted font-bold uppercase tracking-[0.1em]">Güvenli Giriş • Yetkili Hizmet Erişimi</p>
+          <p className="mt-3 label-tertiary text-2xs font-bold uppercase tracking-wide">
+            Müezzin Hizmet Takip Dizgesi v{typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'bilinmeyen'}
+          </p>
         </motion.div>
       </motion.div>
-
-      {/* Footer Decoration */}
-      <div className="fixed bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-10 opacity-30">
-        <span className="text-2xs tracking-wide font-bold uppercase">MÜEZZİN HİZMET TAKİP DİZGESİ v{__APP_VERSION__}</span>
-      </div>
     </div>
   );
 }

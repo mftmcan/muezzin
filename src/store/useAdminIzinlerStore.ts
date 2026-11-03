@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { collection, query, onSnapshot, updateDoc, doc, getDoc, runTransaction, deleteField } from 'firebase/firestore';
+import { collection, query, onSnapshot, doc, getDoc, runTransaction, deleteField, writeBatch } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { Izin } from '../types';
 import { handleFirestoreError, OperationType } from '../lib/firestore-errors';
@@ -143,6 +143,11 @@ export const useAdminIzinlerStore = create<AdminIzinlerState>((set, get) => ({
     let sonIzinlerDocs: { id: string; data: Record<string, unknown> }[] = [];
     let sonSebepMap: Record<string, string> = {};
     let izinlerYuklendi = false;
+    let detayUnsubscribe: (() => void) | null = null;
+    let detayDenemeSayisi = 0;
+    let detaylarKapatildi = false;
+    let detayYenidenAboneTimer: ReturnType<typeof setTimeout> | null = null;
+    let anaYenidenAboneTimer: ReturnType<typeof setTimeout> | null = null;
 
     const birlestirVeYaz = () => {
       if (!izinlerYuklendi) return;
@@ -177,9 +182,19 @@ export const useAdminIzinlerStore = create<AdminIzinlerState>((set, get) => ({
         // KALICI olarak sonlandırdığından (SDK otomatik yeniden bağlanmaz),
         // bunu yazmak init()'in guard'ını süresiz kilitleyip store'u oturum
         // boyunca ölü bırakıyordu (premium hata analizi HS-O1).
-        set({ error: friendly.message, loading: false, initializing: false });
-        setTimeout(() => {
-          if (!get().initialized) get().init();
+        // Dinleyici ilk başarılı snapshot'tan SONRA da kalıcı olarak
+        // kapanabilir. Bu durumda initialized true bırakılırsa aşağıdaki
+        // yeniden abonelik guard'a takılır ve ekran oturum boyunca bayat
+        // kalır. Kardeş detay dinleyicisi de kapatılır; aksi halde her ana
+        // retry yeni bir detay dinleyicisi daha açarak Firestore okumalarını
+        // katlardı (Spark kota denetimi).
+        set({ error: friendly.message, loading: false, initializing: false, initialized: false });
+        detaylarKapatildi = true;
+        detayUnsubscribe?.();
+        if (detayYenidenAboneTimer) clearTimeout(detayYenidenAboneTimer);
+        if (anaYenidenAboneTimer) clearTimeout(anaYenidenAboneTimer);
+        anaYenidenAboneTimer = setTimeout(() => {
+          if (!get().initialized && !get().initializing) get().init();
         }, YENIDEN_ABONE_MS);
       }
     );
@@ -193,10 +208,6 @@ export const useAdminIzinlerStore = create<AdminIzinlerState>((set, get) => ({
     // Kardeş dinleyicinin (yukarıda) yeniden abone olma deseni burada da
     // uygulanır — tek fark, `initialized` guard'ı burada işe yaramadığından
     // (o bayrak ana listeye aittir) deneme sayısının açıkça sınırlanması.
-    let detayUnsubscribe: (() => void) | null = null;
-    let detayDenemeSayisi = 0;
-    let detaylarKapatildi = false;
-
     const detaylariDinle = () => {
       if (detaylarKapatildi) return;
       detayUnsubscribe = onSnapshot(
@@ -221,7 +232,7 @@ export const useAdminIzinlerStore = create<AdminIzinlerState>((set, get) => ({
           if (detaylarKapatildi) return;
           if (detayDenemeSayisi >= DETAY_MAX_YENIDEN_DENEME) return;
           detayDenemeSayisi++;
-          setTimeout(detaylariDinle, YENIDEN_ABONE_MS);
+          detayYenidenAboneTimer = setTimeout(detaylariDinle, YENIDEN_ABONE_MS);
         }
       );
     };
@@ -232,12 +243,19 @@ export const useAdminIzinlerStore = create<AdminIzinlerState>((set, get) => ({
       unsubscribeIzinler();
       detaylarKapatildi = true;
       detayUnsubscribe?.();
+      if (detayYenidenAboneTimer) clearTimeout(detayYenidenAboneTimer);
+      if (anaYenidenAboneTimer) clearTimeout(anaYenidenAboneTimer);
     };
   },
 
   izinGuncelle: async (id, durum) => {
     const path = `izinler/${id}`;
     try {
+      const audit = telemetryService.auditKaydiHazirla(
+        'İzin Talebi Kararı',
+        id,
+        `Talep durumu '${toTurkishUpperCase(durum)}' olarak güncellendi.`
+      );
       // TÜMÜYLE transaction içinde: hem karar hem (varsa) kota etkisi TEK
       // atomik yazım. Önceden yalnızca 'onaylandi' dalı transactional'dı;
       // 'reddedildi' dalı (mevcut durum ne olursa olsun) korumasız, düz bir
@@ -298,9 +316,9 @@ export const useAdminIzinlerStore = create<AdminIzinlerState>((set, get) => ({
         // (`== false`) yalnızca henüz bildirilmemiş kararları bulmasını
         // sağlar (bkz. duyuruServisi.ts'teki AYNI desen).
         transaction.update(izinRef, { durum, bildirimGonderildi: false });
+        transaction.set(audit.ref, audit.data);
       });
 
-      await telemetryService.logAudit('İzin Talebi Kararı', id, `Talep durumu '${toTurkishUpperCase(durum)}' olarak güncellendi.`);
       // Yalnızca onayda plan yenilemesi gerekir — reddedilen izin zaten
       // atamayı hiç etkilemiyordu (bkz. mimari denetim Y1).
       if (durum === 'onaylandi') {
@@ -314,6 +332,11 @@ export const useAdminIzinlerStore = create<AdminIzinlerState>((set, get) => ({
   izinGeriAl: async (id) => {
     const path = `izinler/${id}`;
     try {
+      const audit = telemetryService.auditKaydiHazirla(
+        'İzin Talebi Kararı Geri Alındı',
+        id,
+        "Talep durumu tekrar 'ONAY BEKLİYOR' olarak ayarlandı."
+      );
       const izinSnap = await getDoc(doc(db, 'izinler', id));
       if (!izinSnap.exists()) throw new Error('İzin talebi bulunamadı.');
       const izinData = izinSnap.data() as Izin;
@@ -347,12 +370,15 @@ export const useAdminIzinlerStore = create<AdminIzinlerState>((set, get) => ({
             const mevcutKullanilan = muezzinSnap.data().yillikIzinKullanilanGun || 0;
             transaction.update(muezzinRef, { yillikIzinKullanilanGun: Math.max(0, mevcutKullanilan - gunSayisi) });
           }
+          transaction.set(audit.ref, audit.data);
         });
       } else {
-        await updateDoc(doc(db, 'izinler', id), { durum: 'onay_bekliyor', bildirimGonderildi: deleteField() });
+        const batch = writeBatch(db);
+        batch.update(doc(db, 'izinler', id), { durum: 'onay_bekliyor', bildirimGonderildi: deleteField() });
+        batch.set(audit.ref, audit.data);
+        await batch.commit();
       }
 
-      await telemetryService.logAudit('İzin Talebi Kararı Geri Alındı', id, "Talep durumu tekrar 'ONAY BEKLİYOR' olarak ayarlandı.");
       // Geri alınan bir onay da plan yenilemesi gerektirir — kişi artık
       // yeniden atanabilir olmalı (bkz. mimari denetim Y1).
       await izinEtkilenenHaftalariYenile(id);
@@ -364,6 +390,7 @@ export const useAdminIzinlerStore = create<AdminIzinlerState>((set, get) => ({
   izinSil: async (id) => {
     const path = `izinler/${id}`;
     try {
+      const audit = telemetryService.auditKaydiHazirla('İzin Talebi Silme', id, 'İzin kaydı dizgeden kalıcı olarak silindi.');
       // Kota geri alınıp alınmayacağı kararı artık transaction İÇİNDEKİ
       // taze okumaya göre veriliyor — önceden bu bir ÖN-okumaya (dış
       // `getDoc`) bakıyordu: örneğin talep ön-okuma anında 'onay_bekliyor'
@@ -390,9 +417,8 @@ export const useAdminIzinlerStore = create<AdminIzinlerState>((set, get) => ({
         }
 
         transaction.delete(izinRef);
+        transaction.set(audit.ref, audit.data);
       });
-
-      await telemetryService.logAudit('İzin Talebi Silme', id, 'İzin kaydı dizgeden kalıcı olarak silindi.');
     } catch (err) {
       throw handleFirestoreError(err, OperationType.DELETE, path);
     }

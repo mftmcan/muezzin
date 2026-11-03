@@ -132,7 +132,9 @@ export default function MuezzinAyarlari() {
               {/* Hardcoded "v2.2.0" bir sonraki sürüm çıkışında güncellenmeyi
                   unutma riski taşıyordu (bkz. kod denetimi) — telemetryService.ts
                   zaten build-zamanı enjekte edilen __APP_VERSION__'ı kullanıyor. */}
-              <span className="premium-label !text-2xs !opacity-35">v{__APP_VERSION__}</span>
+              <span className="premium-label !text-2xs !opacity-35">
+                v{typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'bilinmeyen'}
+              </span>
             </button>
 
             <button

@@ -91,21 +91,21 @@ describe('hata yutma — kaynak taraması', () => {
     const IZINLI_KONSOL_SADECE_CATCH = new Set([
       'src/App.tsx:40', // telemetryService.logError'ın KENDİSİ hata verirse — özyinelemeli çağrıyı önler
       'src/hooks/useFcmToken.ts:280', // FCM push token alınamadı — arka plan, kullanıcı bunu beklemiyor
-      'src/lib/firebase.ts:24', // App Check başlatılamazsa PASİF modda devam (bkz. 2026-09-04 geri alma notu)
-      'src/lib/sounds.ts:62',
-      'src/lib/sounds.ts:104',
-      'src/lib/sounds.ts:134',
-      'src/lib/sounds.ts:173', // dördü de bildirim sesi çalma — kozmetik, sessiz başarısızlık kabul edilebilir
+      'src/lib/firebase.ts:29', // App Check başlatılamazsa PASİF modda devam (bkz. 2026-09-04 geri alma notu)
+      'src/lib/sounds.ts:64',
+      'src/lib/sounds.ts:106',
+      'src/lib/sounds.ts:136',
+      'src/lib/sounds.ts:175', // dördü de bildirim sesi çalma — kozmetik, sessiz başarısızlık kabul edilebilir
       'src/lib/timeSync.ts:52', // RTDB zaman senkronu — yalnızca UX, güvenlik sınırı değil (bkz. CLAUDE.md)
       'src/pages/admin/components/SistemTestleriSekmesi.tsx:188', // service worker güncelleme kontrolü — admin tanı aracı
       'src/services/gpsVakitServisi.ts:120', // sessionStorage yazma (kota/gizli mod) — önbellek, fail-soft
       'src/services/gpsVakitServisi.ts:126', // geocoding ağ hatası — çağıran taraf null'ı bilinen varsayılana düşürüp kullanıcıya bildiriyor
       'src/services/gpsVakitServisi.ts:253', // ilçe geocoding ağ hatası — aynı gerekçe
       'src/services/planServisi.ts:110', // mazeret penceresi damgası hesaplanamazsa FAIL-CLOSED (kural tarafı kapalı sayar), plan üretimini engellemez
-      'src/services/telemetryService.ts:303',
-      'src/services/telemetryService.ts:339',
-      'src/services/telemetryService.ts:570',
-      'src/services/telemetryService.ts:594', // telemetri servisinin kendi Firestore yazımı hataları — özyinelemeyi önler
+      'src/services/telemetryService.ts:324',
+      'src/services/telemetryService.ts:360',
+      'src/services/telemetryService.ts:591',
+      'src/services/telemetryService.ts:632', // telemetri servisinin kendi Firestore yazımı hataları — özyinelemeyi önler
       'src/services/veriSifirlamaServisi.ts:225', // ikincil audit-log yazımı — birincil sıfırlama işlemi zaten tamamlanmış/bildirilmiş, bunu maskeleyecek bir hata fırlatmaz
       'src/store/useNotificationStore.ts:199', // bildirim sesi çalma — kozmetik
     ]);

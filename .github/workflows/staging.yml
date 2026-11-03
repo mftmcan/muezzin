@@ -1,0 +1,67 @@
+name: Staging Deploy
+
+# Bu workflow ikinci bir Firebase SPARK projesini hedefler. Cloud Functions,
+# Cloud Run, Cloud Scheduler, PITR/managed backup veya Blaze gerektiren başka
+# bir kaynak eklenmemelidir.
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: deploy-staging
+  cancel-in-progress: true
+
+jobs:
+  deploy-staging:
+    if: vars.STAGING_FIREBASE_PROJECT != '' && vars.GCP_WORKLOAD_IDENTITY_PROVIDER != '' && vars.GCP_SERVICE_ACCOUNT_STAGING != ''
+    environment: staging
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Google Cloud staging kimliğini OIDC ile al
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT_STAGING }}
+          create_credentials_file: true
+      - run: npm ci
+      - name: Production dependency security gate
+        run: npm run security:audit
+      - name: Staging bundle oluştur
+        env:
+          VITE_FIREBASE_CONFIG_JSON: ${{ vars.STAGING_FIREBASE_CONFIG_JSON }}
+          VITE_RECAPTCHA_SITE_KEY: ${{ vars.STAGING_RECAPTCHA_SITE_KEY }}
+          VITE_FCM_VAPID_KEY: ${{ vars.STAGING_FCM_VAPID_KEY }}
+        run: |
+          if [ -z "$VITE_FIREBASE_CONFIG_JSON" ]; then
+            echo "::error::STAGING_FIREBASE_CONFIG_JSON tanımlı değil. Production config'e sessiz geri düşülmez."
+            exit 1
+          fi
+          if [ -z "$VITE_RECAPTCHA_SITE_KEY" ]; then
+            echo "::error::STAGING_RECAPTCHA_SITE_KEY tanımlı değil; App Check olmadan staging deploy edilmez."
+            exit 1
+          fi
+          npm run build
+          npm run verify:performance
+      - name: Staging hosting + rules + indexes deploy
+        run: |
+          ./node_modules/.bin/firebase deploy \
+            --only hosting,firestore:rules,firestore:indexes \
+            --project "${{ vars.STAGING_FIREBASE_PROJECT }}"
+      - name: Staging sağlık kontrolü
+        env:
+          SAGLIK_DENEME: '10'
+          SAGLIK_BEKLEME_MS: '5000'
+        run: npx tsx scripts/hostingSaglikKontrolu.ts "${{ vars.STAGING_HOSTING_URL }}" "$GITHUB_SHA"

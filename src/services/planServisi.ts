@@ -181,6 +181,11 @@ export async function vakitAtamasiniGuncelle(params: VakitAtamasiGuncelleParams)
     const asilRef = doc(db, 'bildirimler', `${haftaId}_${tarih}_${vakit}_asil`);
     const yedekRef = doc(db, 'bildirimler', `${haftaId}_${tarih}_${vakit}_yedek`);
     const planRef = doc(db, 'haftaPlanlari', haftaId);
+    // Plan + iki bildirim + denetim izi tek transaction'da tamamlanır. Ayrı
+    // bir logAudit çağrısı, görev değişip ağ koptuğunda denetim kaydını
+    // sessizce kaybedebiliyordu. Değer transaction retry'larında yeniden
+    // üretilmez; korunan slotta ise hiç hazırlanmaz.
+    let audit: ReturnType<typeof telemetryService.auditKaydiHazirla> | null = null;
 
     const [gY, gM, gD] = tarih.split('-').map(Number);
     const cumaMi = isFriday(new Date(gY, gM - 1, gD));
@@ -192,6 +197,12 @@ export async function vakitAtamasiniGuncelle(params: VakitAtamasiGuncelleParams)
       if (korumaliSlotMu([asilSnap, yedekSnap])) {
         return 'protected' as const;
       }
+
+      audit ??= telemetryService.auditKaydiHazirla(
+        'Manuel Görev Atama',
+        tarih,
+        `${toTurkishUpperCase(vakit)} vakti için asil: ${asilAdi}, yedek: ${yedekAdi} ataması yapıldı.`
+      );
 
       if (asilSnap.exists()) transaction.delete(asilRef);
       if (yedekSnap.exists()) transaction.delete(yedekRef);
@@ -234,16 +245,10 @@ export async function vakitAtamasiniGuncelle(params: VakitAtamasiGuncelleParams)
         });
       }
 
+      transaction.set(audit.ref, audit.data);
+
       return 'updated' as const;
     });
-
-    if (sonuc === 'updated') {
-      await telemetryService.logAudit(
-        'Manuel Görev Atama',
-        tarih,
-        `${toTurkishUpperCase(vakit)} vakti için asil: ${asilAdi}, yedek: ${yedekAdi} ataması yapıldı.`
-      );
-    }
     return sonuc;
   } catch (err) {
     throw handleFirestoreError(err, OperationType.WRITE, path);

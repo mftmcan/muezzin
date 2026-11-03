@@ -148,7 +148,11 @@ export const HakkindaModal: React.FC<HakkindaModalProps> = ({ isOpen, onClose })
                         __APP_VERSION__, build tarihinden __BUILD_TIMESTAMP__)
                         geliyor; telemetryService.ts zaten aynı sabitleri
                         kullanıyor. */}
-                    Sürüm {__APP_VERSION__} · {format(new Date(__BUILD_TIMESTAMP__), 'dd.MM.yyyy')}
+                    Sürüm {typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'bilinmeyen'} ·{' '}
+                    {format(
+                      new Date(typeof __BUILD_TIMESTAMP__ !== 'undefined' ? __BUILD_TIMESTAMP__ : new Date().toISOString()),
+                      'dd.MM.yyyy'
+                    )}
                   </span>
                 </div>
               </motion.div>

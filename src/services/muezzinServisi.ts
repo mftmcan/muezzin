@@ -2,17 +2,15 @@ import {
   collection,
   deleteField,
   doc,
-  deleteDoc,
   DocumentData,
   FirestoreError,
   getDocsFromServer,
   onSnapshot,
   query,
   runTransaction,
-  setDoc,
   Timestamp,
-  updateDoc,
   where,
+  writeBatch,
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { Invite, Muezzin } from '../types';
@@ -67,9 +65,15 @@ async function aktifAdminUidleriGetir(): Promise<string[]> {
  * bu tasarım onu tamamen KAPATIR, ayrı bir sayaç belgesi/şema göçü
  * gerektirmeden.)
  */
-async function sonAdminKorumaliGuncelle(hedefUid: string, guncelleme: DocumentData, hataMesaji: string): Promise<void> {
+async function sonAdminKorumaliGuncelle(
+  hedefUid: string,
+  guncelleme: DocumentData,
+  hataMesaji: string,
+  auditBilgisi: { actionType: string; targetName: string; details: string }
+): Promise<void> {
   const adayUidler = await aktifAdminUidleriGetir();
   const tumUidler = adayUidler.includes(hedefUid) ? adayUidler : [...adayUidler, hedefUid];
+  const audit = telemetryService.auditKaydiHazirla(auditBilgisi.actionType, auditBilgisi.targetName, auditBilgisi.details);
   await runTransaction(db, async (transaction) => {
     const snaps = await Promise.all(tumUidler.map((uid) => transaction.get(doc(db, 'muezzins', uid))));
     const aktifAdminSayisi = snaps.filter((s) => {
@@ -80,6 +84,7 @@ async function sonAdminKorumaliGuncelle(hedefUid: string, guncelleme: DocumentDa
       throw new Error(hataMesaji);
     }
     transaction.update(doc(db, 'muezzins', hedefUid), guncelleme);
+    transaction.set(audit.ref, audit.data);
   });
 }
 
@@ -99,8 +104,15 @@ async function sonAdminKorumaliGuncelle(hedefUid: string, guncelleme: DocumentDa
 export async function kendiAdiniGuncelle(uid: string, displayName: string): Promise<void> {
   const path = `muezzins/${uid}`;
   try {
-    await updateDoc(doc(db, 'muezzins', uid), { displayName });
-    await telemetryService.logAudit('Profil Güncelleme', uid, `Kullanıcı kendi görünen adını "${displayName}" olarak güncelledi.`);
+    const batch = writeBatch(db);
+    const audit = telemetryService.auditKaydiHazirla(
+      'Profil Güncelleme',
+      uid,
+      `Kullanıcı kendi görünen adını "${displayName}" olarak güncelledi.`
+    );
+    batch.update(doc(db, 'muezzins', uid), { displayName });
+    batch.set(audit.ref, audit.data);
+    await batch.commit();
   } catch (err) {
     throw handleFirestoreError(err, OperationType.UPDATE, path);
   }
@@ -157,20 +169,24 @@ export async function personelAktiflikDegistir(m: MuezzinDoc, muezzinler: Muezzi
   }
   const path = `muezzins/${m.id}`;
   try {
+    const auditBilgisi = {
+      actionType: 'Kadro Durumu Değiştirme',
+      targetName: m.displayName,
+      details: `Personel aktiflik durumu ${!m.aktif ? 'AKTİF' : 'PASİF'} yapıldı.`,
+    };
     if (m.role === 'admin' && m.aktif === true) {
       // Aktif bir admin'i pasifleştiriyoruz — tam atomik son-admin koruması
       // gerekli (bkz. sonAdminKorumaliGuncelle). Aktifleştirme yönünde bu
       // kısıt anlamsız (aksine bir yazım updateDoc ile yeterli).
-      await sonAdminKorumaliGuncelle(m.id, { aktif: false, onayBekliyor: false }, 'Son aktif yönetici pasife alınamaz.');
+      await sonAdminKorumaliGuncelle(m.id, { aktif: false, onayBekliyor: false }, 'Son aktif yönetici pasife alınamaz.', auditBilgisi);
     } else {
-      await updateDoc(doc(db, 'muezzins', m.id), { aktif: !m.aktif, onayBekliyor: false });
+      const batch = writeBatch(db);
+      const audit = telemetryService.auditKaydiHazirla(auditBilgisi.actionType, auditBilgisi.targetName, auditBilgisi.details);
+      batch.update(doc(db, 'muezzins', m.id), { aktif: !m.aktif, onayBekliyor: false });
+      batch.set(audit.ref, audit.data);
+      await batch.commit();
     }
     const planRefreshed = await haftaPlaniniGuvenliYenile(m);
-    await telemetryService.logAudit(
-      'Kadro Durumu Değiştirme',
-      m.displayName,
-      `Personel aktiflik durumu ${!m.aktif ? 'AKTİF' : 'PASİF'} yapıldı.`
-    );
     return { planRefreshed };
   } catch (err) {
     throw handleFirestoreError(err, OperationType.UPDATE, path);
@@ -180,12 +196,19 @@ export async function personelAktiflikDegistir(m: MuezzinDoc, muezzinler: Muezzi
 export async function personelOnayla(m: MuezzinDoc): Promise<{ planRefreshed: boolean }> {
   const path = `muezzins/${m.id}`;
   try {
-    await updateDoc(doc(db, 'muezzins', m.id), { aktif: true, onayBekliyor: false });
+    const batch = writeBatch(db);
+    const audit = telemetryService.auditKaydiHazirla(
+      'Personel Onaylama',
+      m.displayName,
+      'Dizgeye katılım talebi onaylandı ve aktif kadroya dahil edildi.'
+    );
+    batch.update(doc(db, 'muezzins', m.id), { aktif: true, onayBekliyor: false });
     if (m.email) {
-      await deleteDoc(doc(db, 'invites', m.email.toLowerCase()));
+      batch.delete(doc(db, 'invites', m.email.toLowerCase()));
     }
+    batch.set(audit.ref, audit.data);
+    await batch.commit();
     const planRefreshed = await haftaPlaniniGuvenliYenile(m);
-    await telemetryService.logAudit('Personel Onaylama', m.displayName, 'Dizgeye katılım talebi onaylandı ve aktif kadroya dahil edildi.');
     return { planRefreshed };
   } catch (err) {
     throw handleFirestoreError(err, OperationType.UPDATE, path);
@@ -195,14 +218,21 @@ export async function personelOnayla(m: MuezzinDoc): Promise<{ planRefreshed: bo
 export async function personelGeriYukle(m: MuezzinDoc): Promise<{ planRefreshed: boolean }> {
   const path = `muezzins/${m.id}`;
   try {
-    await updateDoc(doc(db, 'muezzins', m.id), {
+    const batch = writeBatch(db);
+    const audit = telemetryService.auditKaydiHazirla(
+      'Personel Geri Yükleme',
+      m.displayName,
+      'Arşivlenmiş personel aktif kadroya geri yüklendi.'
+    );
+    batch.update(doc(db, 'muezzins', m.id), {
       aktif: true,
       onayBekliyor: false,
       arsivlendi: false,
       arsivTarihi: null,
     });
+    batch.set(audit.ref, audit.data);
+    await batch.commit();
     const planRefreshed = await haftaPlaniniGuvenliYenile(m);
-    await telemetryService.logAudit('Personel Geri Yükleme', m.displayName, 'Arşivlenmiş personel aktif kadroya geri yüklendi.');
     return { planRefreshed };
   } catch (err) {
     throw handleFirestoreError(err, OperationType.UPDATE, path);
@@ -221,13 +251,21 @@ export async function personelArsivle(m: MuezzinDoc, muezzinler: MuezzinDoc[]): 
       arsivlendi: true,
       arsivTarihi: Timestamp.now(),
     };
+    const auditBilgisi = {
+      actionType: 'Personel Arşivleme',
+      targetName: m.displayName,
+      details: 'Personel aktif kadrodan çıkarılarak arşiv kategorisine alındı.',
+    };
     if (m.role === 'admin' && m.aktif === true) {
-      await sonAdminKorumaliGuncelle(m.id, guncelleme, 'Son aktif yönetici arşive alınamaz.');
+      await sonAdminKorumaliGuncelle(m.id, guncelleme, 'Son aktif yönetici arşive alınamaz.', auditBilgisi);
     } else {
-      await updateDoc(doc(db, 'muezzins', m.id), guncelleme);
+      const batch = writeBatch(db);
+      const audit = telemetryService.auditKaydiHazirla(auditBilgisi.actionType, auditBilgisi.targetName, auditBilgisi.details);
+      batch.update(doc(db, 'muezzins', m.id), guncelleme);
+      batch.set(audit.ref, audit.data);
+      await batch.commit();
     }
     const planRefreshed = await haftaPlaniniGuvenliYenile(m);
-    await telemetryService.logAudit('Personel Arşivleme', m.displayName, 'Personel aktif kadrodan çıkarılarak arşiv kategorisine alındı.');
     return { planRefreshed };
   } catch (err) {
     throw handleFirestoreError(err, OperationType.UPDATE, path);
@@ -237,8 +275,15 @@ export async function personelArsivle(m: MuezzinDoc, muezzinler: MuezzinDoc[]): 
 export async function davetSil(inviteEmail: string): Promise<void> {
   const path = `invites/${inviteEmail}`;
   try {
-    await deleteDoc(doc(db, 'invites', inviteEmail));
-    await telemetryService.logAudit('Davetiye İptal', inviteEmail, 'Gönderilmiş dizge katılım davetiyesi iptal edildi ve silindi.');
+    const batch = writeBatch(db);
+    const audit = telemetryService.auditKaydiHazirla(
+      'Davetiye İptal',
+      inviteEmail,
+      'Gönderilmiş dizge katılım davetiyesi iptal edildi ve silindi.'
+    );
+    batch.delete(doc(db, 'invites', inviteEmail));
+    batch.set(audit.ref, audit.data);
+    await batch.commit();
   } catch (err) {
     throw handleFirestoreError(err, OperationType.DELETE, path);
   }
@@ -278,12 +323,21 @@ export async function personelKaydet(params: PersonelKaydetParams): Promise<{ pl
         role,
         haftalikIzinGunu: haftalikIzinGunu > 0 ? haftalikIzinGunu : deleteField(),
       };
+      const auditBilgisi = {
+        actionType: 'Profil Güncelleme',
+        targetName: fullName,
+        details: `Kullanıcı rolü: ${toTurkishUpperCase(role)}, İzin günü: ${haftalikIzinGunu > 0 ? haftalikIzinGunu : 'Yok'}`,
+      };
       if (editingUser.role === 'admin' && editingUser.aktif === true && role !== 'admin') {
         // Aktif bir admin'in rolü admin DIŞINA değiştiriliyor — tam atomik
         // son-admin koruması gerekli (bkz. sonAdminKorumaliGuncelle).
-        await sonAdminKorumaliGuncelle(editingUser.id, guncelleme, 'Son aktif yöneticinin yetki seviyesi değiştirilemez.');
+        await sonAdminKorumaliGuncelle(editingUser.id, guncelleme, 'Son aktif yöneticinin yetki seviyesi değiştirilemez.', auditBilgisi);
       } else {
-        await updateDoc(doc(db, 'muezzins', editingUser.id), guncelleme);
+        const batch = writeBatch(db);
+        const audit = telemetryService.auditKaydiHazirla(auditBilgisi.actionType, auditBilgisi.targetName, auditBilgisi.details);
+        batch.update(doc(db, 'muezzins', editingUser.id), guncelleme);
+        batch.set(audit.ref, audit.data);
+        await batch.commit();
       }
       let planRefreshed = true;
       if (impactsDutyPlan) {
@@ -294,11 +348,6 @@ export async function personelKaydet(params: PersonelKaydetParams): Promise<{ pl
         // (bkz. mimari denetim O1).
         planRefreshed = await haftalikPlanlariYenile();
       }
-      await telemetryService.logAudit(
-        'Profil Güncelleme',
-        fullName,
-        `Kullanıcı rolü: ${toTurkishUpperCase(role)}, İzin günü: ${haftalikIzinGunu > 0 ? haftalikIzinGunu : 'Yok'}`
-      );
       return { planRefreshed };
     } catch (err) {
       throw handleFirestoreError(err, OperationType.UPDATE, path);
@@ -320,8 +369,15 @@ export async function personelKaydet(params: PersonelKaydetParams): Promise<{ pl
       if (haftalikIzinGunu > 0) {
         inviteData.haftalikIzinGunu = haftalikIzinGunu;
       }
-      await setDoc(doc(db, 'invites', mail), inviteData);
-      await telemetryService.logAudit('Personel Daveti', mail, `Kullanıcı adı: ${fullName}, Davet edilen rol: ${toTurkishUpperCase(role)}`);
+      const batch = writeBatch(db);
+      const audit = telemetryService.auditKaydiHazirla(
+        'Personel Daveti',
+        mail,
+        `Kullanıcı adı: ${fullName}, Davet edilen rol: ${toTurkishUpperCase(role)}`
+      );
+      batch.set(doc(db, 'invites', mail), inviteData);
+      batch.set(audit.ref, audit.data);
+      await batch.commit();
       return { planRefreshed: true };
     } catch (err) {
       throw handleFirestoreError(err, OperationType.CREATE, path);

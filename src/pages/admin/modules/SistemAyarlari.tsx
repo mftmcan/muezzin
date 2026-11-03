@@ -4,7 +4,6 @@ import { useSystemSettingsStore } from '../../../store/useSystemSettingsStore';
 import { useThemeStore } from '../../../store/useThemeStore';
 import { Save, MapPin, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { telemetryService } from '../../../services/telemetryService';
 import { LoadingState } from '../../../components/ui/LoadingState';
 import { ConfirmModal } from '../../../components/ui/ConfirmModal';
 import { VeriSifirlamaModal } from '../components/VeriSifirlamaModal';
@@ -103,11 +102,6 @@ export default function SistemAyarlari() {
       }
 
       setTimeout(() => setStatusMessage(null), 5000);
-      await telemetryService.logAudit(
-        'Dizge Ayarı Güncelleme',
-        'Vakit Bölgesi',
-        `Diyanet İlçe Kodu: ${cleanedIlceId}, İlçe Adı: ${cleanedIlceAdi}, Hicri Düzeltme: ${normalizedHicriDuzeltme}`
-      );
     } catch (error) {
       console.error('Ayar kaydetme hatası:', error);
       setStatusMessage({ type: 'error', text: 'Ayarlar kaydedilemedi. Yetki ve bağlantı durumunu kontrol edin.' });

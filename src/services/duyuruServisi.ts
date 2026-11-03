@@ -1,4 +1,4 @@
-import { addDoc, collection, deleteDoc, doc, FirestoreError, onSnapshot, orderBy, query, Timestamp } from 'firebase/firestore';
+import { collection, doc, FirestoreError, onSnapshot, orderBy, query, Timestamp, writeBatch } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { Duyuru } from '../hooks/useDuyurular';
 import { handleFirestoreError, OperationType } from '../lib/firestore-errors';
@@ -21,12 +21,16 @@ export async function duyuruYayinla(data: { baslik: string; icerik: string; tip:
     // (bkz. Firebase/GitHub veri akışı optimizasyonu — mazeretDevirleriniyle
     // AYNI sınıf sorun, farklı çözüm: zaman penceresi yerine kaynağında
     // baştan sınırlı bir bayrak).
-    await addDoc(collection(db, path), { ...data, tarih: Timestamp.now(), bildirimGonderildi: false });
-    await telemetryService.logAudit(
+    const batch = writeBatch(db);
+    const duyuruRef = doc(collection(db, path));
+    const audit = telemetryService.auditKaydiHazirla(
       'Duyuru Yayınlama',
       data.baslik,
       `Yeni duyuru panoda paylaşıldı. Kategori: ${toTurkishUpperCase(data.tip)}`
     );
+    batch.set(duyuruRef, { ...data, tarih: Timestamp.now(), bildirimGonderildi: false });
+    batch.set(audit.ref, audit.data);
+    await batch.commit();
   } catch (err) {
     throw handleFirestoreError(err, OperationType.CREATE, path);
   }
@@ -35,8 +39,15 @@ export async function duyuruYayinla(data: { baslik: string; icerik: string; tip:
 export async function duyuruSil(id: string, title: string): Promise<void> {
   const path = `duyurular/${id}`;
   try {
-    await deleteDoc(doc(db, 'duyurular', id));
-    await telemetryService.logAudit('Duyuru Silme', title, 'Yayınlanmış olan duyuru panodan kaldırıldı ve kalıcı olarak silindi.');
+    const batch = writeBatch(db);
+    const audit = telemetryService.auditKaydiHazirla(
+      'Duyuru Silme',
+      title,
+      'Yayınlanmış olan duyuru panodan kaldırıldı ve kalıcı olarak silindi.'
+    );
+    batch.delete(doc(db, 'duyurular', id));
+    batch.set(audit.ref, audit.data);
+    await batch.commit();
   } catch (err) {
     throw handleFirestoreError(err, OperationType.DELETE, path);
   }
