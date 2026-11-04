@@ -22,7 +22,9 @@ export interface AdminNavItemConfig {
   id: ActiveModule;
   /** Kısa görünür etiket (SlimSidebar'da metin olarak gösterilir) */
   shortLabel: string;
-  /** Tam betimleyici etiket (FloatingDock'ta aria-label/title, SlimSidebar'da aria-label) */
+  /** Tam betimleyici etiket (title için tek başına; FloatingDock ve SlimSidebar
+   * aria-label'ında görünür kısa etiketle birleştirilir, böylece WCAG 2.5.3
+   * label-in-name korunur) */
   fullLabel: string;
   icon: IconComponent;
   badge: number;

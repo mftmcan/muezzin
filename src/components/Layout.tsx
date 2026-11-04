@@ -105,11 +105,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
           tekrar gösterilmez (bkz. usePWAInstall, görsel tasarım denetimi).
           Mobil bottom-offset FloatingDock.tsx'in gerçek yüksekliğiyle
           KASITLI olarak eşleştirilir: dock'un üst kenarı viewport altından
-          `12px (bottom-[0.75rem]) + 64px (h-[64px])` = 76px'de. Eski 84px
+          `12px (bottom-[0.75rem]) + 68px (h-[68px])` = 80px'de. Eski 84px
           değeri yalnızca 8px pay bırakıyordu — aura/glow gölgeleri bu payı
           görsel olarak sıfırlayıp banner'ın dock'a yapışık görünmesine yol
           açıyordu (bkz. iPhone viewport denetimi). 100px, dock'un üst
-          kenarıyla gerçek (~24px) bir nefes payı bırakır. Dock yüksekliği
+          kenarıyla gerçek (~20px) bir nefes payı bırakır. Dock yüksekliği
           değişirse (FloatingDock.tsx satır ~309) bu değer de gözden
           geçirilmeli. */}
       <AnimatePresence>

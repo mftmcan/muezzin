@@ -65,7 +65,7 @@ const AppNavItem = memo(({ item, isActive }: { item: (typeof ALL_NAV_ITEMS)[0]; 
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.15 }}
-      className="relative flex-1 h-full"
+      className="relative min-w-0 h-full"
     >
       <Link
         to={item.path}
@@ -73,14 +73,14 @@ const AppNavItem = memo(({ item, isActive }: { item: (typeof ALL_NAV_ITEMS)[0]; 
         onPointerDown={handlePointerDown}
         onMouseEnter={handlePrefetch}
         onClick={handleClick}
-        className="relative flex flex-col items-center justify-center w-full h-full select-none touch-manipulation z-10 py-1 group"
+        className="relative flex min-w-0 flex-col items-center justify-center w-full h-full select-none touch-manipulation z-10 px-0.5 group"
         style={{ WebkitTapHighlightColor: 'transparent' }}
       >
-        <motion.div whileTap={{ scale: 0.85 }} className="relative flex flex-col items-center justify-center w-full h-full">
+        <motion.div whileTap={{ scale: 0.9 }} className="relative flex min-h-[52px] flex-col items-center justify-center w-full h-full">
           {isActive && (
             <motion.div
               layoutId="activeNavIndicator"
-              className="absolute inset-[6px] sm:inset-0 bg-[var(--text-primary)]/[0.06] rounded-card shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] border transition-all duration-1000"
+              className="absolute inset-1 sm:inset-0 bg-[var(--text-primary)]/[0.06] rounded-card shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] border transition-all duration-1000"
               style={{
                 borderColor: 'color-mix(in srgb, var(--dynamic-aura, var(--aura-indigo)) 20%, transparent)',
                 boxShadow: '0 0 25px -4px color-mix(in srgb, var(--dynamic-aura, var(--aura-indigo)) 15%, transparent)',
@@ -89,27 +89,21 @@ const AppNavItem = memo(({ item, isActive }: { item: (typeof ALL_NAV_ITEMS)[0]; 
             />
           )}
 
-          <div className="relative z-20 flex flex-col items-center justify-center gap-0 sm:gap-1 pointer-events-none">
+          <div className="relative z-20 flex min-w-0 flex-col items-center justify-center gap-1 pointer-events-none">
             <Icon
-              size={isActive ? 20 : 22}
+              size={21}
               strokeWidth={isActive ? 2.5 : 1.5}
               className={`transition-all duration-500 ${
                 isActive ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]'
               }`}
             />
-            <AnimatePresence mode="wait">
-              {isActive && (
-                <motion.div
-                  key="active-dock-indicator"
-                  layoutId="active-dock-indicator"
-                  initial={{ opacity: 0, scale: 0 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0 }}
-                  className="w-1.5 h-1.5 rounded-full bg-[var(--text-primary)] shadow-[0_0_8px_rgba(255,255,255,0.7)] mt-1.5"
-                  transition={{ type: 'spring', stiffness: 450, damping: 32 }}
-                />
-              )}
-            </AnimatePresence>
+            <span
+              className={`max-w-full truncate px-1 text-2xs leading-none font-medium transition-colors duration-300 ${
+                isActive ? 'text-[var(--text-primary)]' : 'text-faint group-hover:text-[var(--text-primary)]'
+              }`}
+            >
+              {item.label}
+            </span>
           </div>
         </motion.div>
 
@@ -222,7 +216,7 @@ export function FloatingDock() {
 
   return (
     <div
-      className={`fixed bottom-[calc(0.75rem+env(safe-area-inset-bottom,0px))] sm:bottom-6 left-4 right-4 sm:left-0 sm:right-0 z-[100] pointer-events-none flex flex-col items-center gap-2 pb-0 md:pb-12 md:px-6 transition-all duration-300 ease-out ${
+      className={`fixed bottom-[calc(0.75rem+env(safe-area-inset-bottom,0px))] sm:bottom-6 left-3 right-3 sm:left-0 sm:right-0 z-[100] pointer-events-none flex flex-col items-center gap-2 pb-0 md:pb-12 md:px-6 transition-all duration-300 ease-out ${
         isAdminRoute ? 'lg:hidden' : ''
       } ${navHidden ? 'opacity-0 translate-y-[calc(100%+1.5rem)]' : 'opacity-100 translate-y-0'}`}
     >
@@ -237,7 +231,7 @@ export function FloatingDock() {
             exit={{ opacity: 0, y: 8, scale: 0.94 }}
             transition={{ type: 'spring', bounce: 0.1, duration: 0.4 }}
             aria-label="Müezzin menüsü"
-            className="apple-glass px-2 py-1 grid grid-cols-5 gap-1 pointer-events-auto touch-manipulation select-none"
+            className="apple-glass grid w-full max-w-[24rem] grid-cols-5 gap-0.5 p-1.5 pointer-events-auto touch-manipulation select-none"
           >
             {APP_LINKS.map((item) => (
               <button
@@ -250,9 +244,9 @@ export function FloatingDock() {
                   playClick();
                   navigateApp(item.path);
                 }}
-                className="min-w-[42px] h-[38px] px-2 rounded-chip flex items-center justify-center text-[var(--text-primary)]/45 hover:text-[var(--text-primary)] hover:bg-[var(--text-primary)]/[0.04] transition-all touch-manipulation"
+                className="min-w-11 h-11 rounded-chip flex items-center justify-center text-[var(--text-primary)]/45 hover:text-[var(--text-primary)] hover:bg-[var(--text-primary)]/[0.04] transition-all touch-manipulation"
               >
-                <item.icon size={16} strokeWidth={1.7} />
+                <item.icon size={18} strokeWidth={1.7} />
               </button>
             ))}
             {/* Tema geçişi önceden AdminPanel'in kaydırılabilir içerik başlığında
@@ -271,9 +265,9 @@ export function FloatingDock() {
               onPointerDown={(event) => handleAdminPointerAction(event, () => toggleTheme())}
               aria-label={theme === 'dark' ? 'Aydınlık temaya geç' : 'Karanlık temaya geç'}
               title={theme === 'dark' ? 'Aydınlık temaya geç' : 'Karanlık temaya geç'}
-              className="min-w-[42px] h-[38px] px-2 rounded-chip flex items-center justify-center text-[var(--text-primary)]/45 hover:text-[var(--dynamic-aura,var(--aura-amber))] hover:bg-[var(--text-primary)]/[0.04] transition-all touch-manipulation"
+              className="min-w-11 h-11 rounded-chip flex items-center justify-center text-[var(--text-primary)]/45 hover:text-[var(--dynamic-aura,var(--aura-amber))] hover:bg-[var(--text-primary)]/[0.04] transition-all touch-manipulation"
             >
-              {theme === 'dark' ? <Sun size={16} strokeWidth={1.7} /> : <Moon size={16} strokeWidth={1.7} />}
+              {theme === 'dark' ? <Sun size={18} strokeWidth={1.7} /> : <Moon size={18} strokeWidth={1.7} />}
             </button>
           </motion.nav>
         )}
@@ -304,7 +298,7 @@ export function FloatingDock() {
           maskImage: 'linear-gradient(to bottom, transparent, black 16px)',
           WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 16px)',
         }}
-        className="apple-glass pointer-events-auto touch-manipulation select-none relative group/nav overflow-hidden"
+        className="apple-glass w-full max-w-[28rem] sm:w-auto pointer-events-auto touch-manipulation select-none relative group/nav overflow-hidden"
       >
         <div className="absolute inset-0 bg-gradient-to-b from-[var(--text-primary)]/5 to-transparent opacity-0 group-hover/nav:opacity-100 transition-opacity duration-700 pointer-events-none" />
         <div
@@ -328,10 +322,11 @@ export function FloatingDock() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
+            style={!isAdminRoute ? { gridTemplateColumns: `repeat(${navItems.length}, minmax(0, 1fr))` } : undefined}
             className={
               isAdminRoute
-                ? 'w-full sm:w-fit sm:min-w-[220px] min-h-[56px] sm:min-h-[70px] px-2 sm:px-3 py-1.5 sm:py-2 grid grid-cols-4 gap-1 sm:gap-1.5 max-w-full'
-                : 'w-full sm:w-fit md:min-w-[520px] h-[64px] sm:h-[72px] md:h-[88px] flex items-center justify-around md:justify-center gap-1 sm:gap-2 md:gap-8 px-2 sm:px-6 md:px-10'
+                ? 'w-full min-h-[68px] grid grid-cols-4 gap-1 p-1.5 sm:w-[24rem] sm:min-h-[72px] sm:gap-1.5 sm:p-2'
+                : 'w-full h-[68px] grid items-stretch gap-0.5 p-1.5 sm:w-[min(90vw,32rem)] sm:h-[76px] sm:gap-1 sm:p-2 md:w-[520px] md:h-[88px] md:gap-2 md:px-4'
             }
           >
             {isAdminRoute
@@ -345,7 +340,7 @@ export function FloatingDock() {
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.15 }}
-                      aria-label={item.fullLabel}
+                      aria-label={`${item.shortLabel} — ${item.fullLabel}`}
                       aria-current={isActive ? 'page' : undefined}
                       onPointerDown={(event) => handleAdminPointerAction(event, () => setActiveAdminTab(item.id))}
                       onClick={() => {
@@ -353,16 +348,22 @@ export function FloatingDock() {
                         setActiveAdminTab(item.id);
                       }}
                       title={item.fullLabel}
-                      className={`relative min-w-[44px] min-h-[44px] sm:min-w-[54px] sm:min-h-[54px] p-2 sm:p-3 rounded-2xl sm:rounded-control transition-all duration-150 z-10 flex flex-col items-center justify-center gap-1 group touch-manipulation ${
-                        isActive
-                          ? 'text-[var(--dynamic-aura,var(--aura-indigo))] scale-110'
-                          : 'text-faint hover:text-[var(--text-primary)]/60'
+                      className={`relative min-w-11 min-h-11 p-1.5 sm:min-w-[54px] sm:min-h-[54px] sm:p-2 rounded-2xl sm:rounded-control transition-all duration-150 z-10 flex flex-col items-center justify-center gap-1 group touch-manipulation ${
+                        isActive ? 'text-[var(--dynamic-aura,var(--aura-indigo))]' : 'text-faint hover:text-[var(--text-primary)]/60'
                       }`}
                     >
                       <div className="relative z-10 transition-transform duration-500">
-                        <item.icon strokeWidth={isActive ? 2 : 1.5} size={20} />
+                        <item.icon strokeWidth={isActive ? 2 : 1.5} size={21} />
                         {item.badge > 0 && <div className="badge-pulse-danger -top-2 -right-2 w-3.5 h-3.5 !text-2xs">{item.badge}</div>}
                       </div>
+
+                      <span
+                        className={`relative z-10 max-w-full truncate px-0.5 text-2xs leading-none font-medium ${
+                          isActive ? 'text-[var(--text-primary)]' : 'text-faint'
+                        }`}
+                      >
+                        {item.shortLabel}
+                      </span>
 
                       {isActive && (
                         <>
@@ -378,7 +379,7 @@ export function FloatingDock() {
                           />
                           <motion.div
                             layoutId="active-admin-dock-indicator"
-                            className="w-1 h-1 rounded-full bg-[var(--dynamic-aura,var(--aura-indigo))] shadow-[0_0_8px_color-mix(in_srgb,var(--dynamic-aura,var(--aura-indigo))_80%,transparent)] mt-0.5"
+                            className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[var(--dynamic-aura,var(--aura-indigo))] shadow-[0_0_8px_color-mix(in_srgb,var(--dynamic-aura,var(--aura-indigo))_80%,transparent)]"
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
                           />

@@ -64,7 +64,7 @@ export const SlimSidebar = React.memo<SlimSidebarProps>(
             return (
               <button
                 key={item.id}
-                aria-label={item.fullLabel}
+                aria-label={`${toTurkishUpperCase(item.shortLabel)} — ${item.fullLabel}`}
                 aria-current={isActive ? 'page' : undefined}
                 title={item.fullLabel}
                 onClick={() => setActiveTab(item.id)}
