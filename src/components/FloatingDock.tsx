@@ -216,6 +216,9 @@ export function FloatingDock() {
 
   return (
     <div
+      inert={navHidden}
+      aria-hidden={navHidden}
+      onFocusCapture={() => setScrollHidden(false)}
       className={`fixed bottom-[calc(0.75rem+env(safe-area-inset-bottom,0px))] sm:bottom-6 left-3 right-3 sm:left-0 sm:right-0 z-[100] pointer-events-none flex flex-col items-center gap-2 pb-0 md:pb-12 md:px-6 transition-all duration-300 ease-out ${
         isAdminRoute ? 'lg:hidden' : ''
       } ${navHidden ? 'opacity-0 translate-y-[calc(100%+1.5rem)]' : 'opacity-100 translate-y-0'}`}
@@ -240,13 +243,11 @@ export function FloatingDock() {
                 aria-label={`${item.label} sayfasına git`}
                 title={item.label}
                 onPointerDown={(event) => handleAdminPointerAction(event, () => navigateApp(item.path))}
-                onClick={() => {
-                  playClick();
-                  navigateApp(item.path);
-                }}
-                className="min-w-11 h-11 rounded-chip flex items-center justify-center text-[var(--text-primary)]/45 hover:text-[var(--text-primary)] hover:bg-[var(--text-primary)]/[0.04] transition-all touch-manipulation"
+                onClick={() => navigateApp(item.path)}
+                className="min-w-0 min-h-14 rounded-chip flex flex-col gap-1 items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--text-primary)]/[0.04] transition-all touch-manipulation"
               >
                 <item.icon size={18} strokeWidth={1.7} />
+                <span className="max-w-full truncate text-2xs leading-none">{item.label}</span>
               </button>
             ))}
             {/* Tema geçişi önceden AdminPanel'in kaydırılabilir içerik başlığında
@@ -263,11 +264,12 @@ export function FloatingDock() {
                 toggleTheme(event);
               }}
               onPointerDown={(event) => handleAdminPointerAction(event, () => toggleTheme())}
-              aria-label={theme === 'dark' ? 'Aydınlık temaya geç' : 'Karanlık temaya geç'}
+              aria-label={theme === 'dark' ? 'Tema — Aydınlık temaya geç' : 'Tema — Karanlık temaya geç'}
               title={theme === 'dark' ? 'Aydınlık temaya geç' : 'Karanlık temaya geç'}
-              className="min-w-11 h-11 rounded-chip flex items-center justify-center text-[var(--text-primary)]/45 hover:text-[var(--dynamic-aura,var(--aura-amber))] hover:bg-[var(--text-primary)]/[0.04] transition-all touch-manipulation"
+              className="min-w-0 min-h-14 rounded-chip flex flex-col gap-1 items-center justify-center text-[var(--text-secondary)] hover:text-[var(--dynamic-aura,var(--aura-amber))] hover:bg-[var(--text-primary)]/[0.04] transition-all touch-manipulation"
             >
               {theme === 'dark' ? <Sun size={18} strokeWidth={1.7} /> : <Moon size={18} strokeWidth={1.7} />}
+              <span className="text-2xs leading-none">Tema</span>
             </button>
           </motion.nav>
         )}

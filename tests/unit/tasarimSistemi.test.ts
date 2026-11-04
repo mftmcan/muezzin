@@ -188,9 +188,9 @@ describe('tasarım sistemi — kaynak taraması (görsel tasarım denetimi V7/V8
     const IZINLI_TEKIL_DEGERLER = new Set([
       'src/components/FloatingDock.tsx:88', // bounce:0/0.3s — layout morph, süre-tabanlı spring API
       'src/components/FloatingDock.tsx:109', // stiffness:450/damping:32
-      'src/components/FloatingDock.tsx:232', // bounce:0.1/0.4s
-      'src/components/FloatingDock.tsx:288', // bounce:0.15/0.5s — layout morph
-      'src/components/FloatingDock.tsx:289', // bounce:0.15/0.5s — borderRadius morph (288 ile eşleşen çift)
+      'src/components/FloatingDock.tsx:235', // bounce:0.1/0.4s
+      'src/components/FloatingDock.tsx:290', // bounce:0.15/0.5s — layout morph
+      'src/components/FloatingDock.tsx:291', // bounce:0.15/0.5s — borderRadius morph (290 ile eşleşen çift)
       'src/components/GeriSayim.tsx:32', // stiffness:380/damping:30
       'src/components/GorevliKarti.tsx:128', // stiffness:220/damping:25 — layout morph
       'src/components/HakkindaModal.tsx:94', // stiffness:200/damping:25/mass:1

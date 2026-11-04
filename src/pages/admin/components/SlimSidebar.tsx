@@ -121,12 +121,10 @@ export const SlimSidebar = React.memo<SlimSidebarProps>(
               aria-label={`${item.label} sayfasına git`}
               title={item.label}
               onClick={() => onNavigateApp(item.path)}
-              className="relative w-full h-11 rounded-chip flex items-center justify-center text-[var(--text-primary)]/45 hover:text-[var(--text-primary)]/70 hover:bg-[var(--text-primary)]/[0.025] border border-transparent hover:border-[var(--glass-border)] transition-all group"
+              className="relative w-full min-h-14 rounded-chip flex flex-col gap-1 items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--text-primary)]/[0.025] border border-transparent hover:border-[var(--glass-border)] transition-all group"
             >
               <item.icon strokeWidth={1.6} size={18} />
-              <span className="absolute left-[58px] px-3 py-1.5 rounded-xl bg-[var(--app-bg)] border border-[var(--glass-border)] shadow-[var(--spatial-shadow)] text-2xs font-medium tracking-wide opacity-0 translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 pointer-events-none whitespace-nowrap transition-all">
-                {item.label}
-              </span>
+              <span className="text-2xs leading-none font-medium">{item.label}</span>
             </button>
           ))}
         </nav>

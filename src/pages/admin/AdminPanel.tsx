@@ -338,7 +338,7 @@ export default function AdminPanel() {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 min-w-0 w-full max-w-full lg:ml-[80px] px-2 pt-3 pb-28 sm:pb-32 lg:pb-8 lg:p-8 relative z-10">
+      <main className="flex-1 min-w-0 w-full max-w-full lg:ml-[80px] px-2 pt-3 pb-36 sm:pb-40 lg:pb-8 lg:p-8 relative z-10">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}

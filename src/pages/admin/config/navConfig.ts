@@ -1,5 +1,5 @@
 import type { ComponentType } from 'react';
-import { LayoutDashboard, CalendarDays, Users, Settings, Home, Calendar, User, SlidersHorizontal } from 'lucide-react';
+import { LayoutDashboard, CalendarDays, Users, Settings, Home, Calendar, User } from 'lucide-react';
 
 type IconComponent = ComponentType<{ size?: number; strokeWidth?: number; className?: string }>;
 
@@ -49,5 +49,5 @@ export const APP_LINKS: AppLinkConfig[] = [
   { path: '/', label: 'Vakit', icon: Home },
   { path: '/takvim', label: 'Takvim', icon: Calendar },
   { path: '/profil', label: 'Profil', icon: User },
-  { path: '/ayarlar', label: 'Ayarlar', icon: SlidersHorizontal },
+  { path: '/ayarlar', label: 'Ayarlar', icon: Settings },
 ];
