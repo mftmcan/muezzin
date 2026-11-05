@@ -300,7 +300,7 @@ export function FloatingDock() {
           maskImage: 'linear-gradient(to bottom, transparent, black 16px)',
           WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 16px)',
         }}
-        className="apple-glass w-full max-w-[28rem] sm:w-auto pointer-events-auto touch-manipulation select-none relative group/nav overflow-hidden"
+        className="apple-glass w-full max-w-[28rem] sm:w-auto sm:max-w-[32rem] md:max-w-[520px] pointer-events-auto touch-manipulation select-none relative group/nav overflow-hidden"
       >
         <div className="absolute inset-0 bg-gradient-to-b from-[var(--text-primary)]/5 to-transparent opacity-0 group-hover/nav:opacity-100 transition-opacity duration-700 pointer-events-none" />
         <div
